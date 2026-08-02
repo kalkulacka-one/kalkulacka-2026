@@ -85,7 +85,11 @@ export function themeToDeclarations(theme: Theme): Record<string, string> {
   set('typeface-mono', theme.typeface?.mono);
 
   for (const [key, value] of Object.entries(resolveColors(theme.color))) {
-    set(`color-${kebab(key)}`, value);
+    // `neutral` lands under a `-raw` name: `base.css` tints the public
+    // `--vk-color-neutral` toward `agree` before anything reads it, and doing
+    // that requires the untinted value to live under a name the tint formula
+    // can reference without reading its own output.
+    set(`color-${key === 'neutral' ? 'neutral-raw' : kebab(key)}`, value);
   }
 
   set('radius-card', theme.radius?.card);

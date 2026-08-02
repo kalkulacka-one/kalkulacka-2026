@@ -11,6 +11,23 @@
  */
 
 :root {
+  /* --- Neutral tint ------------------------------------------------------
+   * The public `--vk-color-neutral` is never the theme's raw value — it's
+   * that value leaning a little toward `agree`, so every neutral surface
+   * (buttons, borders, the deck back, this file's own soft/wash/hover
+   * variants) reads as "this brand's grey" rather than a generic slate.
+   * `--vk-color-neutral-raw` is what a theme actually sets (see `to-css.ts`,
+   * which renames the `neutral` key on the way out specifically so this
+   * formula has an untinted value to start from instead of reading its own
+   * output).
+   */
+  --vk-neutral-tint: 8%;
+  --vk-color-neutral: color-mix(
+    in oklab,
+    var(--vk-color-neutral-raw),
+    var(--vk-color-agree) var(--vk-neutral-tint)
+  );
+
   /* --- Answer colours -------------------------------------------------- */
 
   /*
