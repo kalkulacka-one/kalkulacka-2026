@@ -4,6 +4,7 @@ import { type Question, questionPath, toSegments } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
 import {
   FlowNav,
+  Logo,
   ProgressSegments,
   type QuestionCardContent,
   QuestionDeck,
@@ -121,10 +122,13 @@ export function QuestionFlow({
   return (
     <div className={styles.flow}>
       <header className={styles.header}>
-        <p className={styles.brand}>{messages.app.title}</p>
-        <p className={styles.subtitle}>
-          {calculatorName} · {electionName}
-        </p>
+        <Logo size={12} className={styles.logo} />
+        <div>
+          <p className={styles.brand}>{messages.app.title}</p>
+          <p className={styles.subtitle}>
+            {calculatorName} · {electionName}
+          </p>
+        </div>
       </header>
 
       <div className={styles.progress}>
@@ -135,43 +139,49 @@ export function QuestionFlow({
         />
       </div>
 
-      <div className={styles.stage}>
-        <QuestionDeck
-          ref={deckRef}
-          current={toCardContent(question)}
-          next={questions[index + 1] ? toCardContent(questions[index + 1] as Question) : undefined}
-          after={questions[index + 2] ? toCardContent(questions[index + 2] as Question) : undefined}
-          selection={{
-            agree: answer?.answer === true,
-            disagree: answer?.answer === false,
-            important: answer?.isImportant === true,
-          }}
-          labels={{
-            agree: messages.flow.agree,
-            disagree: messages.flow.disagree,
-            agreeShort: messages.flow.agreeShort,
-            disagreeShort: messages.flow.disagreeShort,
-            important: messages.flow.important,
-            importantSuffix: messages.flow.importantSuffix,
-            skip: messages.flow.skip,
-          }}
-          onAnswer={handleAnswer}
-          onSkip={handleSkip}
-          onToggleImportant={handleToggleImportant}
+      <div className={styles.center}>
+        <div className={styles.stage}>
+          <QuestionDeck
+            ref={deckRef}
+            current={toCardContent(question)}
+            next={
+              questions[index + 1] ? toCardContent(questions[index + 1] as Question) : undefined
+            }
+            after={
+              questions[index + 2] ? toCardContent(questions[index + 2] as Question) : undefined
+            }
+            selection={{
+              agree: answer?.answer === true,
+              disagree: answer?.answer === false,
+              important: answer?.isImportant === true,
+            }}
+            labels={{
+              agree: messages.flow.agree,
+              disagree: messages.flow.disagree,
+              agreeShort: messages.flow.agreeShort,
+              disagreeShort: messages.flow.disagreeShort,
+              important: messages.flow.important,
+              importantSuffix: messages.flow.importantSuffix,
+              skip: messages.flow.skip,
+            }}
+            onAnswer={handleAnswer}
+            onSkip={handleSkip}
+            onToggleImportant={handleToggleImportant}
+          />
+        </div>
+
+        <FlowNav
+          position={index + 1}
+          total={questions.length}
+          canGoBack={index > 0}
+          onPrevious={() => setIndex((i) => Math.max(i - 1, 0))}
+          onForward={isAnswered ? advanceAnimated : handleSkip}
+          previousLabel={messages.flow.previous}
+          forwardLabel={isAnswered ? messages.flow.next : messages.flow.skip}
+          isSkipped={isSkipped}
+          counterLabel={counterLabel}
         />
       </div>
-
-      <FlowNav
-        position={index + 1}
-        total={questions.length}
-        canGoBack={index > 0}
-        onPrevious={() => setIndex((i) => Math.max(i - 1, 0))}
-        onForward={isAnswered ? advanceAnimated : handleSkip}
-        previousLabel={messages.flow.previous}
-        forwardLabel={isAnswered ? messages.flow.next : messages.flow.skip}
-        isSkipped={isSkipped}
-        counterLabel={counterLabel}
-      />
     </div>
   );
 }

@@ -8,9 +8,17 @@
 
 .header {
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
   font-family: var(--vk-typeface-display);
   line-height: 1.2;
   letter-spacing: -0.03em;
+}
+
+.logo {
+  flex: none;
+  color: var(--vk-color-neutral);
 }
 
 .brand {
@@ -33,28 +41,44 @@
 }
 
 /*
+ * The card and the nav below it are centred as one group in the remaining
+ * vertical space — not the card alone — so the pair sits together rather than
+ * the card floating near the top with the nav stranded far below it.
+ */
+.center {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 51.25rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 860px) {
+  .center {
+    gap: 0.5rem;
+  }
+}
+
+/*
  * The deck is absolutely positioned inside this box, so the stage owns the
- * card's size. Capping it on wide screens keeps the statement from stretching
- * into an unreadable line length.
+ * card's size. Capping its height on wide screens (rather than letting it
+ * fill all remaining space) keeps the statement from floating in an
+ * oversized card.
  */
 .stage {
   position: relative;
   flex: 1;
   min-height: 0;
   width: 100%;
-  max-width: 51.25rem;
-  margin: 2.25rem auto;
 }
 
 @media (min-width: 860px) {
   .stage {
     flex: 0 1 33.75rem;
   }
-}
-
-.flow > :last-child {
-  width: 100%;
-  max-width: 51.25rem;
-  margin: 0 auto;
-  padding-bottom: env(safe-area-inset-bottom);
 }

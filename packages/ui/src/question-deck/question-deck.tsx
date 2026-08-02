@@ -256,6 +256,24 @@ export function QuestionDeck({
 
   const showHint = isDragging && hint !== null;
 
+  /*
+   * While dragging, the active card previews the answer it would record —
+   * matching the prototype, where the buttons themselves light up under the
+   * drag rather than only the hint pill saying so. Below the zone-activation
+   * threshold `hint` is null and the preview briefly clears, exactly as it
+   * does in the prototype, until the drag re-crosses into a zone. "Important"
+   * is the one thing that does not clear: it is an OR with the stored value so
+   * a question armed by an earlier star tap stays visibly armed through a
+   * drag that does not itself reach the up-swipe threshold.
+   */
+  const activeSelection: CardSelection = isDragging
+    ? {
+        agree: hint?.zone === 'agree',
+        disagree: hint?.zone === 'disagree',
+        important: (hint !== null && hint.zone !== 'skip' && hint.important) || selection.important,
+      }
+    : selection;
+
   return (
     <div className={styles.deck}>
       {after ? (
@@ -280,7 +298,7 @@ export function QuestionDeck({
         ref={cardRef}
         className={styles.active}
         content={current}
-        selection={selection}
+        selection={activeSelection}
         labels={cardLabels}
         onPointerDown={onPointerDown}
         onAgree={handleAgree}

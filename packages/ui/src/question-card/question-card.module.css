@@ -170,7 +170,15 @@
   white-space: nowrap;
 }
 
-@container card (min-width: 720px) {
+/*
+ * 600px is comfortable headroom, not a tight fit: the label row only needs
+ * ~350px at any viewport wide enough to reach this in the first place (the
+ * fluid card padding is viewport-driven, not container-driven, so it doesn't
+ * shrink here). Keep this well below the card's likely width in normal use —
+ * the app's own gutters and max-width already eat a good chunk of the
+ * viewport before the card ever sees it.
+ */
+@container card (min-width: 600px) {
   .answerLabel {
     display: inline;
   }
