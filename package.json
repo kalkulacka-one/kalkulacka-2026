@@ -1,0 +1,38 @@
+{
+  "name": "kalkulacka-2026",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.6",
+    "@storybook/addon-a11y": "10.5.5",
+    "@storybook/addon-docs": "10.5.5",
+    "@storybook/react-vite": "10.5.5",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.0.5",
+    "@vk/tokens": "workspace:*",
+    "@vk/ui": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "storybook": "10.5.5",
+    "turbo": "2.10.8",
+    "typescript": "6.0.3",
+    "vite": "8.2.0",
+    "vitest": "4.1.10"
+  }
+}

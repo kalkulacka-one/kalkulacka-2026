@@ -1,0 +1,18 @@
+/*
+ * Storybook loads the fonts from Google directly. The app self-hosts them via
+ * next/font instead, so the two agree on the variable names but not on how the
+ * files get there.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Radio+Canada:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap");
+
+:root {
+  --vk-font-display: "Radio Canada";
+  --vk-font-sans: "Geist";
+}
+
+body {
+  background: var(--vk-color-page);
+  color: var(--vk-color-text);
+  font-family: var(--vk-typeface-sans);
+  -webkit-font-smoothing: antialiased;
+}

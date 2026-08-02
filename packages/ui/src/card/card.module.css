@@ -1,0 +1,24 @@
+.card {
+  background: var(--vk-color-surface);
+  /* The design's signature asymmetry lives in the token, not here. */
+  border-radius: var(--vk-radius-card);
+  box-shadow: var(--vk-shadow-card);
+}
+
+.padded {
+  padding: var(--vk-fluid-card-pad-top) var(--vk-fluid-card-pad-side)
+    var(--vk-fluid-card-pad-bottom);
+}
+
+/* Elevation steps for the stacked deck behind the active card. */
+.next {
+  box-shadow: var(--vk-shadow-card-next);
+}
+
+.back {
+  box-shadow: var(--vk-shadow-card-back);
+}
+
+.lifted {
+  box-shadow: var(--vk-shadow-card-lifted);
+}

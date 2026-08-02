@@ -1,0 +1,122 @@
+/*
+ * Derived tokens.
+ *
+ * Nothing here is a theme decision — every value is computed from the handful
+ * of colours a theme actually sets, using CSS relative colour syntax. That is
+ * the trick that keeps theme files short: an author picks `--vk-color-agree`
+ * and gets its hover, active, soft and on-colour variants for free.
+ *
+ * Load order: base.css, then the base theme, then any override theme.
+ * `var()` resolves lazily, so these definitions do not care which theme wins.
+ */
+
+:root {
+  /* --- Answer colours -------------------------------------------------- */
+
+  /*
+   * "soft" is the resting border/tint of an answer button — the pale blue and
+   * pale red in the prototype. Deriving it by mixing *toward the card surface*
+   * rather than toward white means it stays correct on a dark theme too.
+   */
+  --vk-soft-mix: 22%;
+
+  /*
+   * "on" is the text/icon colour sitting on a filled swatch. The clamp maps
+   * lightness to a hard 0 or 1: dark brand colour gets white ink, light brand
+   * colour gets black ink. Without this, a light accent on a dark theme would
+   * derive white-on-white.
+   */
+  --vk-on-threshold: 0.62;
+
+  --vk-color-agree-soft: color-mix(
+    in oklab,
+    var(--vk-color-agree) var(--vk-soft-mix),
+    var(--vk-color-surface)
+  );
+  --vk-color-agree-hover: oklch(from var(--vk-color-agree) calc(l - 0.05) c h);
+  --vk-color-agree-active: oklch(from var(--vk-color-agree) calc(l - 0.1) c h);
+  --vk-color-agree-on: oklch(
+    from var(--vk-color-agree) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h
+  );
+  --vk-color-agree-wash: oklch(from var(--vk-color-agree) l c h / 0.14);
+  --vk-color-agree-wash-strong: oklch(from var(--vk-color-agree) l c h / 0.22);
+
+  --vk-color-disagree-soft: color-mix(
+    in oklab,
+    var(--vk-color-disagree) var(--vk-soft-mix),
+    var(--vk-color-surface)
+  );
+  --vk-color-disagree-hover: oklch(from var(--vk-color-disagree) calc(l - 0.05) c h);
+  --vk-color-disagree-active: oklch(from var(--vk-color-disagree) calc(l - 0.1) c h);
+  --vk-color-disagree-on: oklch(
+    from var(--vk-color-disagree) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h
+  );
+  --vk-color-disagree-wash: oklch(from var(--vk-color-disagree) l c h / 0.12);
+  --vk-color-disagree-wash-strong: oklch(from var(--vk-color-disagree) l c h / 0.2);
+
+  --vk-color-neutral-soft: color-mix(
+    in oklab,
+    var(--vk-color-neutral) var(--vk-soft-mix),
+    var(--vk-color-surface)
+  );
+  --vk-color-neutral-hover: oklch(from var(--vk-color-neutral) calc(l + 0.06) c h);
+  --vk-color-neutral-active: oklch(from var(--vk-color-neutral) calc(l - 0.06) c h);
+  --vk-color-neutral-on: oklch(
+    from var(--vk-color-neutral) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h
+  );
+  --vk-color-neutral-wash: oklch(from var(--vk-color-text-muted) l c h / 0.2);
+  --vk-color-neutral-wash-strong: oklch(from var(--vk-color-text-muted) l c h / 0.32);
+
+  /* --- Ink and surfaces ------------------------------------------------ */
+
+  --vk-color-text-strong: oklch(from var(--vk-color-text) calc(l - 0.06) c h);
+  --vk-color-text-subtle: oklch(from var(--vk-color-text-muted) calc(l + 0.12) c h);
+  --vk-color-border-strong: oklch(from var(--vk-color-border) calc(l - 0.1) c h);
+
+  /* Progress bar: unanswered, and the enlarged current segment. */
+  --vk-color-progress-idle: var(--vk-color-border);
+  --vk-color-progress-current: var(--vk-color-text-subtle);
+
+  /* --- Elevation -------------------------------------------------------
+   * Tinted with the theme's neutral so shadows belong to the brand rather
+   * than being generic grey.
+   */
+  --vk-shadow-card: 0 18px 44px -16px oklch(from var(--vk-color-neutral) l c h / 0.3);
+  --vk-shadow-card-next: 0 10px 30px -12px oklch(from var(--vk-color-neutral) l c h / 0.26);
+  --vk-shadow-card-back: 0 8px 24px -10px oklch(from var(--vk-color-neutral) l c h / 0.22);
+  --vk-shadow-card-lifted: 0 26px 64px -14px oklch(from var(--vk-color-neutral) l c h / 0.42);
+  --vk-shadow-sticky: 0 -8px 24px -12px oklch(from var(--vk-color-neutral) l c h / 0.18);
+
+  /* --- Structure (not theme decisions) --------------------------------- */
+
+  --vk-space-1: 0.25rem;
+  --vk-space-2: 0.5rem;
+  --vk-space-3: 0.75rem;
+  --vk-space-4: 1rem;
+  --vk-space-5: 1.5rem;
+  --vk-space-6: 2rem;
+  --vk-space-7: 3rem;
+
+  --vk-border-width: 1.5px;
+  --vk-focus-width: 3px;
+  --vk-focus-offset: 2px;
+  --vk-focus-color: oklch(from var(--vk-color-focus) l c h / 0.55);
+
+  --vk-z-card-back: 1;
+  --vk-z-card-next: 2;
+  --vk-z-card: 3;
+  --vk-z-card-lifted: 4;
+  --vk-z-toast: 6;
+}
+
+/*
+ * The gesture-heavy card deck is the one part of this app that genuinely needs
+ * motion. Everything honours this, so a single query disables it all.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --vk-duration-fast: 0.01ms;
+    --vk-duration-base: 0.01ms;
+    --vk-duration-slow: 0.01ms;
+  }
+}

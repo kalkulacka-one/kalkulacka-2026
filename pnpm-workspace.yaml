@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+# Both are expected: esbuild backs Vite/Storybook, sharp backs Next's image
+# optimization. Anything added here later deserves a second look.
+allowBuilds:
+  esbuild: true
+  sharp: true

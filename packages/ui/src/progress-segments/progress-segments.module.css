@@ -1,0 +1,88 @@
+.track {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  /* Fixed height so the enlarged current segment does not shift the layout. */
+  height: 17px;
+}
+
+.segment {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--vk-color-progress-idle);
+  transition:
+    height var(--vk-duration-slow) ease,
+    background var(--vk-duration-base) ease;
+}
+
+/* The question being answered right now reads as a taller segment. */
+.current .bar {
+  height: 11px;
+  border-radius: 5.5px;
+  background: var(--vk-color-progress-current);
+  transform-origin: 50% 50%;
+  animation: segment-pop var(--vk-duration-slow) var(--vk-easing-spring);
+}
+
+.agree .bar {
+  background: var(--vk-color-agree);
+}
+
+.disagree .bar {
+  background: var(--vk-color-disagree);
+}
+
+.skipped .bar {
+  background: var(--vk-color-neutral);
+}
+
+/* "Pro mě důležité" — a dot below the segment. */
+.importantDot {
+  position: absolute;
+  top: calc(6px + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  transition: background var(--vk-duration-base) ease;
+}
+
+.current .importantDot {
+  top: calc(11px + 3px);
+}
+
+.agree .importantDot {
+  background: var(--vk-color-agree);
+}
+
+.disagree .importantDot {
+  background: var(--vk-color-disagree);
+}
+
+.skipped .importantDot {
+  background: var(--vk-color-neutral);
+}
+
+@keyframes segment-pop {
+  0% {
+    transform: scaleY(0.4);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current .bar {
+    animation: none;
+  }
+}

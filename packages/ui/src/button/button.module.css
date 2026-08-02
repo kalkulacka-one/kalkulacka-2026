@@ -1,0 +1,90 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-2);
+
+  padding: 0.8125rem 1.5rem;
+  border: none;
+  border-radius: var(--vk-radius-pill);
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+
+  cursor: pointer;
+  transition:
+    background var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.button:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* --- Variants --------------------------------------------------------- */
+
+.solid {
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+}
+
+.solid:hover:not(:disabled) {
+  background: var(--vk-color-neutral-hover);
+}
+
+.solid:active:not(:disabled) {
+  background: var(--vk-color-neutral-active);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--vk-color-text);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--vk-color-neutral-wash);
+}
+
+.ghost:active:not(:disabled) {
+  background: var(--vk-color-neutral-wash-strong);
+}
+
+.outline {
+  background: var(--vk-color-surface);
+  color: var(--vk-color-text);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--vk-color-neutral-wash);
+}
+
+/* --- Sizes ------------------------------------------------------------ */
+
+.small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.large {
+  padding: 1rem 1.75rem;
+  font-size: 1.0625rem;
+}
+
+.fullWidth {
+  width: 100%;
+}

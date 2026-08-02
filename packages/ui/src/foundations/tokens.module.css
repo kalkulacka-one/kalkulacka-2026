@@ -1,0 +1,105 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-6);
+  max-width: 60rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-5);
+}
+
+.heading {
+  margin: 0 0 var(--vk-space-3);
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--vk-color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--vk-space-3);
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+.chipColor {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: var(--vk-radius-chip);
+  box-shadow: inset 0 0 0 1px var(--vk-color-border);
+}
+
+.code {
+  font-family: var(--vk-typeface-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  color: var(--vk-color-text-muted);
+}
+
+.question {
+  margin: var(--vk-space-2) 0 0;
+  font-family: var(--vk-typeface-question);
+  font-size: var(--vk-fluid-question-size);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: var(--vk-color-text);
+  text-wrap: pretty;
+}
+
+.gist {
+  margin: var(--vk-space-2) 0 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-fluid-gist-size);
+  line-height: 1.62;
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 40rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.8125rem;
+  color: var(--vk-color-text);
+}
+
+.table th {
+  text-align: left;
+  padding-bottom: var(--vk-space-2);
+  color: var(--vk-color-text-muted);
+  font-weight: 500;
+}
+
+.table td {
+  padding: var(--vk-space-1) var(--vk-space-3) var(--vk-space-1) 0;
+  vertical-align: middle;
+}
+
+.ruler {
+  display: block;
+  height: 0.75rem;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-agree);
+}
+
+.elevation {
+  width: 8rem;
+  height: 5rem;
+  display: grid;
+  place-items: center;
+  background: var(--vk-color-surface);
+  border-radius: var(--vk-radius-card);
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@vk/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./base.css": "./src/base.css",
+    "./themes/*.css": "./dist/themes/*.css"
+  },
+  "scripts": {
+    "build": "tsx scripts/build-themes.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "tsx": "4.23.1",
+    "typescript": "6.0.3"
+  }
+}
