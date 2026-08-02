@@ -26,7 +26,7 @@
 }
 
 .row:hover {
-  background: var(--vk-color-neutral-soft);
+  background: var(--vk-color-surface-hover);
 }
 
 .row:active {

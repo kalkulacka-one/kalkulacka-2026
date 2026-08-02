@@ -67,6 +67,14 @@
   --vk-color-neutral-wash: oklch(from var(--vk-color-text-muted) l c h / 0.2);
   --vk-color-neutral-wash-strong: oklch(from var(--vk-color-text-muted) l c h / 0.32);
 
+  /*
+   * A resting-row hover: still neutral (not brand-tinted), but much lighter
+   * than `neutral-wash` reads at full row size. `oklch(from ...)` only touches
+   * alpha here — `c` and `h` pass through untouched — so this is never more
+   * saturated than `neutral` itself, just fainter.
+   */
+  --vk-color-surface-hover: oklch(from var(--vk-color-neutral) l c h / 0.08);
+
   /* --- Ink and surfaces ------------------------------------------------ */
 
   --vk-color-text-strong: oklch(from var(--vk-color-text) calc(l - 0.06) c h);

@@ -56,7 +56,7 @@
 }
 
 .item:hover {
-  background: var(--vk-color-agree-wash);
+  background: var(--vk-color-surface-hover);
 }
 
 .item:focus-visible {
