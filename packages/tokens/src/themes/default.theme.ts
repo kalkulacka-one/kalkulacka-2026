@@ -28,19 +28,43 @@ export const defaultTheme = defineTheme({
   },
 
   color: {
-    agree: '#2563eb',
-    disagree: '#dc2626',
-    neutral: '#334155',
+    light: {
+      agree: '#2563eb',
+      disagree: '#dc2626',
+      neutral: '#334155',
 
-    page: '#f8fafc',
-    surface: '#ffffff',
-    surfaceSunken: '#f1f5f9',
+      page: '#f8fafc',
+      surface: '#ffffff',
+      surfaceSunken: '#f1f5f9',
 
-    text: '#1e293b',
-    textMuted: '#64748b',
-    border: '#e2e8f0',
+      text: '#1e293b',
+      textMuted: '#64748b',
+      border: '#e2e8f0',
 
-    focus: '#2563eb',
+      focus: '#2563eb',
+    },
+    /*
+     * A real palette, not the light one inverted: a flat, solid dark page
+     * (no attempt to fake elevation with a busy gradient) with the card and
+     * chip stepping up from it in two deliberate stages, and the brand
+     * colours brightened a notch — the light palette's exact blue/red read
+     * slightly muddy against near-black rather than white.
+     */
+    dark: {
+      agree: '#3b82f6',
+      disagree: '#f87171',
+      neutral: '#cbd5e1',
+
+      page: '#0b1220',
+      surface: '#1b2740',
+      surfaceSunken: '#151f30',
+
+      text: '#e8eef7',
+      textMuted: '#94a3b8',
+      border: '#2b3648',
+
+      focus: '#3b82f6',
+    },
   },
 
   radius: {

@@ -120,3 +120,18 @@
     --vk-duration-slow: 0.01ms;
   }
 }
+
+/*
+ * A theme with both a light and a dark palette resolves its colours via
+ * `light-dark()`, which follows the OS preference by default. These two rules
+ * are the hook for a manual light/dark toggle: nothing sets `data-mode` today
+ * (there is no toggle UI yet), but forcing one mode later is a one-line
+ * `element.dataset.mode = 'dark'` away rather than a new feature.
+ */
+:root[data-mode="light"] {
+  color-scheme: light;
+}
+
+:root[data-mode="dark"] {
+  color-scheme: dark;
+}

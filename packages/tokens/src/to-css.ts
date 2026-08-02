@@ -1,4 +1,4 @@
-import type { Theme } from './contract';
+import type { ColorSet, Theme } from './contract';
 import { DEFAULT_FLUID_ANCHORS, type FluidAnchors, fluid } from './fluid';
 
 /**
@@ -40,11 +40,33 @@ export function themeToCss(theme: Theme, { selector }: { selector?: string } = {
   // Scoped by default. Only the base theme claims `:root` (see build-themes),
   // so loading extra themes never changes the app until one is selected.
   const scope = selector ?? `[data-theme='${theme.name}']`;
-  const body = Object.entries(decls)
-    .map(([prop, value]) => `  ${prop}: ${value};`)
-    .join('\n');
 
-  return `${scope} {\n${body}\n}\n`;
+  // A real CSS property, not a custom one — this is what makes `light-dark()`
+  // resolve, and it also gets native form controls/scrollbars right for a
+  // theme that's dark-only even when none of its colors use light-dark().
+  const colorScheme = getColorScheme(theme);
+  const lines = [
+    ...(colorScheme ? [`  color-scheme: ${colorScheme};`] : []),
+    ...Object.entries(decls).map(([prop, value]) => `  ${prop}: ${value};`),
+  ];
+
+  return `${scope} {\n${lines.join('\n')}\n}\n`;
+}
+
+/**
+ * What `color-scheme` should be for this theme, derived from which palettes
+ * it actually provided — not a separate field an author has to remember to
+ * set. `undefined` when the theme touches no colors at all (e.g. a
+ * typeface-only override), so it inherits whatever scope it's nested under.
+ */
+export function getColorScheme(theme: Theme): 'light' | 'dark' | 'light dark' | undefined {
+  const hasLight = theme.color?.light !== undefined;
+  const hasDark = theme.color?.dark !== undefined;
+
+  if (hasLight && hasDark) return 'light dark';
+  if (hasDark) return 'dark';
+  if (hasLight) return 'light';
+  return undefined;
 }
 
 /**
@@ -62,7 +84,7 @@ export function themeToDeclarations(theme: Theme): Record<string, string> {
   set('typeface-question', theme.typeface?.question ?? theme.typeface?.display);
   set('typeface-mono', theme.typeface?.mono);
 
-  for (const [key, value] of Object.entries(theme.color ?? {})) {
+  for (const [key, value] of Object.entries(resolveColors(theme.color))) {
     set(`color-${kebab(key)}`, value);
   }
 
@@ -96,4 +118,28 @@ export function themeToDeclarations(theme: Theme): Record<string, string> {
 
 function kebab(value: string) {
   return value.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+}
+
+/**
+ * Merge a theme's light/dark palettes into one set of CSS values.
+ *
+ * A key present in both becomes `light-dark(lightVal, darkVal)`; a key
+ * present in only one is used as-is regardless of mode — that's how a
+ * single-mode theme (no `light`, or no `dark`) is expressed, not a special
+ * case elsewhere in the pipeline.
+ */
+function resolveColors(color: Theme['color']): Partial<ColorSet> {
+  const light = color?.light ?? {};
+  const dark = color?.dark ?? {};
+  const keys = new Set([...Object.keys(light), ...Object.keys(dark)]) as Set<keyof ColorSet>;
+
+  const out: Partial<ColorSet> = {};
+  for (const key of keys) {
+    const l = light[key];
+    const d = dark[key];
+    if (l !== undefined && d !== undefined) out[key] = `light-dark(${l}, ${d})`;
+    else if (l !== undefined) out[key] = l;
+    else if (d !== undefined) out[key] = d;
+  }
+  return out;
 }

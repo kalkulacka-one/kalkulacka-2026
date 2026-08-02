@@ -8,18 +8,27 @@ import '@vk/tokens/themes/midnight.css';
 import './preview.css';
 
 /**
- * Applies the selected theme to the preview document.
+ * Applies the selected theme and colour mode to the preview document.
  *
- * This is the design system's regression test: switch the toolbar to a theme
- * that shares no colours with the default and look for anything that does not
- * move. Whatever stays put has a hardcoded value in a component.
+ * This is the design system's regression test: switch Theme to something that
+ * shares no colours with the default, or flip Mode to dark, and look for
+ * anything that does not move. Whatever stays put has a hardcoded value in a
+ * component.
+ *
+ * "System" leaves `data-mode` unset — Storybook itself doesn't emulate
+ * `prefers-color-scheme` on demand, but the app's own dev/preview browser
+ * does, so unset is the honest "whatever the OS says" state.
  */
 const withTheme: Decorator = (Story, context) => {
   const theme = String(context.globals.theme ?? 'default');
+  const mode = String(context.globals.mode ?? 'system');
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-  }, [theme]);
+
+    if (mode === 'system') delete document.documentElement.dataset.mode;
+    else document.documentElement.dataset.mode = mode;
+  }, [theme, mode]);
 
   return <Story />;
 };
@@ -28,6 +37,7 @@ const preview: Preview = {
   decorators: [withTheme],
   initialGlobals: {
     theme: 'default',
+    mode: 'system',
   },
   globalTypes: {
     theme: {
@@ -37,6 +47,19 @@ const preview: Preview = {
         icon: 'paintbrush',
         dynamicTitle: true,
         items: themes.map((t) => ({ value: t.name, title: t.label ?? t.name })),
+      },
+    },
+    mode: {
+      description: 'Colour mode (light/dark), where the active theme supports it',
+      toolbar: {
+        title: 'Mode',
+        icon: 'circlehollow',
+        dynamicTitle: true,
+        items: [
+          { value: 'system', title: 'System' },
+          { value: 'light', title: 'Light' },
+          { value: 'dark', title: 'Dark' },
+        ],
       },
     },
   },
