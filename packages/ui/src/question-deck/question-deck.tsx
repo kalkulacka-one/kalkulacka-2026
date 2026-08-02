@@ -127,7 +127,7 @@ export function QuestionDeck({
     [current, selection.important, labels, onAnswer, onSkip],
   );
 
-  const { cardRef, nextRef, backRef, onPointerDown, isDragging, resetStack } = useSwipeDeck({
+  const { cardRef, nextRef, backRef, onPointerDown, isDragging, animateStackRise } = useSwipeDeck({
     onCommit: (swipeIntent, from) => commit(swipeIntent, 'normal', from),
     onIntentChange: setHint,
   });
@@ -138,9 +138,9 @@ export function QuestionDeck({
   const commitFromButton = useCallback(
     (zone: SwipeZone, important: boolean) => {
       commit({ zone, important }, 'slow', AT_REST);
-      resetStack();
+      animateStackRise('slow');
     },
-    [commit, resetStack],
+    [commit, animateStackRise],
   );
 
   const handleAgree = useCallback(() => {
@@ -162,8 +162,8 @@ export function QuestionDeck({
 
   const handleSkip = useCallback(() => {
     commit({ zone: 'skip', important: false }, 'normal', AT_REST);
-    resetStack();
-  }, [commit, resetStack]);
+    animateStackRise('normal');
+  }, [commit, animateStackRise]);
 
   useImperativeHandle(
     ref,
@@ -177,10 +177,10 @@ export function QuestionDeck({
           to: advanceTransform(),
           speed: 'instant',
         });
-        resetStack();
+        animateStackRise('instant');
       },
     }),
-    [current, selection, resetStack],
+    [current, selection, animateStackRise],
   );
 
   // Drive the ghost's flight once React has painted it at its starting point.

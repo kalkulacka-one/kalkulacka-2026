@@ -2,11 +2,14 @@ import {
   type PointerEvent as ReactPointerEvent,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
 import {
+  type CommitSpeed,
   PHYSICS,
+  SPEEDS,
   SPRING_BACK_DURATION,
   STACK_BACK,
   STACK_NEXT,
@@ -88,6 +91,68 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
       );
       next.style.filter = `brightness(${STACK_NEXT.brightness})`;
       next.style.opacity = String(STACK_NEXT.opacity);
+    }
+
+    const back = backRef.current;
+    if (back) {
+      back.style.transition = 'none';
+      back.style.transform = stackTransform(
+        STACK_BACK.x,
+        STACK_BACK.y,
+        STACK_BACK.scale,
+        STACK_BACK.rotate,
+      );
+      back.style.filter = `brightness(${STACK_BACK.brightness})`;
+      back.style.opacity = String(STACK_BACK.opacity);
+    }
+  }, []);
+
+  /** Animate the upcoming card rising and enlarging to the front on button/keyboard commit. */
+  const animateStackRise = useCallback((speed: CommitSpeed = 'normal') => {
+    const { fly } = SPEEDS[speed];
+    const easing = `transform ${fly}s var(--vk-easing-spring), filter ${fly}s ease, opacity ${fly}s ease`;
+
+    const card = cardRef.current;
+    if (card) {
+      card.style.transition = 'none';
+      card.style.transform = stackTransform(
+        STACK_NEXT.x,
+        STACK_NEXT.y,
+        STACK_NEXT.scale,
+        STACK_NEXT.rotate,
+      );
+      card.style.filter = `brightness(${STACK_NEXT.brightness})`;
+      card.style.opacity = '1';
+
+      void card.offsetWidth;
+
+      card.style.transition = easing;
+      card.style.transform = transform(0, 0, 0);
+      card.style.filter = 'brightness(1)';
+    }
+
+    const next = nextRef.current;
+    if (next) {
+      next.style.transition = 'none';
+      next.style.transform = stackTransform(
+        STACK_BACK.x,
+        STACK_BACK.y,
+        STACK_BACK.scale,
+        STACK_BACK.rotate,
+      );
+      next.style.filter = `brightness(${STACK_BACK.brightness})`;
+      next.style.opacity = String(STACK_BACK.opacity);
+
+      void next.offsetWidth;
+
+      next.style.transition = easing;
+      next.style.transform = stackTransform(
+        STACK_NEXT.x,
+        STACK_NEXT.y,
+        STACK_NEXT.scale,
+        STACK_NEXT.rotate,
+      );
+      next.style.filter = `brightness(${STACK_NEXT.brightness})`;
     }
 
     const back = backRef.current;
@@ -248,6 +313,14 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
     (event: ReactPointerEvent<HTMLDivElement>) => {
       if (disabled) return;
 
+      if (event.currentTarget.setPointerCapture) {
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        } catch {
+          // Ignore capture failures (e.g. if element is detached)
+        }
+      }
+
       dragging.current = true;
       start.current = { x: event.clientX, y: event.clientY };
       offset.current = { x: 0, y: 0 };
@@ -271,6 +344,11 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
 
   useEffect(() => () => detachRef.current?.(), []);
 
+  // Ensure initial inline transforms match JS physics constants on mount and HMR updates.
+  useLayoutEffect(() => {
+    resetStack();
+  }, [resetStack]);
+
   return {
     cardRef,
     nextRef,
@@ -282,5 +360,6 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
     intent,
     resetStack,
     springBack,
+    animateStackRise,
   };
 }

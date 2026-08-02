@@ -10,20 +10,20 @@ export type SwipeZone = 'agree' | 'disagree' | 'skip';
 
 /** Where the stacked cards sit when the top card is at rest. */
 export const STACK_NEXT = {
-  x: 16,
-  y: -18,
+  x: 12,
+  y: -22,
   scale: 0.95,
-  rotate: 0.8,
-  brightness: 0.92,
+  rotate: 0.5,
+  brightness: 0.99,
   opacity: 1,
 } as const;
 
 export const STACK_BACK = {
-  x: 32,
-  y: -34,
-  scale: 0.89,
-  rotate: 1.5,
-  brightness: 0.82,
+  x: 24,
+  y: -40,
+  scale: 0.9,
+  rotate: 1,
+  brightness: 0.98,
   opacity: 1,
 } as const;
 

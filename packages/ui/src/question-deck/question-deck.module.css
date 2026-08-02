@@ -14,15 +14,15 @@
 
 .back {
   z-index: var(--vk-z-card-back);
-  transform: translate(32px, -34px) scale(0.89) rotate(1.5deg);
-  filter: brightness(0.82);
+  transform: translate(0px, -60px) scale(0.88);
+  filter: brightness(0.95);
   opacity: 1;
 }
 
 .next {
   z-index: var(--vk-z-card-next);
-  transform: translate(16px, -18px) scale(0.95) rotate(0.8deg);
-  filter: brightness(0.92);
+  transform: translate(0px, -32px) scale(0.94);
+  filter: brightness(0.98);
   opacity: 1;
   pointer-events: none;
 }
