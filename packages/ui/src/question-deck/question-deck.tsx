@@ -218,8 +218,15 @@ export function QuestionDeck({
   // important — the same directions the swipes use.
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest('input, textarea, select, [contenteditable]')) return;
+      // `event.target` is not always an Element (it's `window`/`document` for
+      // some synthetically dispatched or unfocused-body keydowns) — guard
+      // before calling an Element-only method on it.
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, textarea, select, [contenteditable]')
+      )
+        return;
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
       switch (event.key) {

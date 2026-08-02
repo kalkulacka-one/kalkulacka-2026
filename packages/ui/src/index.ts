@@ -13,6 +13,11 @@ export { Chip, type ChipProps } from './chip/chip';
 export { FlowNav, type FlowNavProps } from './flow-nav/flow-nav';
 export { Icon, type IconProps } from './icon/icon';
 export { type IconDefinition, type IconName, icons } from './icon/icons';
+export {
+  type KeyboardHint,
+  KeyboardHints,
+  type KeyboardHintsProps,
+} from './keyboard-hints/keyboard-hints';
 export { Logo, type LogoProps } from './logo/logo';
 export {
   ProgressSegments,

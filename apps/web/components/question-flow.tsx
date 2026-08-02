@@ -5,6 +5,7 @@ import { format, getMessages } from '@vk/i18n';
 import {
   Backdrop,
   FlowNav,
+  KeyboardHints,
   Logo,
   ProgressSegments,
   type QuestionCardContent,
@@ -75,7 +76,15 @@ export function QuestionFlow({
     setIndex((i) => Math.min(i + 1, questions.length - 1));
   }, [questions.length]);
 
-  /** "Další" — the answer stands, so the card lifts away rather than flying. */
+  const goToPrevious = useCallback(() => {
+    setIndex((i) => Math.max(i - 1, 0));
+  }, []);
+
+  /**
+   * Lifts the card away without writing to the answer store — used both by
+   * "Další" on an already-answered question and by the browse-only shortcut,
+   * which must never record anything even on an unanswered one.
+   */
   const advanceAnimated = useCallback(() => {
     deckRef.current?.advance();
     advance();
@@ -107,6 +116,40 @@ export function QuestionFlow({
     if (!question) return;
     toggleImportant(calculatorId, question.id);
   }, [calculatorId, question, toggleImportant]);
+
+  /*
+   * `,` / `.` browse without touching the answer store — deliberately not
+   * modifier keys on the existing arrows. Shift+Arrow already means "extend
+   * a text selection" to the browser and some screen readers, which is
+   * exactly the wrong association for a shortcut whose entire point is "this
+   * one is safe, it changes nothing." Mirrors the nav buttons: `,` is
+   * identical to Předchozí, `.` is the store-write-free half of Další.
+   */
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      // `event.target` is not always an Element (it's `window`/`document` for
+      // some synthetically dispatched or unfocused-body keydowns) — guard
+      // before calling an Element-only method on it.
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, textarea, select, [contenteditable]')
+      )
+        return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      if (event.key === ',') {
+        event.preventDefault();
+        goToPrevious();
+      } else if (event.key === '.') {
+        event.preventDefault();
+        advanceAnimated();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [goToPrevious, advanceAnimated]);
 
   if (!question) return null;
 
@@ -179,12 +222,21 @@ export function QuestionFlow({
             position={index + 1}
             total={questions.length}
             canGoBack={index > 0}
-            onPrevious={() => setIndex((i) => Math.max(i - 1, 0))}
+            onPrevious={goToPrevious}
             onForward={isAnswered ? advanceAnimated : handleSkip}
             previousLabel={messages.flow.previous}
             forwardLabel={isAnswered ? messages.flow.next : messages.flow.skip}
             isSkipped={isSkipped}
             counterLabel={counterLabel}
+          />
+
+          <KeyboardHints
+            hints={[
+              { keys: ['←', '→'], label: messages.flow.shortcutAnswer },
+              { keys: ['↑'], label: messages.flow.shortcutImportant },
+              { keys: ['↓'], label: messages.flow.shortcutSkip },
+              { keys: [',', '.'], label: messages.flow.shortcutBrowse },
+            ]}
           />
         </div>
       </div>

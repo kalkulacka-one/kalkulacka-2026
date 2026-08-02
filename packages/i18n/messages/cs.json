@@ -14,7 +14,11 @@
     "previous": "Předchozí",
     "questionCounter": "Otázka {position} z {total}",
     "progressLabel": "Průběh vyplňování",
-    "close": "Zavřít"
+    "close": "Zavřít",
+    "shortcutAnswer": "odpovědět",
+    "shortcutImportant": "důležité",
+    "shortcutSkip": "přeskočit",
+    "shortcutBrowse": "procházet bez odpovědi"
   },
   "questions": {
     "done": "Hotovo",
