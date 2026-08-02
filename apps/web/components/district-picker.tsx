@@ -46,7 +46,7 @@ export function DistrictPicker({ electionName, districts }: DistrictPickerProps)
 
   return (
     <Screen
-      eyebrow={electionName}
+      electionName={electionName}
       title={messages.picker.title}
       description={messages.picker.description}
     >

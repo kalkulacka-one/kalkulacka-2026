@@ -4,9 +4,12 @@ import { countAnswered, firstUnansweredIndex, type Question } from '@vk/core';
 import { format, getMessages, plural } from '@vk/i18n';
 import { Button, StickyBar } from '@vk/ui';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, electionPath, questionPath, stepPath } from '../lib/paths';
 import styles from './calculator-intro.module.css';
+import { RestartDialog } from './restart-dialog';
 import { Screen } from './screen';
 
 export type CalculatorIntroProps = {
@@ -37,6 +40,8 @@ export function CalculatorIntro({
 }: CalculatorIntroProps) {
   const answers = useCalculatorAnswers(calculatorId);
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
+  const router = useRouter();
+  const [confirmingRestart, setConfirmingRestart] = useState(false);
 
   const answered = countAnswered(answers);
   // Held back until the persisted answers land, so the primary action does not
@@ -52,7 +57,8 @@ export function CalculatorIntro({
 
   return (
     <Screen
-      eyebrow={electionName}
+      electionName={electionName}
+      calculator={{ id: calculatorId, electionKey, district }}
       title={calculatorName}
       back={{ href: electionPath(electionKey), label: messages.picker.title }}
       description={format(messages.intro.description, {
@@ -66,7 +72,7 @@ export function CalculatorIntro({
         <StickyBar>
           {inProgress ? (
             <>
-              <Button variant="ghost" size="large" onClick={() => resetCalculator(calculatorId)}>
+              <Button variant="ghost" size="large" onClick={() => setConfirmingRestart(true)}>
                 {messages.intro.restart}
               </Button>
               <Button as={Link} href={resumePath} size="large">
@@ -96,6 +102,18 @@ export function CalculatorIntro({
           {format(messages.intro.progress, { answered, total: questions.length })}
         </p>
       ) : null}
+
+      <RestartDialog
+        open={confirmingRestart}
+        onClose={() => setConfirmingRestart(false)}
+        onConfirm={() => {
+          resetCalculator(calculatorId);
+          setConfirmingRestart(false);
+          // Same destination as the menu's restart: cleared answers and a
+          // screen still saying "Pokračovat" would be its own small lie.
+          router.push(questionPath({ electionKey, district }, 1));
+        }}
+      />
     </Screen>
   );
 }

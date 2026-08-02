@@ -3,10 +3,8 @@
 import { type Question, questionPath, toSegments } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
 import {
-  Backdrop,
   FlowNav,
   KeyboardHints,
-  Logo,
   ProgressSegments,
   type QuestionCardContent,
   QuestionDeck,
@@ -16,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { stepPath } from '../lib/paths';
+import { AppShell } from './app-shell';
 import styles from './question-flow.module.css';
 
 export type QuestionFlowProps = {
@@ -177,21 +176,12 @@ export function QuestionFlow({
   });
 
   return (
-    <div className={styles.flow}>
-      {/* Behind everything below: the backdrop is theme-controlled and off by default. */}
-      <Backdrop />
-
-      <div className={styles.content}>
-        <header className={styles.header}>
-          <Logo size={12} className={styles.logo} />
-          <div>
-            <p className={styles.brand}>{messages.app.title}</p>
-            <p className={styles.subtitle}>
-              {calculatorName} · {electionName}
-            </p>
-          </div>
-        </header>
-
+    <AppShell
+      calculatorName={calculatorName}
+      electionName={electionName}
+      calculator={{ id: calculatorId, electionKey, district }}
+    >
+      <div className={styles.flow}>
         <div className={styles.progress}>
           <ProgressSegments
             segments={segments}
@@ -278,6 +268,6 @@ export function QuestionFlow({
           />
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

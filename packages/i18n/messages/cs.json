@@ -2,6 +2,26 @@
   "app": {
     "title": "Volební kalkulačka"
   },
+  "menu": {
+    "label": "Nabídka",
+    "close": "Zavřít",
+    "cancel": "Zrušit",
+
+    "help": "Jak to funguje",
+    "helpDetail": "Připomenutí, jak se odpovídá",
+
+    "restart": "Začít znovu",
+    "restartDetail": "Smaže vaše odpovědi",
+    "restartTitle": "Začít znovu?",
+    "restartDescription": "Smažeme všechny vaše odpovědi v této kalkulačce a vrátíme vás na první otázku. Tuhle akci nelze vzít zpět.",
+    "restartConfirm": "Smazat a začít znovu",
+
+    "leave": "Opustit kalkulačku",
+    "leaveDetail": "Postup zůstane uložený",
+    "leaveTitle": "Opustit kalkulačku?",
+    "leaveDescription": "Vaše odpovědi zůstávají uložené v tomhle prohlížeči, takže se k nim můžete kdykoli vrátit a pokračovat. V anonymním okně se ale neuloží nic.",
+    "leaveConfirm": "Opustit"
+  },
   "flow": {
     "agree": "Souhlasím",
     "disagree": "Nesouhlasím",

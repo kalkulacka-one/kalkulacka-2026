@@ -1,0 +1,48 @@
+import { getMessages } from '@vk/i18n';
+import { AppHeader, Backdrop } from '@vk/ui';
+import type { ReactNode } from 'react';
+import type { CalculatorRef } from '../lib/paths';
+import { AppMenu } from './app-menu';
+import styles from './app-shell.module.css';
+
+export type AppShellProps = {
+  /** The election's display name, shown next to the wordmark. */
+  electionName?: string;
+  /** The chosen region/district, shown between the election type and year. */
+  calculatorName?: string;
+  /** Passed to the menu; without it, restart and leave are not offered. */
+  calculator?: { id: string } & CalculatorRef;
+  children: ReactNode;
+};
+
+const messages = getMessages();
+
+/**
+ * Backdrop, header, menu — the frame that does not change between screens.
+ *
+ * The shell owns the full viewport and never scrolls; whatever it wraps decides
+ * whether *it* scrolls. That is what lets the question flow (fixed, unscrollable
+ * by design) and the content screens (a scrolling list) share one header and one
+ * backdrop instead of each rebuilding the chrome around their own layout.
+ */
+export function AppShell({ electionName, calculatorName, calculator, children }: AppShellProps) {
+  return (
+    <div className={styles.shell}>
+      {/* Behind everything below. Theme-controlled — a theme can turn it off. */}
+      <Backdrop />
+
+      <div className={styles.content}>
+        <div className={styles.bar}>
+          <AppHeader
+            title={messages.app.title}
+            electionName={electionName}
+            calculatorName={calculatorName}
+            actions={<AppMenu calculator={calculator} />}
+          />
+        </div>
+
+        {children}
+      </div>
+    </div>
+  );
+}

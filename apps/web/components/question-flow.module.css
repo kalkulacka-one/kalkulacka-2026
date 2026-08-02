@@ -1,56 +1,20 @@
-.flow {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  /* Falls back to the theme's page colour when the backdrop is off. */
-  background: var(--vk-color-page);
-}
-
 /*
- * Everything but the backdrop. Needs its own stacking context so it paints
- * above the backdrop's canvas regardless of DOM order — a position:absolute
- * element with z-index:auto (the backdrop) paints above plain in-flow
- * content by default, so this has to opt in to sit on top explicitly.
+ * The deck and its nav, below the shell's header. The backdrop, the header and
+ * the menu are the shell's (`app-shell.module.css`) — this file is only the
+ * flow's own layout.
+ *
+ * `min-height: 0` is what keeps the deck inside the viewport: without it this
+ * flex child would refuse to shrink below its content's height and push the
+ * nav off the bottom edge instead of the card getting shorter.
  */
-.content {
-  position: relative;
-  z-index: 1;
-  height: 100%;
+.flow {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-top: calc(var(--vk-fluid-header-top) + env(safe-area-inset-top, 0px));
+
   padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
-  padding-bottom: 0;
-}
-
-.header {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  font-family: var(--vk-typeface-display);
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-}
-
-.logo {
-  flex: none;
-  color: var(--vk-color-neutral);
-}
-
-.brand {
-  margin: 0;
-  font-size: var(--vk-fluid-brand-size);
-  font-weight: 700;
-  color: var(--vk-color-text);
-}
-
-.subtitle {
-  margin: 0;
-  font-size: var(--vk-fluid-brand-size);
-  font-weight: 400;
-  color: var(--vk-color-text);
 }
 
 .progress {

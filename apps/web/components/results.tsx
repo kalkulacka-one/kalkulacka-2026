@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
+import { AppShell } from './app-shell';
 import styles from './results.module.css';
 import { Screen } from './screen';
 
@@ -101,16 +102,27 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
    */
   if (!waited || !ready) {
     return (
-      <main className={styles.calculating}>
-        <LoadingIndicator label={messages.results.calculating} />
-      </main>
+      // Inside the shell like every other screen: the header and the backdrop
+      // carrying straight through is what makes this read as a moment in the
+      // flow rather than the app blinking out and coming back.
+      <AppShell
+        calculatorName={calculator.name}
+        electionName={calculator.electionName}
+        calculator={{ id: calculator.id, ...ref }}
+      >
+        <main className={styles.calculating}>
+          <LoadingIndicator label={messages.results.calculating} />
+        </main>
+      </AppShell>
     );
   }
 
   if (answered === 0) {
     return (
       <Screen
-        eyebrow={`${calculator.name} · ${calculator.electionName}`}
+        calculatorName={calculator.name}
+        electionName={calculator.electionName}
+        calculator={{ id: calculator.id, ...ref }}
         title={messages.results.emptyTitle}
         description={messages.results.emptyDescription}
         footer={
@@ -128,7 +140,9 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
 
   return (
     <Screen
-      eyebrow={`${calculator.name} · ${calculator.electionName}`}
+      calculatorName={calculator.name}
+      electionName={calculator.electionName}
+      calculator={{ id: calculator.id, ...ref }}
       title={messages.results.title}
       description={messages.results.description}
       back={{ href: stepPath(ref, 'review'), label: messages.results.backToRecap }}

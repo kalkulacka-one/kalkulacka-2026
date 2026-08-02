@@ -47,7 +47,9 @@ export function Recap({
 
   return (
     <Screen
-      eyebrow={`${calculatorName} · ${electionName}`}
+      calculatorName={calculatorName}
+      electionName={electionName}
+      calculator={{ id: calculatorId, ...ref }}
       title={messages.recap.title}
       description={messages.recap.description}
       back={{ href: questionPath(ref, questions.length), label: messages.recap.backToQuestions }}

@@ -1,11 +1,12 @@
 import { getMessages } from '@vk/i18n';
-import { Button, StickyBar, TutorialStep } from '@vk/ui';
+import { Button, StickyBar } from '@vk/ui';
 import Link from 'next/link';
 import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
-import styles from './guide.module.css';
+import { GuideSteps } from './guide-steps';
 import { Screen } from './screen';
 
 export type GuideProps = {
+  calculatorId: string;
   calculatorName: string;
   electionName: string;
 } & CalculatorRef;
@@ -19,12 +20,20 @@ const messages = getMessages();
  * client JavaScript. The functional-first pass explains the gestures in words;
  * teaching them with a live demo card is Phase 6.
  */
-export function Guide({ calculatorName, electionName, electionKey, district }: GuideProps) {
+export function Guide({
+  calculatorId,
+  calculatorName,
+  electionName,
+  electionKey,
+  district,
+}: GuideProps) {
   const ref = { electionKey, district };
 
   return (
     <Screen
-      eyebrow={`${calculatorName} · ${electionName}`}
+      calculatorName={calculatorName}
+      electionName={electionName}
+      calculator={{ id: calculatorId, ...ref }}
       title={messages.guide.title}
       back={{ href: stepPath(ref, 'intro'), label: calculatorName }}
       footer={
@@ -35,33 +44,7 @@ export function Guide({ calculatorName, electionName, electionKey, district }: G
         </StickyBar>
       }
     >
-      <ul className={styles.steps}>
-        <TutorialStep
-          icon="arrowLeft"
-          title={messages.guide.agreeTitle}
-          description={messages.guide.agreeDescription}
-        />
-        <TutorialStep
-          icon="arrowRight"
-          title={messages.guide.disagreeTitle}
-          description={messages.guide.disagreeDescription}
-        />
-        <TutorialStep
-          icon="starThin"
-          title={messages.guide.importantTitle}
-          description={messages.guide.importantDescription}
-        />
-        <TutorialStep
-          icon="arrowDown"
-          title={messages.guide.skipTitle}
-          description={messages.guide.skipDescription}
-        />
-        <TutorialStep
-          icon="list"
-          title={messages.guide.recapTitle}
-          description={messages.guide.recapDescription}
-        />
-      </ul>
+      <GuideSteps />
     </Screen>
   );
 }

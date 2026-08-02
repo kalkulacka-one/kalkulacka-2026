@@ -1,10 +1,10 @@
 .screen {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   /* Keeps a flick inside this list from chaining to the pinned document. */
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  background: var(--vk-color-page);
 }
 
 .inner {
@@ -17,7 +17,7 @@
   margin: 0 auto;
   min-height: 100%;
 
-  padding-top: calc(var(--vk-fluid-header-top) + env(safe-area-inset-top, 0px));
+  padding-top: var(--vk-space-7);
   padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
 }
@@ -25,46 +25,53 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--vk-space-2);
+  gap: var(--vk-space-4);
 }
 
 .footer {
   margin-top: auto;
 }
 
+/*
+ * A plate rather than bare text: this sits over a moving backdrop, and a link
+ * whose contrast changes as the wash drifts under it is a link that reads as
+ * an accident. The plate also gives it an edge to be a *control* against the
+ * page, which bare 15px muted type never had.
+ */
 .back {
   display: inline-flex;
   align-items: center;
   gap: var(--vk-space-1);
   align-self: flex-start;
 
-  min-height: 2.75rem;
-  margin-bottom: calc(var(--vk-space-2) * -1);
+  min-height: 2.25rem;
+  padding: 0 var(--vk-space-3) 0 var(--vk-space-2);
+
+  border-radius: var(--vk-radius-pill);
+  background: oklch(from var(--vk-color-surface) l c h / 0.7);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  backdrop-filter: var(--vk-plate-blur);
 
   font-family: var(--vk-typeface-sans);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--vk-color-text-muted);
   text-decoration: none;
+
+  transition:
+    background var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease;
 }
 
 .back:hover {
+  background: var(--vk-color-surface);
   color: var(--vk-color-text-strong);
 }
 
 .back:focus-visible {
   outline: var(--vk-focus-width) solid var(--vk-focus-color);
   outline-offset: var(--vk-focus-offset);
-  border-radius: 0.125rem;
-}
-
-.eyebrow {
-  margin: 0;
-  font-family: var(--vk-typeface-sans);
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--vk-color-text-muted);
 }
 
 .title {
@@ -72,9 +79,10 @@
   font-family: var(--vk-typeface-display);
   font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
   line-height: 1.1;
-  color: var(--vk-color-text-strong);
+  color: var(--vk-color-text);
+  text-wrap: balance;
 }
 
 .description {
@@ -84,4 +92,5 @@
   font-size: 1rem;
   line-height: 1.55;
   color: var(--vk-color-text-muted);
+  text-wrap: pretty;
 }

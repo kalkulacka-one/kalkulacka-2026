@@ -1,6 +1,7 @@
 import { parseRoute } from '@vk/core';
 import { getMessages } from '@vk/i18n';
 import { notFound } from 'next/navigation';
+import { AppShell } from '../../components/app-shell';
 import { CalculatorIntro } from '../../components/calculator-intro';
 import { DistrictPicker, type PickerDistrict } from '../../components/district-picker';
 import { Guide } from '../../components/guide';
@@ -68,7 +69,12 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
 
       case 'guide':
         return (
-          <Guide {...ref} calculatorName={calculator.name} electionName={calculator.electionName} />
+          <Guide
+            {...ref}
+            calculatorId={calculator.id}
+            calculatorName={calculator.name}
+            electionName={calculator.electionName}
+          />
         );
 
       case 'question': {
@@ -111,12 +117,18 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     }
   }
 
-  // The homepage is Phase 8.
+  /*
+   * The homepage is Phase 8. It gets the shell anyway — "Opustit kalkulačku"
+   * lands here, and arriving at an unstyled page would read as having left the
+   * app rather than as having reached a part of it that is still being built.
+   */
   return (
-    <main className={styles.placeholder}>
-      <h1 className={styles.title}>{messages.comingSoon.title}</h1>
-      <p className={styles.description}>{messages.comingSoon.description}</p>
-    </main>
+    <AppShell>
+      <main className={styles.placeholder}>
+        <h1 className={styles.title}>{messages.comingSoon.title}</h1>
+        <p className={styles.description}>{messages.comingSoon.description}</p>
+      </main>
+    </AppShell>
   );
 }
 
