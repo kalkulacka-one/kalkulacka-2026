@@ -16,7 +16,15 @@ export const defaultTheme = defineTheme({
     display: "var(--vk-font-display, 'Radio Canada'), system-ui, sans-serif",
     sans: "var(--vk-font-sans, 'Geist'), system-ui, sans-serif",
     mono: "var(--vk-font-mono, 'Geist Mono'), ui-monospace, monospace",
-    // `question` intentionally omitted — it follows `display`.
+    /*
+     * The prototype's own default is Geist, not Radio Canada — its
+     * `questionRadioCanada` toggle defaults to `false`. Set explicitly (rather
+     * than left to fall back to `display`) so it's obvious this is a real
+     * choice, not an oversight: swap this one line for `display`, or any
+     * other face, whenever the question statement should look different from
+     * the body copy again.
+     */
+    question: "var(--vk-font-sans, 'Geist'), system-ui, sans-serif",
   },
 
   color: {

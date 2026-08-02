@@ -1,0 +1,29 @@
+/*
+ * Fills whatever positioned ancestor the caller puts this in — the canvas's
+ * own `inset: 0` anchors to this element, not to the caller's container
+ * directly, so the caller only needs `position: relative` and nothing else.
+ */
+.host {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Blurred and slightly oversized so the blur never reveals a hard edge. */
+  filter: blur(28px);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+/* Used only when WebGL is unavailable — a static approximation, not animated. */
+.fallback {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

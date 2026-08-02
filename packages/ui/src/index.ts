@@ -6,6 +6,7 @@
  *  - styling lives in co-located `.module.css` files that reference only `var(--vk-*)`
  *  - no data fetching, no routing, no domain knowledge
  */
+export { Backdrop, type BackdropProps } from './backdrop/backdrop';
 export { Button, type ButtonProps } from './button/button';
 export { Card, type CardProps } from './card/card';
 export { Chip, type ChipProps } from './chip/chip';
