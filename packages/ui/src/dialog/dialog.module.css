@@ -1,0 +1,129 @@
+/*
+ * The element is the full-viewport click-catcher; the panel inside it is what
+ * you see. That split is what lets a click on the surrounding area dismiss,
+ * without a separate overlay div.
+ */
+.dialog {
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  height: 100%;
+  margin: 0;
+  padding: var(--vk-space-4);
+  border: none;
+  background: none;
+  overflow: hidden;
+}
+
+/*
+ * Scoped to `[open]` on purpose. A closed `<dialog>` is hidden by the UA's own
+ * `display: none`, so setting `display` unconditionally here would override
+ * that and leave every dialog in the tree rendered inline, permanently open.
+ */
+.dialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog::backdrop {
+  background: oklch(from var(--vk-color-neutral) min(l, 0.25) c h / 0.42);
+  backdrop-filter: blur(3px);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  padding: var(--vk-space-5);
+  /* The signature asymmetric card shape, at dialog scale. */
+  border-radius: var(--vk-radius-card);
+  background: var(--vk-color-surface);
+  box-shadow: var(--vk-shadow-card-lifted);
+
+  /*
+   * Entry only. A native dialog leaves the top layer the instant it closes, so
+   * an exit animation would play against an element that is already gone —
+   * better an honest snap out than a half-drawn one.
+   */
+  animation: panel-in var(--vk-duration-slow) var(--vk-easing-spring);
+}
+
+.compact {
+  --dialog-max: 26rem;
+}
+
+.wide {
+  --dialog-max: 34rem;
+}
+
+.panel {
+  max-width: var(--dialog-max, 26rem);
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vk-space-3);
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--vk-color-text-strong);
+}
+
+.description {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--vk-color-text-muted);
+}
+
+.body {
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--vk-space-2);
+}
+
+/* Full-width, stacked actions on a narrow screen — thumbs, not pointers. */
+@media (max-width: 26rem) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}

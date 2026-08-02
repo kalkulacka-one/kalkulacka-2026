@@ -1,0 +1,93 @@
+.root {
+  position: relative;
+  flex: none;
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + var(--vk-space-2));
+  right: 0;
+  z-index: var(--vk-z-toast);
+
+  display: flex;
+  flex-direction: column;
+  /* Wide enough that the detail lines sit on one line rather than wrapping. */
+  min-width: 17.5rem;
+  padding: var(--vk-space-2);
+
+  /* Nested to match the item's own corner (radius + the padding it sits in),
+     so a hovered edge item's rounded corner traces the container's corner
+     instead of leaving a gap between two mismatched curves. */
+  border-radius: calc(var(--vk-radius-chip) * 1.5 + var(--vk-space-2));
+  background: var(--vk-color-surface);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-card-lifted);
+
+  animation: menu-in var(--vk-duration-base) var(--vk-easing-spring);
+  /* Grows out of the trigger it hangs from, not from its own middle. */
+  transform-origin: top right;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+  width: 100%;
+
+  min-height: 2.75rem;
+  padding: var(--vk-space-3);
+
+  border: none;
+  border-radius: calc(var(--vk-radius-chip) * 1.5);
+  background: none;
+  color: var(--vk-color-text);
+
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--vk-duration-fast) ease;
+}
+
+.item:hover {
+  background: var(--vk-color-agree-wash);
+}
+
+.item:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: calc(var(--vk-focus-offset) * -1);
+}
+
+.icon {
+  flex: none;
+  display: flex;
+  color: var(--vk-color-text-muted);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-strong);
+}
+
+.detail {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--vk-color-text-muted);
+}

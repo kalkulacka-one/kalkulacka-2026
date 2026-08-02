@@ -1,0 +1,56 @@
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-4);
+
+  font-family: var(--vk-typeface-display);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.logo {
+  flex: none;
+  color: var(--vk-color-neutral);
+}
+
+.names {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--vk-fluid-brand-size);
+  font-weight: 700;
+  color: var(--vk-color-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--vk-fluid-brand-size);
+  font-weight: 400;
+  color: var(--vk-color-text);
+
+  /* One line — a long city plus election name must not wrap the bar taller. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.electionType {
+  color: var(--vk-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+  margin-left: auto;
+}

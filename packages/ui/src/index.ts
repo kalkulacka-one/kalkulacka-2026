@@ -7,6 +7,7 @@
  *  - no data fetching, no routing, no domain knowledge
  */
 export { AnswerPill, type AnswerPillProps, type AnswerTone } from './answer-pill/answer-pill';
+export { AppHeader, type AppHeaderProps } from './app-header/app-header';
 export { Avatar, type AvatarProps } from './avatar/avatar';
 export { Backdrop, type BackdropProps } from './backdrop/backdrop';
 export { Button, type ButtonProps } from './button/button';
@@ -17,9 +18,11 @@ export {
   type ComparisonListProps,
   type ComparisonRow,
 } from './comparison-list/comparison-list';
+export { Dialog, type DialogProps } from './dialog/dialog';
 export { FlowNav, type FlowNavProps } from './flow-nav/flow-nav';
 export { Icon, type IconProps } from './icon/icon';
 export { type IconDefinition, type IconName, icons } from './icon/icons';
+export { IconButton, type IconButtonProps } from './icon-button/icon-button';
 export {
   type HintKey,
   type KeyboardHint,
@@ -32,6 +35,7 @@ export {
 } from './loading-indicator/loading-indicator';
 export { Logo, type LogoProps } from './logo/logo';
 export { MatchCard, type MatchCardProps } from './match-card/match-card';
+export { Menu, type MenuItem, type MenuProps } from './menu/menu';
 export { OptionRow, type OptionRowProps } from './option-row/option-row';
 export {
   ProgressSegments,
