@@ -1,0 +1,101 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+}
+
+.label {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+}
+
+.labelHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+
+  padding: 0 var(--vk-space-4);
+  height: 3rem;
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+
+  transition: box-shadow var(--vk-duration-fast) ease;
+}
+
+.control:focus-within {
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border-strong);
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.lens {
+  flex: none;
+  color: var(--vk-color-text-muted);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+
+  font-family: var(--vk-typeface-sans);
+  /* 1rem is the smallest size iOS Safari will not zoom into on focus. */
+  font-size: 1rem;
+  color: var(--vk-color-text);
+}
+
+.input::placeholder {
+  color: var(--vk-color-text-subtle);
+}
+
+.input:focus {
+  outline: none;
+}
+
+/* The platform's own clear control — replaced by `.clear` below. */
+.input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.clear {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-right: calc(var(--vk-space-2) * -1);
+
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  background: transparent;
+  color: var(--vk-color-text-muted);
+  cursor: pointer;
+
+  transition: background var(--vk-duration-fast) ease;
+}
+
+.clear:hover {
+  background: var(--vk-color-neutral-wash);
+}
+
+.clear:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}

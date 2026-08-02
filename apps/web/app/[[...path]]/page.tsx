@@ -1,8 +1,19 @@
 import { parseRoute } from '@vk/core';
 import { getMessages } from '@vk/i18n';
 import { notFound } from 'next/navigation';
+import { CalculatorIntro } from '../../components/calculator-intro';
+import { DistrictPicker, type PickerDistrict } from '../../components/district-picker';
+import { Guide } from '../../components/guide';
 import { QuestionFlow } from '../../components/question-flow';
-import { listAvailableCalculators, loadCalculator } from '../../lib/calculators';
+import { Recap } from '../../components/recap';
+import { Results } from '../../components/results';
+import {
+  listAvailableCalculators,
+  listDistricts,
+  loadCalculator,
+  loadElection,
+} from '../../lib/calculators';
+import { stepPath } from '../../lib/paths';
 import styles from './page.module.css';
 
 /**
@@ -20,28 +31,87 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
 
   if (!route) notFound();
 
-  if (route.kind === 'calculator' && route.step === 'question') {
+  if (route.kind === 'election') {
+    const election = loadElection(route.electionKey);
+    if (!election) notFound();
+
+    const districts: PickerDistrict[] = listDistricts(route.electionKey).map((district) => ({
+      code: district.code,
+      name: district.name,
+      slug: district.slug,
+      showCode: district.showCode,
+      available: district.available,
+      href: stepPath({ electionKey: route.electionKey, district: district.slug }, 'intro'),
+    }));
+
+    return <DistrictPicker electionName={election.name} districts={districts} />;
+  }
+
+  if (route.kind === 'calculator') {
     const calculator = loadCalculator(route.electionKey, route.district ?? '');
     if (!calculator) notFound();
 
-    const position = Number.parseInt(route.param ?? '1', 10);
+    const ref = { electionKey: route.electionKey, district: route.district ?? '' };
 
-    return (
-      <QuestionFlow
-        calculatorId={calculator.id}
-        calculatorName={calculator.name}
-        electionName={calculator.electionName}
-        electionKey={route.electionKey}
-        district={route.district ?? ''}
-        // Only the questions cross to the client; candidates and their answers
-        // are only needed on the results screen.
-        questions={calculator.questions}
-        initialPosition={Number.isNaN(position) ? 1 : position}
-      />
-    );
+    switch (route.step) {
+      case 'intro':
+        return (
+          <CalculatorIntro
+            {...ref}
+            calculatorId={calculator.id}
+            calculatorName={calculator.name}
+            electionName={calculator.electionName}
+            candidateCount={calculator.candidates.length}
+            questions={calculator.questions}
+          />
+        );
+
+      case 'guide':
+        return (
+          <Guide {...ref} calculatorName={calculator.name} electionName={calculator.electionName} />
+        );
+
+      case 'question': {
+        const position = Number.parseInt(route.param ?? '1', 10);
+
+        return (
+          <QuestionFlow
+            {...ref}
+            calculatorId={calculator.id}
+            calculatorName={calculator.name}
+            electionName={calculator.electionName}
+            // Only the questions cross to the client; candidates and their
+            // answers are only needed on the results screen.
+            questions={calculator.questions}
+            initialPosition={Number.isNaN(position) ? 1 : position}
+          />
+        );
+      }
+
+      case 'review':
+        return (
+          <Recap
+            {...ref}
+            calculatorId={calculator.id}
+            calculatorName={calculator.name}
+            electionName={calculator.electionName}
+            questions={calculator.questions}
+          />
+        );
+
+      /*
+       * `comparison` deep-links into the same screen. The results list already
+       * expands a candidate's full answer-by-answer comparison in place, so a
+       * separate screen would be a second way to render the same thing —
+       * Phase 5 decides whether one is actually wanted.
+       */
+      case 'result':
+      case 'comparison':
+        return <Results {...ref} calculator={calculator} />;
+    }
   }
 
-  // Everything else is Phase 3.
+  // The homepage is Phase 8.
   return (
     <main className={styles.placeholder}>
       <h1 className={styles.title}>{messages.comingSoon.title}</h1>

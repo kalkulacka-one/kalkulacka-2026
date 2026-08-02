@@ -1,0 +1,21 @@
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--vk-z-card-lifted);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-3);
+
+  padding: var(--vk-space-4) 0 max(var(--vk-space-4), env(safe-area-inset-bottom, 0px));
+}
+
+.floating {
+  background: var(--vk-color-page);
+  box-shadow: var(--vk-shadow-sticky);
+}
+
+.flat {
+  background: none;
+}

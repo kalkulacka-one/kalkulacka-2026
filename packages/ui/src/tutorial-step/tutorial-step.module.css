@@ -1,0 +1,43 @@
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vk-space-4);
+  list-style: none;
+}
+
+.badge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-neutral-soft);
+  color: var(--vk-color-text-strong);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-1);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-strong);
+}
+
+.description {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--vk-color-text-muted);
+}

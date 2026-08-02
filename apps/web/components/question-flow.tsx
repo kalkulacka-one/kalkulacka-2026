@@ -12,8 +12,10 @@ import {
   QuestionDeck,
   type QuestionDeckHandle,
 } from '@vk/ui';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
+import { stepPath } from '../lib/paths';
 import styles from './question-flow.module.css';
 
 export type QuestionFlowProps = {
@@ -71,10 +73,21 @@ export function QuestionFlow({
   }, [electionKey, district, index]);
 
   const deckRef = useRef<QuestionDeckHandle>(null);
+  const router = useRouter();
 
+  /**
+   * Move on — and off the end of the deck into the recap.
+   *
+   * The last card advancing to itself would leave someone stuck on question 42
+   * with a "Další" that does nothing, so the deck's end is the recap's entrance.
+   */
   const advance = useCallback(() => {
-    setIndex((i) => Math.min(i + 1, questions.length - 1));
-  }, [questions.length]);
+    if (index + 1 >= questions.length) {
+      router.push(stepPath({ electionKey, district }, 'review'));
+      return;
+    }
+    setIndex(index + 1);
+  }, [district, electionKey, index, questions.length, router]);
 
   const goToPrevious = useCallback(() => {
     setIndex((i) => Math.max(i - 1, 0));

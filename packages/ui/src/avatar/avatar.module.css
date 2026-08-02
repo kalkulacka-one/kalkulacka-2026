@@ -1,0 +1,47 @@
+.avatar {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: var(--vk-radius-pill);
+  overflow: hidden;
+  background: var(--vk-color-neutral-soft);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+}
+
+.small {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.75rem;
+}
+
+.medium {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 0.9375rem;
+}
+
+.large {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.25rem;
+}
+
+.initials {
+  font-family: var(--vk-typeface-sans);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--vk-color-text-muted);
+}
+
+/* Covers the initials when it loads; leaves them visible when it doesn't. */
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--vk-color-surface);
+}

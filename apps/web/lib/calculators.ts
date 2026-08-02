@@ -1,4 +1,4 @@
-import { type Calculator, getFixtureIndex, getPardubiceCalculator } from '@vk/core';
+import { type Calculator, type Election, getFixtureIndex, getPardubiceCalculator } from '@vk/core';
 
 /**
  * Calculator lookup.
@@ -35,8 +35,22 @@ export function listAvailableCalculators(): { electionKey: string; district: str
   return [{ electionKey: calculator.electionId, district: slugifyDistrict(calculator.name) }];
 }
 
+export function loadElection(electionKey: string): Election | null {
+  return getFixtureIndex().elections.find((e) => e.key === electionKey) ?? null;
+}
+
+/**
+ * Every district in an election, each flagged with whether we hold its data.
+ *
+ * The index lists all 35 komunální cities but only Pardubice is committed, so
+ * the picker has to say which rows lead anywhere. Once the real backend lands
+ * `available` becomes true for all of them and nothing above this changes.
+ */
 export function listDistricts(electionKey: string) {
   return getFixtureIndex()
     .districts.filter((d) => d.electionId === electionKey)
-    .map((d) => ({ ...d, slug: slugifyDistrict(d.name) }));
+    .map((d) => {
+      const slug = slugifyDistrict(d.name);
+      return { ...d, slug, available: loadCalculator(electionKey, slug) !== null };
+    });
 }

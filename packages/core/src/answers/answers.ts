@@ -95,6 +95,11 @@ export function countAnswered(answers: AnswerMap): number {
   return Object.values(answers).filter((a) => a.answer !== undefined).length;
 }
 
+/** How many questions were explicitly skipped. */
+export function countSkipped(answers: AnswerMap): number {
+  return Object.values(answers).filter((a) => a.skipped === true && a.answer === undefined).length;
+}
+
 /** A question is "visited" once it has a real position or an explicit skip. */
 function isVisited(answer: UserAnswer | undefined): boolean {
   return answer !== undefined && (answer.answer !== undefined || answer.skipped === true);

@@ -1,0 +1,124 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+
+  padding: var(--vk-space-4);
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  list-style: none;
+}
+
+/* Sits apart from the ranking rather than at the bottom of it. */
+.incomparable {
+  background: none;
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+}
+
+.rank {
+  flex: none;
+  min-width: 1.25rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--vk-color-text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-strong);
+}
+
+.description {
+  margin: 0.125rem 0 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  color: var(--vk-color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score {
+  flex: none;
+  text-align: right;
+}
+
+.percent {
+  font-family: var(--vk-typeface-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--vk-color-agree);
+  font-variant-numeric: tabular-nums;
+}
+
+.noAnswer {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+}
+
+.track {
+  height: 0.5rem;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-progress-idle);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-agree);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+  align-self: flex-start;
+
+  min-height: 2.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+}
+
+.toggle:hover {
+  color: var(--vk-color-text-strong);
+}
+
+.toggle:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+  border-radius: 0.125rem;
+}
+
+.panel {
+  border-top: var(--vk-border-width) solid var(--vk-color-border);
+  padding-top: var(--vk-space-3);
+}

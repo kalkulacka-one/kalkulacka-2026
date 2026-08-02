@@ -15,10 +15,16 @@ import type { NextConfig } from 'next';
  * the same baffling symptom.
  */
 function localAddresses(): string[] {
-  return Object.values(networkInterfaces())
+  const addrs = Object.values(networkInterfaces())
     .flat()
     .filter((iface) => iface && iface.family === 'IPv4' && !iface.internal)
     .map((iface) => (iface as { address: string }).address);
+
+  const origins: string[] = [];
+  for (const addr of addrs) {
+    origins.push(addr, `${addr}:3000`, `${addr}:3001`, `${addr}:6006`);
+  }
+  return origins;
 }
 
 const nextConfig: NextConfig = {

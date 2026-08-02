@@ -13,6 +13,8 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   white-space: nowrap;
+  /* Set here rather than per-variant: the same class renders as an `<a>`. */
+  text-decoration: none;
 
   cursor: pointer;
   transition:

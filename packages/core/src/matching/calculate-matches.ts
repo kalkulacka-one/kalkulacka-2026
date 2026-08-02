@@ -81,6 +81,27 @@ function indexByQuestion(answers: CandidateAnswer[]): Map<string, CandidateAnswe
 }
 
 /**
+ * The answers a candidate is scored on.
+ *
+ * A coalition that filed nothing of its own is represented by its members'
+ * answers, matching the existing platform. Exported so the results comparison
+ * shows exactly the answers the percentage was computed from — deriving them
+ * twice is how the two quietly drift apart.
+ */
+export function candidateAnswersFor(
+  calculator: Calculator,
+  candidateId: string,
+): CandidateAnswer[] {
+  const own = calculator.candidateAnswers[candidateId];
+  if (own && own.length > 0) return own;
+
+  const candidate = calculator.candidates.find((c) => c.id === candidateId);
+  if (!candidate) return [];
+
+  return candidate.members.flatMap((m) => calculator.candidateAnswers[m.id] ?? []);
+}
+
+/**
  * Score every candidate against the user's answers.
  *
  * Coalitions with no answers of their own fall back to aggregating their
@@ -97,13 +118,7 @@ export function calculateMatches(
   const answered = userAnswers.filter((a) => a.answer !== undefined);
 
   const matches = calculator.candidates.map((candidate): CandidateMatch => {
-    const own = calculator.candidateAnswers[candidate.id];
-    const answers =
-      own && own.length > 0
-        ? own
-        : candidate.members.flatMap((m) => calculator.candidateAnswers[m.id] ?? []);
-
-    const byQuestion = indexByQuestion(answers);
+    const byQuestion = indexByQuestion(candidateAnswersFor(calculator, candidate.id));
 
     let score = 0;
     let weight = 0;

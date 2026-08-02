@@ -1,0 +1,8 @@
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-5);
+  margin: 0;
+  padding: 0 0 var(--vk-space-5);
+  list-style: none;
+}

@@ -1,0 +1,165 @@
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+
+  padding: var(--vk-space-4);
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  list-style: none;
+}
+
+/*
+ * An unanswered row is the one thing the recap exists to surface, so it is
+ * marked on the edge rather than by dimming it — dimming would make the rows
+ * that still need work the *least* visible ones on the screen.
+ */
+.unanswered {
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    inset 3px 0 0 0 var(--vk-color-neutral);
+}
+
+/*
+ * Top-aligned, not centred: at narrow widths the two chips wrap onto separate
+ * lines and a vertically centred number ends up floating between them.
+ */
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vk-space-3);
+}
+
+.position {
+  flex: none;
+  /* Optically level with the first chip's label rather than its box. */
+  padding-top: 0.3125rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--vk-color-text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.skipped {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+}
+
+.statement {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+
+  font-family: var(--vk-typeface-question);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-strong);
+}
+
+.statement:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.statement:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+  border-radius: 0.125rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+.answer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-2);
+
+  min-height: 2.75rem;
+  padding: 0 var(--vk-space-4);
+  flex: 1;
+
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  cursor: pointer;
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  font-weight: 700;
+
+  transition:
+    background var(--vk-duration-fast) ease,
+    color var(--vk-duration-fast) ease;
+}
+
+.answer:focus-visible,
+.star:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.agree {
+  background: var(--vk-color-agree-soft);
+  color: var(--vk-color-agree-active);
+}
+
+.agree[aria-pressed="true"] {
+  background: var(--vk-color-agree);
+  color: var(--vk-color-agree-on);
+}
+
+.disagree {
+  background: var(--vk-color-disagree-soft);
+  color: var(--vk-color-disagree-active);
+}
+
+.disagree[aria-pressed="true"] {
+  background: var(--vk-color-disagree);
+  color: var(--vk-color-disagree-on);
+}
+
+.star {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-neutral-wash);
+  color: var(--vk-color-text-muted);
+  cursor: pointer;
+
+  transition:
+    background var(--vk-duration-fast) ease,
+    color var(--vk-duration-fast) ease;
+}
+
+.star[aria-pressed="true"] {
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+}

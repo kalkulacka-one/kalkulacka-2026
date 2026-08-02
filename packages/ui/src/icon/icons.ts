@@ -116,6 +116,16 @@ export const icons = {
   period: { ...THIN, paths: [], dots: [[12, 13, 2.6]] },
   chevronLeftThin: { ...THIN, paths: ['M15 4 L7 12 L15 20'] },
   chevronRightThin: { ...THIN, paths: ['M9 4 L17 12 L9 20'] },
+  chevronDownThin: { ...THIN, paths: ['M4 9 L12 17 L20 9'] },
+  chevronUpThin: { ...THIN, paths: ['M4 15 L12 7 L20 15'] },
+  /**
+   * The lens is one of the few shapes the family allows to be genuinely round;
+   * its handle stays on the 45° diagonal so it still rhymes with the wordmark.
+   */
+  search: {
+    ...THIN,
+    paths: ['M17 10.5 A6.5 6.5 0 1 1 4 10.5 A6.5 6.5 0 1 1 17 10.5', 'M15.1 15.1 L20 20'],
+  },
   info: {
     ...THIN,
     paths: ['M21 12 A9 9 0 1 1 3 12 A9 9 0 1 1 21 12', 'M12 11.5 L12 17'],

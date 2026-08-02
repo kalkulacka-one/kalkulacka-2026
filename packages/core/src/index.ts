@@ -17,6 +17,7 @@ export {
   type AnswerSegmentState,
   clearAnswer,
   countAnswered,
+  countSkipped,
   firstUnansweredIndex,
   getAnswer,
   isComplete,
@@ -45,9 +46,17 @@ export {
   calculateBaseScore,
   calculateMatches,
   calculateMatchScorePercentage,
+  candidateAnswersFor,
   processSingleAnswer,
   type QuestionScore,
 } from './matching/calculate-matches';
+export {
+  type Agreement,
+  buildComparison,
+  buildResults,
+  type CandidateResult,
+  type ComparisonEntry,
+} from './matching/results';
 export {
   buildRoute,
   type CalculatorRoute,

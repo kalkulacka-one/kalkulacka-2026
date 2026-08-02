@@ -1,0 +1,84 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+  width: 100%;
+
+  /* ≥44px tall at every text size, per the touch-target minimum. */
+  min-height: 3.25rem;
+  padding: var(--vk-space-3) var(--vk-space-4);
+
+  border: none;
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+
+  transition:
+    background var(--vk-duration-fast) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.row:hover {
+  background: var(--vk-color-neutral-soft);
+}
+
+.row:active {
+  transform: scale(0.99);
+}
+
+.row:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.disabled {
+  background: none;
+  cursor: default;
+}
+
+.disabled:hover {
+  background: none;
+}
+
+.leading {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.label {
+  font-family: var(--vk-typeface-sans);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-strong);
+}
+
+/* After `.label` so the more specific rule also comes later in source order. */
+.disabled .label {
+  color: var(--vk-color-text-muted);
+}
+
+.meta {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  color: var(--vk-color-text-muted);
+}
+
+.chevron {
+  flex: none;
+  color: var(--vk-color-text-subtle);
+}

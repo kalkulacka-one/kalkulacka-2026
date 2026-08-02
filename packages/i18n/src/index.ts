@@ -30,3 +30,18 @@ export function format(template: string, values: Record<string, string | number>
     key in values ? String(values[key]) : match,
   );
 }
+
+/**
+ * Czech's three cardinal forms: 1 · 2–4 · 0 and 5+.
+ *
+ * Hand-written because the placeholder accessor above has no ICU. The rule
+ * itself is real and is what next-intl's `plural` will apply when it lands — so
+ * call sites written against this need no change, only the implementation does.
+ * Non-integers ("1,5 otázky") take the *few* form, matching CLDR.
+ */
+export function plural(count: number, forms: { one: string; few: string; many: string }): string {
+  if (!Number.isInteger(count)) return format(forms.few, { count });
+  if (count === 1) return format(forms.one, { count });
+  if (count >= 2 && count <= 4) return format(forms.few, { count });
+  return format(forms.many, { count });
+}
