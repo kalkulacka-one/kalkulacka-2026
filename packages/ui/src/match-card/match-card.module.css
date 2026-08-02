@@ -6,13 +6,19 @@
   padding: var(--vk-space-4);
   border-radius: var(--vk-radius-control);
   background: var(--vk-color-surface);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-surface);
   list-style: none;
 }
 
-/* Sits apart from the ranking rather than at the bottom of it. */
+/*
+ * Sits apart from the ranking rather than at the bottom of it: recessed and
+ * unlifted, so a candidate who cannot be scored reads as outside the comparison
+ * instead of as its last place.
+ */
 .incomparable {
-  background: none;
+  background: color-mix(in oklab, var(--vk-color-surface-sunken) 55%, transparent);
   box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
 }
 

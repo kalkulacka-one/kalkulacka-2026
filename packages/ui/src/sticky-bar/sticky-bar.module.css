@@ -8,12 +8,28 @@
   justify-content: center;
   gap: var(--vk-space-3);
 
-  padding: var(--vk-space-4) 0 max(var(--vk-space-4), env(safe-area-inset-bottom, 0px));
+  padding: var(--vk-space-4) 0;
+  margin-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
 }
 
+/*
+ * A floating pill, not a band across the screen.
+ *
+ * The obvious treatment — an opaque strip pinned to the bottom edge — assumes
+ * the bar spans the viewport. It does not: it lives inside a reading column
+ * that is far narrower than a desktop window, so a strip would end in two hard
+ * edges partway across the page. Shaping it as a plate that is *meant* to float
+ * makes the same element read as deliberate at every width, and the translucency
+ * keeps the backdrop alive underneath instead of punching a grey hole in it.
+ */
 .floating {
-  background: var(--vk-color-page);
-  box-shadow: var(--vk-shadow-sticky);
+  padding: var(--vk-space-3);
+  border-radius: var(--vk-radius-pill);
+  background: oklch(from var(--vk-color-surface) l c h / 0.78);
+  backdrop-filter: var(--vk-plate-blur);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-card-back);
 }
 
 .flat {

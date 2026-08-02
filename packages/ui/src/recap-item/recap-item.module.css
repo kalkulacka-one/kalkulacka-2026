@@ -6,7 +6,9 @@
   padding: var(--vk-space-4);
   border-radius: var(--vk-radius-control);
   background: var(--vk-color-surface);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-surface);
   list-style: none;
 }
 
@@ -18,7 +20,8 @@
 .unanswered {
   box-shadow:
     inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
-    inset 3px 0 0 0 var(--vk-color-neutral);
+    inset 3px 0 0 0 var(--vk-color-neutral),
+    var(--vk-shadow-surface);
 }
 
 /*
