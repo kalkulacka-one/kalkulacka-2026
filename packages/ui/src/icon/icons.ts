@@ -139,6 +139,17 @@ export const icons = {
   results: { ...THIN, paths: ['M4 20 L4 13 M12 20 L12 5 M20 20 L20 9'] },
   list: { ...THIN, paths: ['M4 6 L20 6 M4 12 L20 12 M4 18 L20 18'] },
   plus: { ...THIN, paths: ['M12 4 L12 20 M4 12 L20 12'] },
+  /**
+   * Start over. The ring is one of the shapes the family allows to be round;
+   * the gap and the arrowhead sit on the diagonal so it still reads as drawn
+   * with the same pen as the wordmark.
+   */
+  restart: { ...THIN, paths: ['M12 19 A7 7 0 1 1 19 12', 'M16 9 L19 12 L22 9'] },
+  /** Leave — an arrow stepping out through the open side of a frame. */
+  exit: {
+    ...THIN,
+    paths: ['M13 4 L4 4 L4 20 L13 20', 'M10 12 L20 12 M15.5 7.5 L20 12 L15.5 16.5'],
+  },
   more: {
     ...THIN,
     paths: [],

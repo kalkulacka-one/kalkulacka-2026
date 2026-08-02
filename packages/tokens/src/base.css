@@ -101,6 +101,23 @@
     0 24px 52px -10px oklch(from var(--vk-shadow-color) l c h / 0.25);
   --vk-shadow-sticky: 0 -8px 24px -12px oklch(from var(--vk-shadow-color) l c h / 0.14);
 
+  /*
+   * A content surface resting on the page — recap rows, match cards, picker
+   * options. Much softer than `card`, which is the deck's lifted stack: these
+   * are not floating, they just need enough of an edge to separate from a page
+   * that is no longer a flat colour now that the backdrop drifts under it.
+   */
+  --vk-shadow-surface:
+    0 1px 2px -1px oklch(from var(--vk-shadow-color) l c h / 0.08),
+    0 10px 24px -14px oklch(from var(--vk-shadow-color) l c h / 0.2);
+
+  /*
+   * Chrome that floats over the backdrop — the sticky action bar, the back
+   * link, the menu trigger. Translucent and blurred rather than opaque, so the
+   * wash still reads underneath instead of being punched out by a grey slab.
+   */
+  --vk-plate-blur: blur(12px) saturate(1.4);
+
   /* --- Structure (not theme decisions) --------------------------------- */
 
   --vk-space-1: 0.25rem;

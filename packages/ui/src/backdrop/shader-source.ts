@@ -16,6 +16,8 @@ export const FRAGMENT_SHADER = [
   'uniform vec3 uBase;',
   'uniform vec3 uAccentA;',
   'uniform vec3 uAccentB;',
+  'uniform vec3 uLight;',
+  'uniform float uLightStrength;',
   '',
   '// Organic domain warp for a liquid, fluid flow effect',
   'vec2 warp(vec2 p, float t) {',
@@ -71,12 +73,32 @@ export const FRAGMENT_SHADER = [
   '  vec3 col = mix(uBase, uAccentA, wA_clean * 0.38 * uIntensity);',
   '  col = mix(col, uAccentB, wB_clean * 0.36 * uIntensity);',
   '',
+  '  // A near-white blob through the middle, mixed *last* so it lifts whatever',
+  '  // it passes over rather than being tinted by it. This is the column text',
+  '  // and cards sit in: without it a content-heavy screen is a wall of type on',
+  '  // flat page grey, and the wash reads as noise at the edges instead of depth.',
+  '  vec2 cL1 = blobCenter(2.4, 0.11, 0.09, vec2(0.0, -0.05), vec2(0.10, 0.14));',
+  '  vec2 cL2 = blobCenter(4.7, 0.08, 0.13, vec2(0.02, 0.20), vec2(0.13, 0.10));',
+  '  float dL1 = smoothstep(0.62, 0.0, length(p - cL1));',
+  '  float dL2 = smoothstep(0.46, 0.0, length(p - cL2));',
+  '  float wL = 1.0 - (1.0 - dL1) * (1.0 - dL2);',
+  '  col = mix(col, uLight, wL * uLightStrength);',
+  '',
   '  gl_FragColor = vec4(col, 1.0);',
   '}',
 ].join('\n');
 
 /** Authored defaults from the prototype's own controls, not the code's defensive fallbacks. */
 export const DEFAULT_INTENSITY = 0.35;
+/**
+ * How far the light blob pulls the page toward the surface colour.
+ *
+ * Ours, not the prototype's — the prototype only ever had to sit behind one
+ * screen that was mostly card. Kept well under half so the page still reads as
+ * the page: at 1.0 the middle would simply *be* the card colour and every
+ * surface on top of it would lose its edge.
+ */
+export const DEFAULT_LIGHT_STRENGTH = 0.55;
 export const DEFAULT_SPEED = 1.5;
 /** Render at half resolution and let the CSS scale + blur hide it — the blur makes the softening invisible. */
 export const RENDER_SCALE = 0.5;

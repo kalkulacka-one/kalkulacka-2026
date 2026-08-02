@@ -5,6 +5,7 @@ import styles from './backdrop.module.css';
 import { toRgbFloat } from './color-uniform';
 import {
   DEFAULT_INTENSITY,
+  DEFAULT_LIGHT_STRENGTH,
   DEFAULT_SPEED,
   FRAGMENT_SHADER,
   MIN_FRAME_INTERVAL_MS,
@@ -25,6 +26,7 @@ type Colors = {
   base: [number, number, number];
   accentA: [number, number, number];
   accentB: [number, number, number];
+  light: [number, number, number];
 };
 
 function readTokens(el: HTMLElement): { enabled: boolean; colors: Colors } {
@@ -37,6 +39,10 @@ function readTokens(el: HTMLElement): { enabled: boolean; colors: Colors } {
       base: toRgbFloat(cs.getPropertyValue('--vk-color-page') || '#ffffff'),
       accentA: toRgbFloat(cs.getPropertyValue('--vk-color-agree') || '#2563eb'),
       accentB: toRgbFloat(cs.getPropertyValue('--vk-color-disagree') || '#dc2626'),
+      // The card colour, so the bright pass through the middle is the same
+      // white the content sits on — on a dark theme that is a *lighter* dark,
+      // which is exactly right: it lifts without going pale.
+      light: toRgbFloat(cs.getPropertyValue('--vk-color-surface') || '#ffffff'),
     },
   };
 }
@@ -104,7 +110,9 @@ function FallbackGradient({ colors }: { colors: Colors }) {
     <div
       className={styles.fallback}
       style={{
-        background: `radial-gradient(circle at 20% 25%, ${rgb(colors.accentA)}1c, transparent 50%), radial-gradient(circle at 80% 75%, ${rgb(colors.accentB)}18, transparent 50%), ${rgb(colors.base)}`,
+        // Listed light-first because CSS paints the first layer on top — the
+        // same order the shader mixes in, so both paths lift the middle.
+        background: `radial-gradient(60% 50% at 50% 45%, ${rgb(colors.light)}8c, transparent 70%), radial-gradient(circle at 20% 25%, ${rgb(colors.accentA)}1c, transparent 50%), radial-gradient(circle at 80% 75%, ${rgb(colors.accentB)}18, transparent 50%), ${rgb(colors.base)}`,
       }}
     />
   );
@@ -171,6 +179,8 @@ function ShaderCanvas({ colors, onUnsupported }: { colors: Colors; onUnsupported
     const uBase = gl.getUniformLocation(program, 'uBase');
     const uAccentA = gl.getUniformLocation(program, 'uAccentA');
     const uAccentB = gl.getUniformLocation(program, 'uAccentB');
+    const uLight = gl.getUniformLocation(program, 'uLight');
+    const uLightStrength = gl.getUniformLocation(program, 'uLightStrength');
 
     const resize = () => {
       const parent = canvas.parentElement;
@@ -193,6 +203,8 @@ function ShaderCanvas({ colors, onUnsupported }: { colors: Colors; onUnsupported
       gl.uniform3f(uBase, ...c.base);
       gl.uniform3f(uAccentA, ...c.accentA);
       gl.uniform3f(uAccentB, ...c.accentB);
+      gl.uniform3f(uLight, ...c.light);
+      gl.uniform1f(uLightStrength, DEFAULT_LIGHT_STRENGTH);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
