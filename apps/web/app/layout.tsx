@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Radio_Canada } from 'next/font/google';
 import type { ReactNode } from 'react';
 
@@ -26,6 +26,20 @@ const sans = Geist({
 
 export const metadata: Metadata = {
   title: 'Volební kalkulačka',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0b1220' },
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -27,6 +27,35 @@ export const All: Story = {
   ),
 };
 
+/**
+ * The thin set at the sizes it actually ships at. If a new icon holds together
+ * at 16 it is drawn correctly; if it muddies, its terminals are off the grid.
+ */
+export const ThinSetSizes: Story = {
+  render: () => (
+    <div style={{ display: 'grid', gap: '1rem' }}>
+      {[16, 20, 28].map((size) => (
+        <div key={size} style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          {(
+            [
+              'arrowLeft',
+              'arrowRight',
+              'checkThin',
+              'crossThin',
+              'starThin',
+              'info',
+              'share',
+              'results',
+            ] as IconName[]
+          ).map((name) => (
+            <Icon key={name} name={name} size={size} />
+          ))}
+        </div>
+      ))}
+    </div>
+  ),
+};
+
 /** The star fills when a question is marked "pro mě důležité". */
 export const StarStates: Story = {
   render: () => (

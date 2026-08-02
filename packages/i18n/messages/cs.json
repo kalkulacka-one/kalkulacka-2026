@@ -15,10 +15,17 @@
     "questionCounter": "Otázka {position} z {total}",
     "progressLabel": "Průběh vyplňování",
     "close": "Zavřít",
-    "shortcutAnswer": "odpovědět",
-    "shortcutImportant": "důležité",
-    "shortcutSkip": "přeskočit",
-    "shortcutBrowse": "procházet bez odpovědi"
+    "shortcutAgree": "Souhlasím",
+    "shortcutDisagree": "Nesouhlasím",
+    "shortcutImportant": "Důležité",
+    "shortcutSkip": "Přeskočit",
+    "shortcutBrowse": "Procházet bez odpovědi",
+    "keyArrowLeft": "Šipka vlevo",
+    "keyArrowRight": "Šipka vpravo",
+    "keyArrowUp": "Šipka nahoru",
+    "keyArrowDown": "Šipka dolů",
+    "keyComma": "Čárka",
+    "keyPeriod": "Tečka"
   },
   "questions": {
     "done": "Hotovo",

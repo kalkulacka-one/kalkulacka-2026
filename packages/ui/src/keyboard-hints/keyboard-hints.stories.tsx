@@ -11,10 +11,17 @@ const meta = {
   },
   args: {
     hints: [
-      { keys: ['←', '→'], label: 'odpovědět' },
-      { keys: ['↑'], label: 'důležité' },
-      { keys: ['↓'], label: 'přeskočit' },
-      { keys: [',', '.'], label: 'procházet bez odpovědi' },
+      { keys: [{ icon: 'arrowLeft', label: 'Šipka vlevo' }], label: 'Souhlasím' },
+      { keys: [{ icon: 'arrowRight', label: 'Šipka vpravo' }], label: 'Nesouhlasím' },
+      { keys: [{ icon: 'arrowUp', label: 'Šipka nahoru' }], label: 'Důležité' },
+      { keys: [{ icon: 'arrowDown', label: 'Šipka dolů' }], label: 'Přeskočit' },
+      {
+        keys: [
+          { icon: 'comma', label: 'Čárka' },
+          { icon: 'period', label: 'Tečka' },
+        ],
+        label: 'Procházet bez odpovědi',
+      },
     ],
   },
 } satisfies Meta<typeof KeyboardHints>;

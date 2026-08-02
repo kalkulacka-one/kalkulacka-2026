@@ -14,6 +14,7 @@ export { FlowNav, type FlowNavProps } from './flow-nav/flow-nav';
 export { Icon, type IconProps } from './icon/icon';
 export { type IconDefinition, type IconName, icons } from './icon/icons';
 export {
+  type HintKey,
   type KeyboardHint,
   KeyboardHints,
   type KeyboardHintsProps,

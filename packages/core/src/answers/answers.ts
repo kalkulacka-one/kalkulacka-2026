@@ -36,18 +36,25 @@ export function setAnswer(answers: AnswerMap, questionId: string, answer: Answer
       questionId,
       answer,
       isImportant: existing?.isImportant ?? false,
+      skipped: false,
     },
   };
 }
 
-/** Explicitly skip — distinct from never having reached the question. */
+/**
+ * Explicitly skip — distinct from never having reached the question.
+ *
+ * "Important" only makes sense attached to a real position, so skipping drops
+ * any flag armed before the skip rather than carrying it forward unanswered.
+ */
 export function skipQuestion(answers: AnswerMap, questionId: string): AnswerMap {
   return {
     ...answers,
     [questionId]: {
       questionId,
       answer: undefined,
-      isImportant: answers[questionId]?.isImportant ?? false,
+      isImportant: false,
+      skipped: true,
     },
   };
 }
@@ -56,7 +63,8 @@ export function skipQuestion(answers: AnswerMap, questionId: string): AnswerMap 
  * Toggle "pro mě důležité".
  *
  * Can be armed before answering: the prototype lets you press the star first and
- * carries the flag into whichever answer you then give.
+ * carries the flag into whichever answer you then give. Arming it must not read
+ * as a skip, so the existing `skipped`/`answer` state is preserved untouched.
  */
 export function toggleImportant(answers: AnswerMap, questionId: string): AnswerMap {
   const existing = answers[questionId];
@@ -67,6 +75,7 @@ export function toggleImportant(answers: AnswerMap, questionId: string): AnswerM
       questionId,
       answer: existing?.answer,
       isImportant: !existing?.isImportant,
+      skipped: existing?.skipped ?? false,
     },
   };
 }
@@ -86,13 +95,18 @@ export function countAnswered(answers: AnswerMap): number {
   return Object.values(answers).filter((a) => a.answer !== undefined).length;
 }
 
+/** A question is "visited" once it has a real position or an explicit skip. */
+function isVisited(answer: UserAnswer | undefined): boolean {
+  return answer !== undefined && (answer.answer !== undefined || answer.skipped === true);
+}
+
 export function isComplete(questions: Question[], answers: AnswerMap): boolean {
-  return questions.every((q) => answers[q.id] !== undefined);
+  return questions.every((q) => isVisited(answers[q.id]));
 }
 
 /** Index of the first question with nothing recorded, or -1 when finished. */
 export function firstUnansweredIndex(questions: Question[], answers: AnswerMap): number {
-  return questions.findIndex((q) => answers[q.id] === undefined);
+  return questions.findIndex((q) => !isVisited(answers[q.id]));
 }
 
 /** Derive the progress bar. Presentation shape, but the mapping is domain logic. */
@@ -105,7 +119,8 @@ export function toSegments(
     const important = answer?.isImportant === true;
 
     if (!answer) return { state: 'unanswered', important };
-    if (answer.answer === undefined) return { state: 'skipped', important };
+    if (answer.skipped) return { state: 'skipped', important };
+    if (answer.answer === undefined) return { state: 'unanswered', important };
     if (answer.answer === true) return { state: 'agree', important };
     if (answer.answer === false) return { state: 'disagree', important };
 

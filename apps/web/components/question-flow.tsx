@@ -156,7 +156,7 @@ export function QuestionFlow({
   const answer = answers[question.id];
   const segments = toSegments(questions, answers);
   const isAnswered = answer?.answer !== undefined;
-  const isSkipped = answer !== undefined && answer.answer === undefined;
+  const isSkipped = answer?.skipped === true;
 
   const counterLabel = format(messages.flow.questionCounter, {
     position: index + 1,
@@ -230,12 +230,37 @@ export function QuestionFlow({
             counterLabel={counterLabel}
           />
 
+          {/*
+            Left and right get a hint each rather than one shared "odpovědět":
+            which arrow means "souhlasím" is the one thing about this shortcut
+            a first-time user cannot guess, and the paired row also matches
+            the left/right order of the answer buttons on the card.
+          */}
           <KeyboardHints
             hints={[
-              { keys: ['←', '→'], label: messages.flow.shortcutAnswer },
-              { keys: ['↑'], label: messages.flow.shortcutImportant },
-              { keys: ['↓'], label: messages.flow.shortcutSkip },
-              { keys: [',', '.'], label: messages.flow.shortcutBrowse },
+              {
+                keys: [{ icon: 'arrowLeft', label: messages.flow.keyArrowLeft }],
+                label: messages.flow.shortcutAgree,
+              },
+              {
+                keys: [{ icon: 'arrowRight', label: messages.flow.keyArrowRight }],
+                label: messages.flow.shortcutDisagree,
+              },
+              {
+                keys: [{ icon: 'arrowUp', label: messages.flow.keyArrowUp }],
+                label: messages.flow.shortcutImportant,
+              },
+              {
+                keys: [{ icon: 'arrowDown', label: messages.flow.keyArrowDown }],
+                label: messages.flow.shortcutSkip,
+              },
+              {
+                keys: [
+                  { icon: 'comma', label: messages.flow.keyComma },
+                  { icon: 'period', label: messages.flow.keyPeriod },
+                ],
+                label: messages.flow.shortcutBrowse,
+              },
             ]}
           />
         </div>

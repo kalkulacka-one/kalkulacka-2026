@@ -104,7 +104,7 @@ function FallbackGradient({ colors }: { colors: Colors }) {
     <div
       className={styles.fallback}
       style={{
-        background: `radial-gradient(circle at 25% 30%, ${rgb(colors.accentA)}22, transparent 55%), radial-gradient(circle at 75% 70%, ${rgb(colors.accentB)}1a, transparent 55%), ${rgb(colors.base)}`,
+        background: `radial-gradient(circle at 20% 25%, ${rgb(colors.accentA)}1c, transparent 50%), radial-gradient(circle at 80% 75%, ${rgb(colors.accentB)}18, transparent 50%), ${rgb(colors.base)}`,
       }}
     />
   );

@@ -8,6 +8,7 @@
 
   background: var(--vk-color-surface);
   border-radius: var(--vk-radius-card);
+  border: 1px solid var(--vk-color-border);
   padding: var(--vk-fluid-card-pad-top) var(--vk-fluid-card-pad-side)
     var(--vk-fluid-card-pad-bottom);
 

@@ -10,7 +10,29 @@ body {
   padding: 0;
 }
 
+/*
+ * The whole app is one fixed-in-place screen — the question flow is never
+ * meant to scroll. `overflow: hidden` on `.flow` (question-flow.module.css)
+ * only stops its own box from scrolling; iOS Safari still elastic-bounces
+ * the *document* itself on any drag that starts outside the swipe card's
+ * `touch-action: none` area (header, progress bar, the gap around the nav).
+ * Pinning html/body directly is the only thing that stops that at the source.
+ */
+html,
 body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html {
+  background: var(--vk-color-page);
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
   background: var(--vk-color-page);
   color: var(--vk-color-text);
   font-family: var(--vk-typeface-sans);

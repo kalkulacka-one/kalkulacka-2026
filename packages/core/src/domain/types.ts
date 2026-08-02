@@ -68,9 +68,15 @@ export type CandidateAnswer = {
 /** One user's position on one question. */
 export type UserAnswer = {
   questionId: string;
-  /** `undefined` means skipped. */
+  /**
+   * `undefined` means no position recorded — either because the question was
+   * explicitly skipped (`skipped: true`) or because only the importance star
+   * was armed before an answer was ever given.
+   */
   answer?: AnswerValue;
   isImportant?: boolean;
+  /** True only for an explicit "Přeskočit" — distinct from importance armed early. */
+  skipped?: boolean;
 };
 
 export type Calculator = {

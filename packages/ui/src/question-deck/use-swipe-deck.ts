@@ -80,20 +80,32 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
     const next = nextRef.current;
     if (next) {
       next.style.transition = 'none';
-      next.style.transform = stackTransform(STACK_NEXT.x, STACK_NEXT.y, STACK_NEXT.scale);
+      next.style.transform = stackTransform(
+        STACK_NEXT.x,
+        STACK_NEXT.y,
+        STACK_NEXT.scale,
+        STACK_NEXT.rotate,
+      );
+      next.style.filter = `brightness(${STACK_NEXT.brightness})`;
       next.style.opacity = String(STACK_NEXT.opacity);
     }
 
     const back = backRef.current;
     if (back) {
       back.style.transition = 'none';
-      back.style.transform = stackTransform(STACK_BACK.x, STACK_BACK.y, STACK_BACK.scale);
+      back.style.transform = stackTransform(
+        STACK_BACK.x,
+        STACK_BACK.y,
+        STACK_BACK.scale,
+        STACK_BACK.rotate,
+      );
+      back.style.filter = `brightness(${STACK_BACK.brightness})`;
       back.style.opacity = String(STACK_BACK.opacity);
     }
   }, []);
 
   const springBack = useCallback(() => {
-    const easing = `transform ${SPRING_BACK_DURATION}s var(--vk-easing-spring), opacity ${SPRING_BACK_DURATION}s ease`;
+    const easing = `transform ${SPRING_BACK_DURATION}s var(--vk-easing-spring), filter ${SPRING_BACK_DURATION}s ease, opacity ${SPRING_BACK_DURATION}s ease`;
 
     const card = cardRef.current;
     if (card) {
@@ -104,23 +116,38 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
     const next = nextRef.current;
     if (next) {
       next.style.transition = easing;
-      next.style.transform = stackTransform(STACK_NEXT.x, STACK_NEXT.y, STACK_NEXT.scale);
+      next.style.transform = stackTransform(
+        STACK_NEXT.x,
+        STACK_NEXT.y,
+        STACK_NEXT.scale,
+        STACK_NEXT.rotate,
+      );
+      next.style.filter = `brightness(${STACK_NEXT.brightness})`;
       next.style.opacity = String(STACK_NEXT.opacity);
     }
 
     const back = backRef.current;
     if (back) {
       back.style.transition = easing;
-      back.style.transform = stackTransform(STACK_BACK.x, STACK_BACK.y, STACK_BACK.scale);
+      back.style.transform = stackTransform(
+        STACK_BACK.x,
+        STACK_BACK.y,
+        STACK_BACK.scale,
+        STACK_BACK.rotate,
+      );
+      back.style.filter = `brightness(${STACK_BACK.brightness})`;
       back.style.opacity = String(STACK_BACK.opacity);
     }
   }, []);
 
   // Listeners live on the window rather than the card so a fast drag that
-  // outruns the pointer still tracks, and are attached only while dragging.
-  useEffect(() => {
-    if (!isDragging) return undefined;
-
+  // outruns the pointer still tracks. They are attached synchronously from
+  // `onPointerDown` itself — not from a `useEffect` keyed off `isDragging` —
+  // because on touch devices a tap or flick can produce its pointermove/up
+  // before React commits the state update and runs the effect, silently
+  // dropping the gesture (and, since `handleUp` never runs, leaving
+  // `dragging.current` stuck `true`). Attaching inline has no such gap.
+  const attachListeners = useCallback(() => {
     const handleMove = (event: globalThis.PointerEvent) => {
       const dx = event.clientX - start.current.x;
       const dy = event.clientY - start.current.y;
@@ -141,7 +168,11 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
           STACK_NEXT.x + STACK_TRAVEL.next.x * progress,
           STACK_NEXT.y + STACK_TRAVEL.next.y * progress,
           STACK_NEXT.scale + STACK_TRAVEL.next.scale * progress,
+          STACK_NEXT.rotate + STACK_TRAVEL.next.rotate * progress,
         );
+        next.style.filter = `brightness(${
+          STACK_NEXT.brightness + STACK_TRAVEL.next.brightness * progress
+        })`;
         next.style.opacity = String(STACK_NEXT.opacity + STACK_TRAVEL.next.opacity * progress);
       }
 
@@ -151,17 +182,28 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
           STACK_BACK.x + STACK_TRAVEL.back.x * progress,
           STACK_BACK.y + STACK_TRAVEL.back.y * progress,
           STACK_BACK.scale + STACK_TRAVEL.back.scale * progress,
+          STACK_BACK.rotate + STACK_TRAVEL.back.rotate * progress,
         );
+        back.style.filter = `brightness(${
+          STACK_BACK.brightness + STACK_TRAVEL.back.brightness * progress
+        })`;
         back.style.opacity = String(STACK_BACK.opacity + STACK_TRAVEL.back.opacity * progress);
       }
 
       publishIntent(zoneForOffset(dx, dy));
     };
 
+    const detach = () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleUp);
+    };
+
     const handleUp = () => {
       if (!dragging.current) return;
       dragging.current = false;
       setIsDragging(false);
+      detach();
 
       const { x: dx, y: dy } = offset.current;
       const settled = intentRef.current;
@@ -194,12 +236,13 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
     window.addEventListener('pointerup', handleUp);
     window.addEventListener('pointercancel', handleUp);
 
-    return () => {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-      window.removeEventListener('pointercancel', handleUp);
-    };
-  }, [isDragging, onCommit, publishIntent, springBack, resetStack]);
+    return detach;
+  }, [onCommit, publishIntent, springBack, resetStack]);
+
+  // Runs the returned cleanup once the current drag ends, then forgets it —
+  // `attachListeners` itself never depends on `isDragging`, so there is no
+  // render in between "pointer went down" and "listeners are live".
+  const detachRef = useRef<(() => void) | null>(null);
 
   const onPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -215,9 +258,18 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
       }
 
       setIsDragging(true);
+
+      // Attached here, synchronously, rather than in a `useEffect` — see the
+      // comment above `attachListeners`. `pointermove`/`pointerup` can arrive
+      // (and on a quick touch tap, both can arrive) before React would
+      // otherwise have committed `isDragging` and run the effect.
+      detachRef.current?.();
+      detachRef.current = attachListeners();
     },
-    [disabled],
+    [disabled, attachListeners],
   );
+
+  useEffect(() => () => detachRef.current?.(), []);
 
   return {
     cardRef,

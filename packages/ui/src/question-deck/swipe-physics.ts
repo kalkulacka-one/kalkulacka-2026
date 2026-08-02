@@ -9,28 +9,43 @@
 export type SwipeZone = 'agree' | 'disagree' | 'skip';
 
 /** Where the stacked cards sit when the top card is at rest. */
-export const STACK_NEXT = { x: -10, y: -16, scale: 0.965, opacity: 0.9 } as const;
-export const STACK_BACK = { x: -20, y: -30, scale: 0.93, opacity: 0.55 } as const;
+export const STACK_NEXT = {
+  x: 16,
+  y: -18,
+  scale: 0.95,
+  rotate: 0.8,
+  brightness: 0.92,
+  opacity: 1,
+} as const;
+
+export const STACK_BACK = {
+  x: 32,
+  y: -34,
+  scale: 0.89,
+  rotate: 1.5,
+  brightness: 0.82,
+  opacity: 1,
+} as const;
 
 /** How far the stack cards travel toward the front as the top card is dragged. */
 export const STACK_TRAVEL = {
-  next: { x: 10, y: 16, scale: 0.035, opacity: 0.1 },
-  back: { x: 10, y: 14, scale: 0.035, opacity: 0.35 },
+  next: { x: -16, y: 18, scale: 0.05, rotate: -0.8, brightness: 0.08, opacity: 0 },
+  back: { x: -16, y: 16, scale: 0.06, rotate: -0.7, brightness: 0.1, opacity: 0 },
 } as const;
 
 export const PHYSICS = {
   /** Drag distance that commits an answer. */
-  threshold: 70,
+  threshold: 50,
   /** Horizontal drag is divided by this to produce the card's tilt in degrees. */
   rotationDivisor: 18,
   /** Drag distance at which the stack has fully caught up. */
   stackProgressDistance: 130,
   /** Horizontal travel before a left/right intent is recognised. */
-  zoneActivateX: 34,
+  zoneActivateX: 25,
   /** Upward travel that arms "pro mě důležité" mid-swipe. */
-  importantLiftY: -48,
+  importantLiftY: -38,
   /** Downward travel before a skip is recognised... */
-  skipActivateY: 60,
+  skipActivateY: 45,
   /** ...and how much it must dominate horizontal travel to count as one. */
   skipDominance: 1.2,
 } as const;
@@ -67,8 +82,8 @@ export function transform(x: number, y: number, rotation: number) {
   return `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
 }
 
-export function stackTransform(x: number, y: number, scale: number) {
-  return `translate(${x}px, ${y}px) scale(${scale})`;
+export function stackTransform(x: number, y: number, scale: number, rotate = 0) {
+  return `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg)`;
 }
 
 /**

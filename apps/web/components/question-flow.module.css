@@ -1,6 +1,6 @@
 .flow {
   position: relative;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
   /* Falls back to the theme's page colour when the backdrop is off. */
   background: var(--vk-color-page);
@@ -18,7 +18,10 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--vk-fluid-header-top) var(--vk-fluid-gutter) 0;
+  padding-top: calc(var(--vk-fluid-header-top) + env(safe-area-inset-top, 0px));
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+  padding-bottom: 0;
 }
 
 .header {
@@ -53,6 +56,7 @@
 .progress {
   flex: none;
   padding-top: var(--vk-fluid-progress-top);
+  margin-bottom: var(--vk-space-5);
 }
 
 /*
@@ -69,8 +73,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0;
-  padding-bottom: env(safe-area-inset-bottom);
+  gap: var(--vk-space-5);
+  padding-bottom: max(var(--vk-space-4), env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 860px) {

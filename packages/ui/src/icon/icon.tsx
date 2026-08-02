@@ -39,7 +39,14 @@ export function Icon({ name, size = 20, filled = false, className }: IconProps) 
       aria-hidden="true"
       focusable="false"
     >
-      <path d={icon.path} />
+      {icon.paths.map((d) => (
+        <path key={d} d={d} />
+      ))}
+      {/* Dots are solid regardless of the icon's mode — they're the thin set's
+          one filled element, so they opt out of the stroke attributes above. */}
+      {icon.dots?.map(([cx, cy, r]) => (
+        <circle key={`${cx},${cy}`} cx={cx} cy={cy} r={r} fill="currentColor" stroke="none" />
+      ))}
     </svg>
   );
 }

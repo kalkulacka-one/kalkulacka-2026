@@ -22,7 +22,12 @@ const questions: Question[] = ['q1', 'q2', 'q3'].map((id) => ({
 describe('setAnswer', () => {
   it('records a position', () => {
     const answers = setAnswer({}, 'q1', true);
-    expect(answers.q1).toEqual({ questionId: 'q1', answer: true, isImportant: false });
+    expect(answers.q1).toEqual({
+      questionId: 'q1',
+      answer: true,
+      isImportant: false,
+      skipped: false,
+    });
   });
 
   it('clears the answer when the same one is chosen again', () => {
@@ -52,7 +57,21 @@ describe('setAnswer', () => {
 describe('toggleImportant', () => {
   it('can be armed before an answer exists', () => {
     const answers = toggleImportant({}, 'q1');
-    expect(answers.q1).toEqual({ questionId: 'q1', answer: undefined, isImportant: true });
+    expect(answers.q1).toEqual({
+      questionId: 'q1',
+      answer: undefined,
+      isImportant: true,
+      skipped: false,
+    });
+  });
+
+  it('does not read as a skip when armed before an answer exists', () => {
+    const answers = toggleImportant({}, 'q1');
+    expect(toSegments(questions, answers)).toEqual([
+      { state: 'unanswered', important: true },
+      { state: 'unanswered', important: false },
+      { state: 'unanswered', important: false },
+    ]);
   });
 
   it('toggles back off', () => {
@@ -66,6 +85,14 @@ describe('skipQuestion', () => {
     expect(answers.q1).toBeDefined();
     expect(answers.q1?.answer).toBeUndefined();
     expect(countAnswered(answers)).toBe(0);
+  });
+
+  it('drops an important flag armed before skipping, since it never attached to a position', () => {
+    let answers = toggleImportant({}, 'q1');
+    expect(answers.q1?.isImportant).toBe(true);
+
+    answers = skipQuestion(answers, 'q1');
+    expect(answers.q1?.isImportant).toBe(false);
   });
 });
 

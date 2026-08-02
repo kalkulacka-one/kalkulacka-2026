@@ -2,6 +2,7 @@
   background: var(--vk-color-surface);
   /* The design's signature asymmetry lives in the token, not here. */
   border-radius: var(--vk-radius-card);
+  border: 1px solid var(--vk-color-border);
   box-shadow: var(--vk-shadow-card);
 }
 

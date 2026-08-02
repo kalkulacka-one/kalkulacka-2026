@@ -79,13 +79,27 @@
 
   /* --- Elevation -------------------------------------------------------
    * Tinted with the theme's neutral so shadows belong to the brand rather
-   * than being generic grey.
+   * than being generic grey — but clamped to a low lightness first. A dark
+   * theme's neutral is a light ink colour (readable text on a dark card), so
+   * using it unclamped would cast a pale, muddy halo instead of a shadow.
+   * Capping `l` keeps the hue tint while guaranteeing the shadow itself is
+   * always dark, in both light and dark mode, so the stack actually reads as
+   * elevated.
    */
-  --vk-shadow-card: 0 18px 44px -16px oklch(from var(--vk-color-neutral) l c h / 0.3);
-  --vk-shadow-card-next: 0 10px 30px -12px oklch(from var(--vk-color-neutral) l c h / 0.26);
-  --vk-shadow-card-back: 0 8px 24px -10px oklch(from var(--vk-color-neutral) l c h / 0.22);
-  --vk-shadow-card-lifted: 0 26px 64px -14px oklch(from var(--vk-color-neutral) l c h / 0.42);
-  --vk-shadow-sticky: 0 -8px 24px -12px oklch(from var(--vk-color-neutral) l c h / 0.18);
+  --vk-shadow-color: oklch(from var(--vk-color-neutral) min(l, 0.2) c h);
+  --vk-shadow-card:
+    0 4px 12px -2px oklch(from var(--vk-shadow-color) l c h / 0.1),
+    0 16px 36px -8px oklch(from var(--vk-shadow-color) l c h / 0.18);
+  --vk-shadow-card-next:
+    0 2px 8px -2px oklch(from var(--vk-shadow-color) l c h / 0.08),
+    0 10px 24px -6px oklch(from var(--vk-shadow-color) l c h / 0.14);
+  --vk-shadow-card-back:
+    0 2px 6px -2px oklch(from var(--vk-shadow-color) l c h / 0.06),
+    0 6px 18px -4px oklch(from var(--vk-shadow-color) l c h / 0.1);
+  --vk-shadow-card-lifted:
+    0 8px 20px -4px oklch(from var(--vk-shadow-color) l c h / 0.14),
+    0 24px 52px -10px oklch(from var(--vk-shadow-color) l c h / 0.25);
+  --vk-shadow-sticky: 0 -8px 24px -12px oklch(from var(--vk-shadow-color) l c h / 0.14);
 
   /* --- Structure (not theme decisions) --------------------------------- */
 
