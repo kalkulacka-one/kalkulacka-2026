@@ -9,6 +9,7 @@
 export { Button, type ButtonProps } from './button/button';
 export { Card, type CardProps } from './card/card';
 export { Chip, type ChipProps } from './chip/chip';
+export { FlowNav, type FlowNavProps } from './flow-nav/flow-nav';
 export { Icon, type IconProps } from './icon/icon';
 export { type IconDefinition, type IconName, icons } from './icon/icons';
 export {
@@ -17,3 +18,17 @@ export {
   type Segment,
   type SegmentState,
 } from './progress-segments/progress-segments';
+export {
+  type CardSelection,
+  QuestionCard,
+  type QuestionCardContent,
+  type QuestionCardProps,
+} from './question-card/question-card';
+export {
+  QuestionDeck,
+  type QuestionDeckHandle,
+  type QuestionDeckLabels,
+  type QuestionDeckProps,
+} from './question-deck/question-deck';
+export { PHYSICS, type SwipeZone } from './question-deck/swipe-physics';
+export { VisuallyHidden } from './visually-hidden/visually-hidden';

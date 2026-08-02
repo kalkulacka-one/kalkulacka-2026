@@ -1,0 +1,27 @@
+.placeholder {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-3);
+  padding: var(--vk-space-6);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--vk-color-text-strong);
+}
+
+.description {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--vk-color-text-muted);
+}

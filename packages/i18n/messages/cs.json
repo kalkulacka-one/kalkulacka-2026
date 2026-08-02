@@ -1,0 +1,33 @@
+{
+  "app": {
+    "title": "Volební kalkulačka"
+  },
+  "flow": {
+    "agree": "Souhlasím",
+    "disagree": "Nesouhlasím",
+    "agreeShort": "Ano",
+    "disagreeShort": "Ne",
+    "important": "Pro mě důležité",
+    "importantSuffix": " · Pro mě důležité",
+    "skip": "Přeskočit",
+    "next": "Další",
+    "previous": "Předchozí",
+    "questionCounter": "Otázka {position} z {total}",
+    "progressLabel": "Průběh vyplňování",
+    "close": "Zavřít"
+  },
+  "questions": {
+    "done": "Hotovo",
+    "doneDescription": "Odpověděli jste na všechny otázky.",
+    "restart": "Začít znovu",
+    "showResults": "Zobrazit výsledky"
+  },
+  "notFound": {
+    "title": "Stránka nenalezena",
+    "description": "Tato kalkulačka zatím neexistuje."
+  },
+  "comingSoon": {
+    "title": "Připravujeme",
+    "description": "Tato část kalkulačky se teprve staví."
+  }
+}

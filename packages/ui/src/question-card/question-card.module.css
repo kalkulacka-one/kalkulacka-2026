@@ -1,0 +1,177 @@
+.card {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: var(--vk-color-surface);
+  border-radius: var(--vk-radius-card);
+  padding: var(--vk-fluid-card-pad-top) var(--vk-fluid-card-pad-side)
+    var(--vk-fluid-card-pad-bottom);
+
+  /*
+   * Labels on the answer buttons appear once the card itself is wide enough,
+   * not once the window is. Inside an embed the two are very different things.
+   */
+  container-type: inline-size;
+  container-name: card;
+
+  transform-origin: 50% 50%;
+}
+
+.interactive {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.interactive:active {
+  cursor: grabbing;
+}
+
+.chips {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--vk-space-2) 0;
+  overflow-y: auto;
+}
+
+.statement {
+  margin: 0;
+  font-family: var(--vk-typeface-question);
+  font-size: var(--vk-fluid-question-size);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: var(--vk-color-text);
+  text-wrap: pretty;
+}
+
+.detail {
+  margin: 1.125rem 0 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-fluid-gist-size);
+  line-height: 1.62;
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+/* --- Action row -------------------------------------------------------- */
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+}
+
+.action {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-3);
+
+  border: none;
+  background: var(--vk-color-surface);
+  color: var(--vk-color-neutral);
+  cursor: pointer;
+
+  transition:
+    background var(--vk-duration-base) ease,
+    box-shadow var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.action:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.important {
+  width: var(--vk-fluid-star-size);
+  height: var(--vk-fluid-star-size);
+  flex: none;
+  border-radius: var(--vk-radius-pill);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+}
+
+.important:hover {
+  background: var(--vk-color-neutral-wash);
+}
+
+.important:active {
+  transform: scale(0.96);
+}
+
+.important[aria-pressed="true"] {
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-neutral);
+}
+
+.answer {
+  flex: 1;
+  height: var(--vk-fluid-action-height);
+  border-radius: var(--vk-radius-control);
+}
+
+.answer:active {
+  transform: scale(0.985);
+}
+
+.agree {
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-agree-soft);
+}
+
+.agree:hover {
+  background: var(--vk-color-agree-wash);
+}
+
+.agree[aria-pressed="true"] {
+  background: var(--vk-color-agree);
+  color: var(--vk-color-agree-on);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-agree);
+}
+
+.disagree {
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-disagree-soft);
+}
+
+.disagree:hover {
+  background: var(--vk-color-disagree-wash);
+}
+
+.disagree[aria-pressed="true"] {
+  background: var(--vk-color-disagree);
+  color: var(--vk-color-disagree-on);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-disagree);
+}
+
+.answerLabel {
+  display: none;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-fluid-action-label-size);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+@container card (min-width: 720px) {
+  .answerLabel {
+    display: inline;
+  }
+}

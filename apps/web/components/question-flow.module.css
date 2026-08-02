@@ -1,0 +1,60 @@
+.flow {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--vk-fluid-header-top) var(--vk-fluid-gutter) 0;
+}
+
+.header {
+  flex: none;
+  font-family: var(--vk-typeface-display);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.brand {
+  margin: 0;
+  font-size: var(--vk-fluid-brand-size);
+  font-weight: 700;
+  color: var(--vk-color-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--vk-fluid-brand-size);
+  font-weight: 400;
+  color: var(--vk-color-text);
+}
+
+.progress {
+  flex: none;
+  padding-top: var(--vk-fluid-progress-top);
+}
+
+/*
+ * The deck is absolutely positioned inside this box, so the stage owns the
+ * card's size. Capping it on wide screens keeps the statement from stretching
+ * into an unreadable line length.
+ */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 51.25rem;
+  margin: 2.25rem auto;
+}
+
+@media (min-width: 860px) {
+  .stage {
+    flex: 0 1 33.75rem;
+  }
+}
+
+.flow > :last-child {
+  width: 100%;
+  max-width: 51.25rem;
+  margin: 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}

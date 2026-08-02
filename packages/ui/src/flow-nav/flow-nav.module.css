@@ -1,0 +1,82 @@
+.nav {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: var(--vk-fluid-nav-height);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+
+  padding: 0.4375rem 0.875rem;
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  background: transparent;
+  color: var(--vk-color-neutral);
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  cursor: pointer;
+  transition:
+    background var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--vk-color-neutral-wash);
+}
+
+.button:active:not(:disabled) {
+  background: var(--vk-color-neutral-wash-strong);
+  transform: scale(0.97);
+}
+
+.button:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.button:disabled {
+  color: var(--vk-color-text-subtle);
+  cursor: default;
+}
+
+.previous {
+  justify-self: start;
+  margin-left: -0.875rem;
+}
+
+.forward {
+  justify-self: end;
+  margin-right: -0.875rem;
+}
+
+/* An explicitly skipped question keeps the control filled, as a reminder. */
+.skipped {
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+}
+
+.skipped:hover:not(:disabled) {
+  background: var(--vk-color-neutral-hover);
+}
+
+.counter {
+  justify-self: center;
+  font-family: var(--vk-typeface-sans);
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-subtle);
+}
+
+.position {
+  font-weight: 700;
+  color: var(--vk-color-text-strong);
+}
