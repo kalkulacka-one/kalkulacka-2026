@@ -2,9 +2,12 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    projects: ['packages/*'],
-    // Phase 1 brings the first real suites (adapter, matching, routing). Until
-    // then an empty run should be green rather than red.
+    // `apps/*` as well as `packages/*`: with only the latter, a test file added
+    // under apps/web would never be collected and the suite would stay green
+    // while testing nothing.
+    projects: ['packages/*', 'apps/*'],
+    // Not every workspace has a suite yet — an empty project should be green
+    // rather than red.
     passWithNoTests: true,
   },
 });

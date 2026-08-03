@@ -6,7 +6,6 @@ import {
   FlowNav,
   KeyboardHints,
   ProgressSegments,
-  type QuestionCardContent,
   QuestionDeck,
   type QuestionDeckHandle,
 } from '@vk/ui';
@@ -14,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { stepPath } from '../lib/paths';
+import { toCardContent } from '../lib/question-content';
 import { AppShell } from './app-shell';
 import styles from './question-flow.module.css';
 
@@ -29,16 +29,6 @@ export type QuestionFlowProps = {
 };
 
 const messages = getMessages();
-
-function toCardContent(question: Question): QuestionCardContent {
-  return {
-    id: question.id,
-    statement: question.statement,
-    title: question.title,
-    detail: question.detail,
-    topic: question.tags[0],
-  };
-}
 
 export function QuestionFlow({
   calculatorId,

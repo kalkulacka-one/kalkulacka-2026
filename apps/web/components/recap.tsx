@@ -1,22 +1,22 @@
 'use client';
 
-import { type AnswerValue, countAnswered, type Question } from '@vk/core';
-import { format, getMessages } from '@vk/i18n';
 import {
-  Button,
-  FilterChips,
-  type FilterOption,
-  Icon,
-  type QuestionCardContent,
-  QuestionDialog,
-  RecapRow,
-  type RecapTone,
-  StickyBar,
-} from '@vk/ui';
+  type AnswerValue,
+  buildRecapFilters,
+  countRecapTotals,
+  filterRecapQuestions,
+  type Question,
+  RECAP_FILTER_ALL,
+  type RecapFilterId,
+  toRecapAnswerTone,
+} from '@vk/core';
+import { format, getMessages } from '@vk/i18n';
+import { Button, FilterChips, Icon, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
 import Link from 'next/link';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
+import { toCardContent } from '../lib/question-content';
 import { AppShell } from './app-shell';
 import styles from './recap.module.css';
 
@@ -28,13 +28,6 @@ export type RecapProps = {
 } & CalculatorRef;
 
 const messages = getMessages();
-
-/** The two filters that are about progress rather than subject matter. */
-const ALL = 'all';
-const UNANSWERED = 'unanswered';
-const IMPORTANT = 'important';
-/** Topic filters are namespaced so a topic literally named "all" can't collide. */
-const TOPIC_PREFIX = 'topic:';
 
 /**
  * Every question at once — as a list you scan, not a stack you re-read.
@@ -60,7 +53,7 @@ export function Recap({
   const skipQuestion = useAnswersStore((s) => s.skipQuestion);
   const toggleImportant = useAnswersStore((s) => s.toggleImportant);
 
-  const [filter, setFilter] = useState<string>(ALL);
+  const [filter, setFilter] = useState<RecapFilterId>(RECAP_FILTER_ALL);
   /** The question the dialog is showing, as an index into `questions`. */
   const [openIndex, setOpenIndex] = useState<number | undefined>();
 
@@ -106,56 +99,18 @@ export function Recap({
   }, []);
 
   const ref = { electionKey, district };
-  const answered = countAnswered(answers);
-  // Skipped and never-reached are the same bucket here — both are "no
-  // position taken" — so this is every question without a recorded agree or
-  // disagree, not just the ones nobody has looked at yet.
-  const remaining = questions.length - answered;
 
-  const topics = useMemo(() => {
-    /*
-     * A Map, not a Set: the chips need counts, and building them in encounter
-     * order keeps the filter row in the same sequence as the questions rather
-     * than in an alphabetical one nobody asked for.
-     */
-    const counts = new Map<string, number>();
-    for (const question of questions) {
-      const topic = question.tags[0];
-      if (topic) counts.set(topic, (counts.get(topic) ?? 0) + 1);
-    }
-    return [...counts];
-  }, [questions]);
+  // Which questions a filter leaves, and what each chip counts, is @vk/core's
+  // to decide — this screen only lays the answer out.
+  const { answered, remaining } = countRecapTotals(questions, answers);
 
-  const matches = (question: Question) => {
-    const answer = answers[question.id];
+  const options = buildRecapFilters(questions, answers, {
+    all: messages.recap.filterAll,
+    unanswered: messages.recap.filterUnanswered,
+    important: messages.recap.filterImportant,
+  });
 
-    if (filter === ALL) return true;
-    if (filter === UNANSWERED) return answer?.answer === undefined;
-    if (filter === IMPORTANT) return answer?.isImportant === true;
-    return question.tags[0] === filter.slice(TOPIC_PREFIX.length);
-  };
-
-  const importantCount = questions.filter((q) => answers[q.id]?.isImportant === true).length;
-
-  const options: FilterOption[] = [
-    { id: ALL, label: messages.recap.filterAll, count: questions.length },
-    ...(remaining > 0
-      ? [{ id: UNANSWERED, label: messages.recap.filterUnanswered, count: remaining }]
-      : []),
-    ...(importantCount > 0
-      ? [{ id: IMPORTANT, label: messages.recap.filterImportant, count: importantCount }]
-      : []),
-    ...topics.map(([topic, count], index) => ({
-      id: `${TOPIC_PREFIX}${topic}`,
-      label: topic,
-      count,
-      separatorBefore: index === 0,
-    })),
-  ];
-
-  const visible = questions
-    .map((question, index) => ({ question, index }))
-    .filter(({ question }) => matches(question));
+  const visible = filterRecapQuestions(questions, answers, filter);
 
   const openQuestion = openIndex === undefined ? undefined : questions[openIndex];
   const openAnswer = openQuestion ? answers[openQuestion.id] : undefined;
@@ -237,7 +192,7 @@ export function Recap({
             {visible.length === 0 ? (
               <div className={styles.empty}>
                 <p className={styles.emptyText}>{messages.recap.emptyFilter}</p>
-                <Button variant="outline" size="small" onClick={() => setFilter(ALL)}>
+                <Button variant="outline" size="small" onClick={() => setFilter(RECAP_FILTER_ALL)}>
                   {messages.recap.emptyFilterAction}
                 </Button>
               </div>
@@ -263,7 +218,7 @@ export function Recap({
                         <RecapRow
                           key={question.id}
                           title={question.title}
-                          tone={toneOf(answer?.answer)}
+                          tone={toRecapAnswerTone(answer?.answer)}
                           important={answer?.isImportant === true}
                           skipped={answer?.skipped === true}
                           labels={{
@@ -333,22 +288,6 @@ export function Recap({
       />
     </AppShell>
   );
-}
-
-function toCardContent(question: Question): QuestionCardContent {
-  return {
-    id: question.id,
-    statement: question.statement,
-    title: question.title,
-    detail: question.detail,
-    topic: question.tags[0],
-  };
-}
-
-function toneOf(answer: AnswerValue | undefined): RecapTone {
-  if (answer === true) return 'agree';
-  if (answer === false) return 'disagree';
-  return 'none';
 }
 
 function answerLabel(answer: AnswerValue | undefined): string {

@@ -58,6 +58,25 @@ export {
   type ComparisonEntry,
 } from './matching/results';
 export {
+  buildRecapFilters,
+  countRecapTopics,
+  countRecapTotals,
+  filterRecapQuestions,
+  matchesRecapFilter,
+  RECAP_FILTER_ALL,
+  RECAP_FILTER_IMPORTANT,
+  RECAP_FILTER_UNANSWERED,
+  RECAP_TOPIC_PREFIX,
+  type RecapAnswerTone,
+  type RecapEntry,
+  type RecapFilterId,
+  type RecapFilterOption,
+  type RecapTotals,
+  topicFilterId,
+  topicOf,
+  toRecapAnswerTone,
+} from './recap/recap';
+export {
   buildRoute,
   type CalculatorRoute,
   CS_SLUGS,
