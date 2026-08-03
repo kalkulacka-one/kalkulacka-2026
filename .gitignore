@@ -9,6 +9,9 @@ playwright-report/
 
 *.log
 .DS_Store
+
+# Per-machine Claude Code permissions; `.claude/launch.json` is shared config.
+.claude/settings.local.json
 .env
 .env*.local
 *.tsbuildinfo
