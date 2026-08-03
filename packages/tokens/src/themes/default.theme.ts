@@ -49,10 +49,17 @@ export const defaultTheme = defineTheme({
      * chip stepping up from it in two deliberate stages, and the brand
      * colours brightened a notch — the light palette's exact blue/red read
      * slightly muddy against near-black rather than white.
+     *
+     * That brightening is capped by contrast, not just taste: the filled
+     * answer button pins its ink to white in dark mode (`--vk-color-agree-on`
+     * / `-disagree-on` in `base.css`), so `agree`/`disagree` here can only go
+     * as light as still clears 4.5:1 against white. `#3b82f6`/`#f87171` (the
+     * original brightened pair) landed at 3.68:1 / 2.77:1 — these are the
+     * same hue pulled back down until white ink reads again.
      */
     dark: {
-      agree: '#3b82f6',
-      disagree: '#f87171',
+      agree: '#2c6cee',
+      disagree: '#df2e2e',
       neutral: '#cbd5e1',
 
       page: '#0b1220',

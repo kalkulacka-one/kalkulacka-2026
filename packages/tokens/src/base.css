@@ -42,6 +42,14 @@
    * lightness to a hard 0 or 1: dark brand colour gets white ink, light brand
    * colour gets black ink. Without this, a light accent on a dark theme would
    * derive white-on-white.
+   *
+   * That threshold-driven pick is for light mode only. In dark mode `-on` is
+   * pinned to white outright (see `--vk-color-agree-on` etc. below) — the
+   * same call the recap marks make (`recap-row.module.css`'s `.agree`/
+   * `.disagree`) for the same reason: a brand accent bright enough to read
+   * against a dark surface is also bright enough to flip the threshold and
+   * put near-black ink on a filled swatch, which reads as broken rather than
+   * "a light theme". Pinning removes that flip instead of chasing it per theme.
    */
   --vk-on-threshold: 0.62;
 
@@ -52,8 +60,9 @@
   );
   --vk-color-agree-hover: oklch(from var(--vk-color-agree) calc(l - 0.05) c h);
   --vk-color-agree-active: oklch(from var(--vk-color-agree) calc(l - 0.1) c h);
-  --vk-color-agree-on: oklch(
-    from var(--vk-color-agree) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h
+  --vk-color-agree-on: light-dark(
+    oklch(from var(--vk-color-agree) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h),
+    white
   );
   --vk-color-agree-wash: oklch(from var(--vk-color-agree) l c h / 0.14);
   --vk-color-agree-wash-strong: oklch(from var(--vk-color-agree) l c h / 0.22);
@@ -65,8 +74,9 @@
   );
   --vk-color-disagree-hover: oklch(from var(--vk-color-disagree) calc(l - 0.05) c h);
   --vk-color-disagree-active: oklch(from var(--vk-color-disagree) calc(l - 0.1) c h);
-  --vk-color-disagree-on: oklch(
-    from var(--vk-color-disagree) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h
+  --vk-color-disagree-on: light-dark(
+    oklch(from var(--vk-color-disagree) clamp(0, (var(--vk-on-threshold) - l) * 1000, 1) 0 h),
+    white
   );
   --vk-color-disagree-wash: oklch(from var(--vk-color-disagree) l c h / 0.12);
   --vk-color-disagree-wash-strong: oklch(from var(--vk-color-disagree) l c h / 0.2);
