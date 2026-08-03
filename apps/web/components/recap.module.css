@@ -1,28 +1,456 @@
-.summary {
+/*
+ * The recap is a fixed composition, like the deck — not a document.
+ *
+ * `Screen` (the scroll-the-whole-page shell the other content screens use) is
+ * deliberately not used here. This screen follows the last question directly,
+ * and having the title and the primary action scroll away made the transition
+ * out of the deck feel like leaving the app. So the frame holds still and the
+ * list is the only thing that moves.
+ */
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+}
+
+.inner {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--vk-space-1);
+  gap: var(--vk-space-4);
+
+  width: 100%;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding-top: var(--vk-space-5);
+}
+
+/*
+ * Arriving from the deck, the screen assembles rather than appears: the header
+ * leads, the list follows a beat later. The stagger is small on purpose — this
+ * is a transition between two steps of one task, not a curtain going up.
+ */
+.header,
+.filters,
+.listShell {
+  animation: rise 420ms var(--vk-easing-spring) backwards;
+}
+
+.filters {
+  animation-delay: 60ms;
+}
+
+.listShell {
+  animation-delay: 110ms;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .filters,
+  .listShell {
+    animation: none;
+  }
+}
+
+/* --- Header ------------------------------------------------------------- */
+
+.header {
+  flex: none;
+}
+
+.headerInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+}
+
+/*
+ * Phone-only: while scrolling forward through the list, the header collapses
+ * to just the filter row below it, and re-expands the moment the scroll
+ * reverses (`recap.tsx` tracks direction, not just distance from the top —
+ * the common "toolbar hides advancing, reappears on the way back" pattern).
+ *
+ * The grid-rows trick, not `max-height`: `.headerInner`'s content — the back
+ * link, the title, the description, the tally — has no fixed height to guess
+ * at, and `max-height` transitions either overshoot (guess too high, the
+ * animation has dead time at the end) or clip (guess too low). Animating
+ * `grid-template-rows` from `1fr` to `0fr` instead sizes to the *actual*
+ * content every time, with `.headerInner`'s `overflow: hidden` doing the
+ * clipping as the row shrinks.
+ */
+@media (max-width: 55.99rem) {
+  .header {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows var(--vk-duration-slow) ease;
+  }
+
+  .header[data-collapsed] {
+    grid-template-rows: 0fr;
+  }
+
+  .headerInner {
+    overflow: hidden;
+    min-height: 0;
+  }
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: clamp(1.625rem, 1.3rem + 1.5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+  color: var(--vk-color-text);
+  text-wrap: balance;
+}
+
+.description {
+  margin: 0;
+  max-width: 32rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--vk-space-1) var(--vk-space-2);
   margin: 0;
 }
 
 .count {
   font-family: var(--vk-typeface-sans);
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--vk-color-text-strong);
+  white-space: nowrap;
 }
 
 .muted {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  color: var(--vk-color-text-muted);
+}
+
+/*
+ * A plate rather than bare text: this sits over a moving backdrop, and a link
+ * whose contrast changes as the wash drifts under it is a link that reads as an
+ * accident.
+ */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-1);
+  align-self: flex-start;
+
+  min-height: 2.25rem;
+  padding: 0 var(--vk-space-3) 0 var(--vk-space-2);
+
+  border-radius: var(--vk-radius-pill);
+  background: oklch(from var(--vk-color-surface) l c h / 0.7);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  backdrop-filter: var(--vk-plate-blur);
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-muted);
+  text-decoration: none;
+
+  transition:
+    background var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease;
+}
+
+.back:hover {
+  background: var(--vk-color-surface);
+  color: var(--vk-color-text-strong);
+}
+
+.back:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.filters {
+  flex: none;
+}
+
+/* --- The list ----------------------------------------------------------- */
+
+/*
+ * Everything below the filters lives in this one positioned box: the list (or
+ * the empty state) fills it, the top/bottom fades sit over its edges, and the
+ * control panel floats over the bottom fade rather than taking a row of its
+ * own beneath it. `min-height: 0` is what lets it shrink inside the flex
+ * column instead of pushing past the viewport.
+ */
+.listShell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+
+  /*
+   * Set once here rather than on `.bottomFade` and `.footer` separately —
+   * both inherit it, so the fade and the panel it holds the button in are the
+   * same height by construction, not by two literals someone has to remember
+   * to keep in sync.
+   */
+  --vk-recap-safe: 11rem;
+}
+
+.listWrap {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+
+  /* Room for row focus rings, which a tight scroll box would clip. */
+  padding-inline: 3px;
+  margin-inline: -3px;
+
+  /*
+   * The bottom padding is what keeps the last row clear of both the blur and
+   * the control panel floating over it — tall enough to clear the button
+   * where it sits, centred inside `--vk-recap-safe-zone` below.
+   */
+  padding-bottom: 7.5rem;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vk-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  /* Replayed on every filter change via the `key={filter}` remount in
+     `recap.tsx` — a new result set deserves its own small entrance, not a
+     silent swap. */
+  animation: listIn 260ms var(--vk-easing-spring) backwards;
+}
+
+@keyframes listIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list {
+    animation: none;
+  }
+}
+
+/*
+ * Two columns once there is width for them — the point is not density but
+ * *less scrolling*: forty-two rows in one column is a long haul past the very
+ * viewport edge this screen is trying to hold still.
+ */
+@media (min-width: 56rem) {
+  .list {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--vk-space-3);
+  }
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  /* Clears the floating control panel the same way the list's own bottom
+     padding does, so "Zobrazit vše" never sits under "Zobrazit výsledky". */
+  padding-bottom: var(--vk-recap-safe);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-3);
+  text-align: center;
+}
+
+.emptyText {
+  margin: 0;
   font-family: var(--vk-typeface-sans);
   font-size: 0.9375rem;
   color: var(--vk-color-text-muted);
 }
 
-.list {
+/* --- Edge fades ----------------------------------------------------------
+ * Both sit over the list rather than inside its own mask, so they can carry a
+ * real `backdrop-filter` blur — a `mask-image` on the scroll box itself can
+ * only fade *opacity*, which reads as content dimming rather than as glass.
+ *
+ * Each is a *single* blurred layer, not several stacked at different radii.
+ * Layering two independently-masked blurs was the earlier approach, and at
+ * the seam between them — wherever their two mask curves happened to cross —
+ * the change in blur amount was sharp enough to read as a hard edge instead
+ * of a haze, exactly the "truly masked" feeling this is trying to produce.
+ * One layer with a gradual, many-stop mask blurs smoothly along its whole
+ * height instead.
+ */
+
+.topFade,
+.bottomFade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
+  backdrop-filter: blur(16px);
+}
+
+.topFade {
+  top: 0;
+  height: 4rem;
+  opacity: 0;
+  background: linear-gradient(to bottom, var(--vk-color-page) 0%, transparent 65%);
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 20%,
+    rgba(0, 0, 0, 0.7) 45%,
+    rgba(0, 0, 0, 0.35) 70%,
+    transparent 100%
+  );
+  transition: opacity var(--vk-duration-base) ease;
+}
+
+.topFade[data-visible] {
+  opacity: 1;
+}
+
+/*
+ * Tall enough to hold the control panel with room to spare — `--vk-recap-safe`
+ * is shared with `.footer` below so the two stay the same height by
+ * construction rather than by two numbers someone has to keep in sync by hand.
+ */
+.bottomFade {
+  bottom: 0;
+  height: var(--vk-recap-safe);
+  backdrop-filter: blur(22px);
+  background: linear-gradient(to top, var(--vk-color-page) 0%, transparent 55%);
+  mask-image: linear-gradient(
+    to top,
+    black 0%,
+    black 22%,
+    rgba(0, 0, 0, 0.75) 42%,
+    rgba(0, 0, 0, 0.4) 62%,
+    rgba(0, 0, 0, 0.12) 82%,
+    transparent 100%
+  );
+}
+
+/*
+ * The control panel — floating over the blur rather than in a row beneath it,
+ * so the list reads as continuing underneath it instead of stopping to make
+ * room. Sized to the same height as the fade beneath it and centred inside
+ * that height, so the button sits with equal air above and below it rather
+ * than hugging the bottom edge. Centred horizontally on a phone;
+ * `justify-content` moves to the right column edge on a desktop, where
+ * "centred" would otherwise mean centred under a much wider two-column list
+ * than the button has any relation to.
+ */
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--vk-recap-safe);
+  z-index: 3;
   display: flex;
-  flex-direction: column;
-  gap: var(--vk-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.footer > * {
+  width: fit-content;
+  pointer-events: auto;
+}
+
+/* --- Wide screens -------------------------------------------------------- */
+
+@media (min-width: 56rem) {
+  .screen {
+    /*
+     * The deck leaves room below itself on a tall viewport rather than
+     * stretching to fill it (`question-flow.module.css`'s `.stage` caps the
+     * same way); the recap matches that instead of using every last pixel just
+     * because a flex box will happily give it away.
+     */
+    padding-bottom: var(--vk-space-6);
+  }
+
+  .inner {
+    padding-top: var(--vk-space-5);
+    gap: var(--vk-space-4);
+  }
+
+  /*
+   * Wide enough for one line. Every line the header takes is a row of questions
+   * the list doesn't get, and on this screen the list is the point.
+   */
+  .description {
+    max-width: 42rem;
+  }
+
+  /*
+   * Title and tally share a line: the header stops being a stack of four
+   * paragraphs and becomes one band, which is where the extra whitespace on a
+   * desktop actually comes from.
+   */
+  .headline {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--vk-space-5);
+  }
+
+  .tally {
+    flex: none;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  /* The button sits under the list's own right edge, not centred beneath a
+     column-and-a-half of rows it has no relationship to. */
+  .footer {
+    justify-content: flex-end;
+  }
 }

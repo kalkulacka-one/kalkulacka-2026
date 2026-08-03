@@ -19,6 +19,11 @@ export {
   type ComparisonRow,
 } from './comparison-list/comparison-list';
 export { Dialog, type DialogProps } from './dialog/dialog';
+export {
+  FilterChips,
+  type FilterChipsProps,
+  type FilterOption,
+} from './filter-chips/filter-chips';
 export { FlowNav, type FlowNavProps } from './flow-nav/flow-nav';
 export { Icon, type IconProps } from './icon/icon';
 export { type IconDefinition, type IconName, icons } from './icon/icons';
@@ -57,10 +62,16 @@ export {
 } from './question-deck/question-deck';
 export { PHYSICS, type SwipeZone } from './question-deck/swipe-physics';
 export {
-  RecapItem,
-  type RecapItemLabels,
-  type RecapItemProps,
-} from './recap-item/recap-item';
+  QuestionDialog,
+  type QuestionDialogLabels,
+  type QuestionDialogProps,
+} from './question-dialog/question-dialog';
+export {
+  RecapRow,
+  type RecapRowLabels,
+  type RecapRowProps,
+  type RecapTone,
+} from './recap-row/recap-row';
 export { SearchField, type SearchFieldProps } from './search-field/search-field';
 export { StickyBar, type StickyBarProps } from './sticky-bar/sticky-bar';
 export { TutorialStep, type TutorialStepProps } from './tutorial-step/tutorial-step';

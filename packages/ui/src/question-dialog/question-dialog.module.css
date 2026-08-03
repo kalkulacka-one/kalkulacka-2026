@@ -1,0 +1,179 @@
+/*
+ * The element is the full-viewport click-catcher; the card inside it is what
+ * you see. No panel of its own — see the component's doc comment.
+ */
+.dialog {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: var(--vk-fluid-gutter);
+  border: none;
+  background: none;
+  overflow: hidden;
+}
+
+.dialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog::backdrop {
+  background: oklch(from var(--vk-color-neutral) min(l, 0.25) c h / 0.42);
+  backdrop-filter: blur(3px);
+  animation: veil-in var(--vk-duration-base) ease;
+}
+
+/*
+ * The close is native and instant — a modal `<dialog>` leaves the top layer
+ * the moment `.close()` runs, which is too late for a fade to play against.
+ * The component works around this by delaying that call until the `.closing`
+ * animation below actually finishes (see `question-dialog.tsx`), so this rule
+ * only ever plays while the element is still genuinely open.
+ */
+.dialog[data-closing]::backdrop {
+  animation: veil-out var(--vk-duration-base) ease forwards;
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+
+  width: 100%;
+  /*
+   * Past the card's own 600px container query, so the answer buttons carry
+   * their labels here exactly as they do in the deck. A narrower dialog would
+   * silently downgrade them to bare icons — the same card, quietly saying less.
+   */
+  max-width: 42rem;
+  height: 100%;
+  /*
+   * Matches the deck's own stage cap (`question-flow.module.css`) plus the row
+   * underneath, so the card opens at the size it had when it was answered
+   * rather than stretching to whatever the window allows.
+   */
+  max-height: 37rem;
+
+  animation: card-in var(--vk-duration-slow) var(--vk-easing-spring);
+}
+
+.closing {
+  animation: card-out var(--vk-duration-base) var(--vk-easing-exit) forwards;
+}
+
+/* The card is `position: absolute; inset: 0`, so the stage owns its size. */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/*
+ * The drag hint — same look and position as the deck's own toast
+ * (`question-deck.module.css`), duplicated rather than shared because the two
+ * live in different packages' components and the visual is small enough that
+ * sharing it would cost more (a new export, a prop to carry the labels
+ * through) than it saves.
+ */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  z-index: var(--vk-z-toast);
+
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px) scale(0.92);
+  transition:
+    opacity var(--vk-duration-fast) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.toastVisible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.under {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+ * The same "still filled" treatment `FlowNav`'s skip control wears when a
+ * question was explicitly skipped: this only ever appears for the same kind
+ * of moment — an answer just came off — so it is always drawn as the obvious
+ * next move, not as a plate that happens to sometimes get emphasised.
+ */
+.skip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+
+  min-height: 2.375rem;
+  padding: 0 var(--vk-space-4);
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  cursor: pointer;
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+
+  transition: background var(--vk-duration-base) ease;
+}
+
+.skip:hover {
+  background: var(--vk-color-neutral-hover);
+}
+
+.skip:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+@keyframes card-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+}
+
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes veil-out {
+  to {
+    opacity: 0;
+  }
+}

@@ -1,0 +1,129 @@
+.host {
+  container-type: inline-size;
+}
+
+/*
+ * The row scrolls sideways on a phone rather than wrapping to three lines. The
+ * negative margin plus matching padding lets the first and last chip reach the
+ * screen edge as they scroll past, instead of hitting an invisible wall inset
+ * from it, while keeping them aligned with the content at rest.
+ */
+.scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  margin-inline: calc(var(--vk-space-3) * -1);
+  padding-inline: var(--vk-space-3);
+  /* Room for the focus ring, which would otherwise be clipped by the scroller. */
+  padding-block: 3px;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * A `<fieldset>`, so the UA's own box has to be flattened: the default border,
+ * padding and `min-inline-size: min-content` would each break the scrolling row
+ * on their own.
+ */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: max-content;
+  min-width: 100%;
+  min-inline-size: 0;
+}
+
+/*
+ * Given real width, the row wraps instead of scrolling. Sideways scrolling is a
+ * phone affordance — on a desktop it hides half the topics behind a gesture
+ * nobody makes with a mouse, which is the opposite of "easy to filter".
+ */
+@container (min-width: 44rem) {
+  .scroller {
+    overflow: visible;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .row {
+    flex-wrap: wrap;
+    width: auto;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: none;
+
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  cursor: pointer;
+
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+
+  /*
+   * Translucent, like the back link and the sticky bar: this floats over the
+   * moving wash, and an opaque grey chip would punch a hole in it.
+   */
+  background: oklch(from var(--vk-color-surface) l c h / 0.7);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  backdrop-filter: var(--vk-plate-blur);
+  color: var(--vk-color-text-muted);
+
+  transition:
+    background var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease,
+    box-shadow var(--vk-duration-base) ease;
+}
+
+.chip:hover {
+  background: var(--vk-color-surface);
+  color: var(--vk-color-text-strong);
+}
+
+.chip:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-neutral);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+}
+
+/*
+ * Marks where one kind of filter ends and another begins — "how far did I get"
+ * versus "which topic". Without it the row reads as one flat list of twelve
+ * equivalent options, which is exactly what it is not.
+ */
+.divider {
+  flex: none;
+  width: 1px;
+  height: 1.25rem;
+  margin-inline: var(--vk-space-1);
+  background: var(--vk-color-border-strong);
+}

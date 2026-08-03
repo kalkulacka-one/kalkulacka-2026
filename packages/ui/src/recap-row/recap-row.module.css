@@ -1,0 +1,201 @@
+.item {
+  list-style: none;
+  display: flex;
+}
+
+/*
+ * The tile itself: a plain surface lifted by a shadow rather than ringed by a
+ * border, so the list reads as pieces resting on the page instead of boxes
+ * drawn on it. Two buttons live inside it — the star and the open area — but
+ * only this outer element carries the tile's look, so the pair still reads as
+ * one continuous card with two things you can press.
+ *
+ * Padding is uniform on all four sides and the star/mark circles get no extra
+ * padding of their own — that's what keeps the halo of whitespace around each
+ * of them equal. The height comes from that padding plus the mark (the
+ * larger of the two circles), not from a fixed `min-height`: a number chosen
+ * independently of the circle it has to fit around is exactly how the two
+ * drift out of balance.
+ */
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--vk-space-2);
+
+  width: 100%;
+  padding: 0.625rem;
+
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface);
+  box-shadow: var(--vk-shadow-surface);
+
+  transition:
+    box-shadow var(--vk-duration-base) ease,
+    opacity var(--vk-duration-base) ease;
+}
+
+.row:hover {
+  box-shadow: var(--vk-shadow-card-back);
+}
+
+/*
+ * A skipped question reads as secondary — present, but visibly lower-priority
+ * than one still genuinely open — without going as far as `:disabled`'s greyed,
+ * inert look. The row itself stays fully interactive; only its star does not.
+ */
+.row[data-secondary] {
+  opacity: 0.95;
+}
+
+/* --- The star toggle ------------------------------------------------------
+ * The same control the question card wears (`question-card.module.css`'s
+ * `.important`), at the row's own scale — this is the one answer that can
+ * change without opening the full card.
+ */
+.star {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-surface);
+  color: var(--vk-color-neutral);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  cursor: pointer;
+
+  transition:
+    background var(--vk-duration-base) ease,
+    color var(--vk-duration-base) ease,
+    box-shadow var(--vk-duration-base) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.star:hover {
+  background: var(--vk-color-neutral-wash);
+}
+
+.star:active {
+  transform: scale(0.94);
+}
+
+.star:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.star[aria-pressed="true"] {
+  background: var(--vk-color-neutral);
+  color: var(--vk-color-neutral-on);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-neutral);
+}
+
+/*
+ * A skip already clears "pro mě důležité" in the store (`skipQuestion`), so
+ * re-arming it here — without the actual question in front of you — would be
+ * attaching the flag to a position that was never taken. A real `disabled`,
+ * not just a dimmer default: no hover wash, no focus ring, no click.
+ */
+.star:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.star:disabled:hover {
+  background: var(--vk-color-surface);
+}
+
+/* --- The open area ----------------------------------------------------- */
+
+.open {
+  grid-column: 2 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vk-space-3);
+  min-width: 0;
+  height: 100%;
+
+  /* No horizontal padding of its own — the row's own uniform padding plus the
+     grid gap ahead of it are already the whitespace around the star and the
+     mark. An extra inset here just on the mark's side is what threw the two
+     out of balance before. */
+  padding: 0;
+  border: none;
+  border-radius: calc(var(--vk-radius-control) - 0.25rem);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.open:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: calc(var(--vk-focus-offset) * -1);
+}
+
+.title {
+  min-width: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--vk-color-text-strong);
+
+  /* Two lines is the ceiling: past that the rows in a grid column stop having
+     a shared rhythm and the list reads as cards again. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.row[data-secondary] .title {
+  color: var(--vk-color-text-muted);
+  font-weight: 500;
+}
+
+/* --- The answer mark ---------------------------------------------------- */
+
+.mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: var(--vk-radius-pill);
+  transition: background var(--vk-duration-base) ease;
+}
+
+/*
+ * Fixed white ink on both marks, in every theme — not the derived `-on` token
+ * the card's own buttons use, which flips to near-black once a theme's accent
+ * gets light enough (the dark theme's brighter blue/red). That flip reads as
+ * the icon *inverting* between themes; a small filled dot has no room for that
+ * kind of surprise, so the ink is pinned rather than computed.
+ */
+.agree {
+  background: var(--vk-color-agree);
+  color: white;
+}
+
+.disagree {
+  background: var(--vk-color-disagree);
+  color: white;
+}
+
+/*
+ * No answer — a dashed ring, whether the question was explicitly skipped or
+ * simply never reached. The recap doesn't act on that distinction, so it
+ * doesn't draw one: both are "still open", and this is the one mark for it.
+ */
+.none {
+  background: none;
+  border: var(--vk-border-width) dashed oklch(from var(--vk-color-text-muted) l c h / 0.5);
+}
