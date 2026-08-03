@@ -39,6 +39,59 @@
   gap: var(--vk-space-2);
 }
 
+/* Reserves room for the corner close button so a long topic/title pair wraps
+   around it instead of running underneath it. Only applied when `close` is
+   actually passed — the deck's cards never carry this control. */
+.closable .chips {
+  padding-right: 2.5rem;
+}
+
+/*
+ * A classic modal close — inset by the same padding the chips row starts at,
+ * so its top edge lines up with theirs instead of sitting flush with the
+ * card's literal corner (an absolutely positioned child's containing block is
+ * the padding *box*, not the content box, so that alignment has to be spelled
+ * out explicitly).
+ */
+.close {
+  position: absolute;
+  top: var(--vk-fluid-card-pad-top);
+  right: var(--vk-fluid-card-pad-side);
+  z-index: 1;
+
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+
+  border: none;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-surface);
+  color: var(--vk-color-neutral);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  cursor: pointer;
+
+  transition:
+    background var(--vk-duration-base) ease,
+    box-shadow var(--vk-duration-base) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.close:hover {
+  background: var(--vk-color-neutral-wash);
+}
+
+.close:active {
+  transform: scale(0.94);
+}
+
+.close:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
 .body {
   flex: 1;
   min-height: 0;

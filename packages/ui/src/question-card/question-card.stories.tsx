@@ -69,6 +69,11 @@ export const WithoutTopic: Story = {
   args: { content: { ...content, topic: undefined } },
 };
 
+/** Only the recap's dialog passes this — the deck's own cards never close. */
+export const Closable: Story = {
+  args: { close: { label: 'Zavřít', onClose: () => {} } },
+};
+
 /** The longest statement and explainer in the Pardubice set. */
 export const LongestContent: Story = {
   args: {

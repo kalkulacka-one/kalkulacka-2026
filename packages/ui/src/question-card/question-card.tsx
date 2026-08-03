@@ -38,6 +38,13 @@ export type QuestionCardProps = {
   onDisagree?: () => void;
   onToggleImportant?: () => void;
   onPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  /**
+   * A classic corner close control — only ever set by the recap's dialog,
+   * which is the one place a question card is dismissible without being
+   * answered. The deck never passes this: its cards leave by swiping or
+   * answering, not by being closed.
+   */
+  close?: { label: string; onClose: () => void };
   /** Non-interactive cards are hidden from assistive tech and the tab order. */
   inert?: boolean;
   elevation?: 'active' | 'next' | 'back' | 'lifted';
@@ -67,17 +74,29 @@ export function QuestionCard({
   onDisagree,
   onToggleImportant,
   onPointerDown,
+  close,
   inert = false,
   elevation = 'active',
   ref,
   className,
 }: QuestionCardProps) {
-  const interactive = !inert && Boolean(onPointerDown ?? onAgree);
+  /*
+   * Keyed to `onPointerDown`, which is what actually makes the card draggable —
+   * not to `onAgree`, which only means its buttons work. The recap's dialog
+   * renders an answerable card that is *not* on a deck, and a grab cursor over
+   * something that cannot be grabbed is a promise the card can't keep.
+   */
+  const interactive = !inert && Boolean(onPointerDown);
 
   return (
     <div
       ref={ref}
-      className={[styles.card, interactive ? styles.interactive : undefined, className]
+      className={[
+        styles.card,
+        interactive ? styles.interactive : undefined,
+        close ? styles.closable : undefined,
+        className,
+      ]
         .filter(Boolean)
         .join(' ')}
       style={{ boxShadow: ELEVATION_SHADOW[elevation] }}
@@ -87,6 +106,20 @@ export function QuestionCard({
       inert={inert}
       aria-hidden={inert || undefined}
     >
+      {close ? (
+        <button
+          type="button"
+          className={styles.close}
+          aria-label={close.label}
+          title={close.label}
+          onPointerDown={stopPropagation}
+          onClick={close.onClose}
+          tabIndex={inert ? -1 : undefined}
+        >
+          <Icon name="close" size={14} />
+        </button>
+      ) : null}
+
       <div className={styles.chips}>
         {content.topic ? <Chip variant="filled">{content.topic}</Chip> : null}
         <Chip variant="outline">{content.title}</Chip>
@@ -103,6 +136,7 @@ export function QuestionCard({
           className={`${styles.action} ${styles.important}`}
           aria-pressed={selection.important}
           aria-label={labels.important}
+          title={labels.important}
           onPointerDown={stopPropagation}
           onClick={onToggleImportant}
           tabIndex={inert ? -1 : undefined}
