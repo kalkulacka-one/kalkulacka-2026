@@ -45,12 +45,21 @@ export const FRAGMENT_SHADER = [
   '  vec2 p = warp(st, uTime);',
   '',
   '  // Agree blobs (Accent A) stay on top-left / left side',
-  '  vec2 cA1 = blobCenter(0.0, 0.20, 0.16, vec2(-0.25, -0.18), vec2(0.16, 0.20));',
+  '  vec2 cA1 = blobCenter(0.0, 0.20, 0.16, vec2(-0.25, -0.05), vec2(0.16, 0.16));',
   '  vec2 cA2 = blobCenter(1.8, 0.14, 0.22, vec2(-0.12, 0.22), vec2(0.18, 0.16));',
   '',
-  '  // Disagree blobs (Accent B) stay on bottom-right / right side',
+  /*
+   * Disagree blobs (Accent B) stay on bottom-right / right side — but "bottom"
+   * is capped short of the actual bottom edge. `st.y` reaches -0.5 there on a
+   * short, wide desktop window (where `minDim` is the height), and chrome
+   * that's pinned to the bottom of the screen — the recap's blurred safe zone
+   * under its floating button, in particular — sits right in that band. A
+   * saturated blob wandering into a masked, backdrop-blurred region reads as a
+   * hard, curved edge where the mask ramp crosses its bright centre, not as
+   * part of the wash. cB2's lowest reach is capped well above that line.
+   */
   '  vec2 cB1 = blobCenter(3.5, 0.18, 0.15, vec2(0.25, 0.18), vec2(0.16, 0.20));',
-  '  vec2 cB2 = blobCenter(5.2, 0.15, 0.24, vec2(0.12, -0.22), vec2(0.18, 0.16));',
+  '  vec2 cB2 = blobCenter(5.2, 0.15, 0.24, vec2(0.12, -0.08), vec2(0.18, 0.14));',
   '',
   '  // Distance falloffs with soft liquid radii',
   '  float rA = 0.40;',
