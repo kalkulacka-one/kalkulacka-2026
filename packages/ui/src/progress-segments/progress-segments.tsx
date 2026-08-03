@@ -22,6 +22,13 @@ export type ProgressSegmentsProps = {
  *
  * Presentational only — it takes an already-derived list rather than answers,
  * so the mapping from domain answers to visual state stays testable in @vk/core.
+ *
+ * `skipped` reads identically to `unanswered` here — an idle bar, not a third
+ * colour. The bar is a progress readout ("how much is decided"), and a skip is
+ * not a decision; filling it in would overstate what's actually been settled.
+ * `Přeskočit` still exists as an affordance elsewhere (the nav button fills
+ * when a question was explicitly passed over) — only this bar declines to draw
+ * the distinction.
  */
 export function ProgressSegments({ segments, currentIndex, label }: ProgressSegmentsProps) {
   return (
@@ -35,9 +42,10 @@ export function ProgressSegments({ segments, currentIndex, label }: ProgressSegm
     >
       {segments.map((segment, index) => {
         const isCurrent = index === currentIndex;
+        const isFilled = segment.state === 'agree' || segment.state === 'disagree';
         const classes = [
           styles.segment,
-          segment.state !== 'unanswered' ? styles[segment.state] : undefined,
+          isFilled ? styles[segment.state] : undefined,
           isCurrent ? styles.current : undefined,
         ]
           .filter(Boolean)
