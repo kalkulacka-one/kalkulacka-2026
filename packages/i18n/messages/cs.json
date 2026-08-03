@@ -10,6 +10,11 @@
     "help": "Jak to funguje",
     "helpDetail": "Připomenutí, jak se odpovídá",
 
+    "darkMode": "Tmavý režim",
+    "darkModeDetail": "Přepne aplikaci do tmavého vzhledu",
+    "lightMode": "Světlý režim",
+    "lightModeDetail": "Přepne aplikaci do světlého vzhledu",
+
     "restart": "Začít znovu",
     "restartDetail": "Smaže vaše odpovědi",
     "restartTitle": "Začít znovu?",

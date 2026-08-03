@@ -69,8 +69,9 @@ export function Backdrop({ forceEnabled }: BackdropProps) {
   const [webglFailed, setWebglFailed] = useState(false);
 
   // Tokens are read from the DOM rather than passed as props so the backdrop
-  // reacts to a `data-theme` switch (e.g. Storybook's theme toolbar) without
-  // every call site having to plumb the theme through.
+  // reacts to a `data-theme` switch (e.g. Storybook's theme toolbar) or a
+  // `data-mode` light/dark toggle without every call site having to plumb
+  // the theme through.
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -81,7 +82,7 @@ export function Backdrop({ forceEnabled }: BackdropProps) {
     const observer = new MutationObserver(update);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme'],
+      attributeFilter: ['data-theme', 'data-mode'],
     });
     return () => observer.disconnect();
   }, []);

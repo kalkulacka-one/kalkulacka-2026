@@ -159,6 +159,27 @@ export const icons = {
       [19, 12, 1.6],
     ],
   },
+  /** Light mode. The disc is round like `search`'s lens; the rays stay on 45° diagonals. */
+  sun: {
+    ...THIN,
+    paths: [
+      'M16 12 A4 4 0 1 1 8 12 A4 4 0 1 1 16 12',
+      'M12 2 L12 5',
+      'M12 19 L12 22',
+      'M2 12 L5 12',
+      'M19 12 L22 12',
+      'M4.9 4.9 L7 7',
+      'M17 17 L19.1 19.1',
+      'M4.9 19.1 L7 17',
+      'M17 7 L19.1 4.9',
+    ],
+  },
+  /** Dark mode. One circle bitten out of another, same construction as `restart`'s ring. */
+  moon: {
+    ...THIN,
+    paths: ['M21 12.79 A9 9 0 1 1 11.21 3 A7 7 0 0 0 21 12.79 Z'],
+    strokeLinejoin: 'round',
+  },
 } as const satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

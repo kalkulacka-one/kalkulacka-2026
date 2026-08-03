@@ -5,6 +5,7 @@ import { Button, Dialog, Menu, type MenuItem } from '@vk/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAnswersStore } from '../lib/answers-store';
+import { useColorMode } from '../lib/color-mode';
 import { type CalculatorRef, questionPath } from '../lib/paths';
 import { GuideSteps } from './guide-steps';
 import { RestartDialog } from './restart-dialog';
@@ -35,6 +36,7 @@ export function AppMenu({ calculator }: AppMenuProps) {
   const router = useRouter();
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
   const [dialog, setDialog] = useState<OpenDialog>('none');
+  const [colorMode, toggleColorMode] = useColorMode();
 
   const close = () => setDialog('none');
 
@@ -46,6 +48,24 @@ export function AppMenu({ calculator }: AppMenuProps) {
       icon: 'info',
       onSelect: () => setDialog('help'),
     },
+    // Labelled by what it switches *to*, matching every other item's
+    // imperative phrasing — so the icon and label always describe the mode
+    // one click away, not the one currently showing.
+    colorMode === 'dark'
+      ? {
+          id: 'color-mode',
+          label: messages.menu.lightMode,
+          detail: messages.menu.lightModeDetail,
+          icon: 'sun',
+          onSelect: toggleColorMode,
+        }
+      : {
+          id: 'color-mode',
+          label: messages.menu.darkMode,
+          detail: messages.menu.darkModeDetail,
+          icon: 'moon',
+          onSelect: toggleColorMode,
+        },
     ...(calculator
       ? ([
           {
