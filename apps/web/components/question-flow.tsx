@@ -53,6 +53,16 @@ export function QuestionFlow({
     Math.min(Math.max(initialPosition - 1, 0), questions.length - 1),
   );
 
+  /**
+   * True right after re-tapping the current answer clears it — a nudge toward
+   * "Přeskočit" for the moment the question is unexpectedly unanswered again.
+   * Reset whenever the question itself changes, so it never survives to the
+   * next card.
+   */
+  const [justCleared, setJustCleared] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally keyed on `index` alone — this only resets on card change, nothing inside it reads `index`.
+  useEffect(() => setJustCleared(false), [index]);
+
   const answers = useCalculatorAnswers(calculatorId);
   const setAnswer = useAnswersStore((s) => s.setAnswer);
   const skipQuestion = useAnswersStore((s) => s.skipQuestion);
@@ -113,6 +123,7 @@ export function QuestionFlow({
       if (important && !existing?.isImportant) toggleImportant(calculatorId, question.id);
 
       // Re-choosing the same answer clears it; that is an edit, not progress.
+      setJustCleared(isClearing);
       if (!isClearing) advance();
     },
     [advance, answers, calculatorId, question, setAnswer, toggleImportant],
@@ -230,6 +241,7 @@ export function QuestionFlow({
             previousLabel={messages.flow.previous}
             forwardLabel={isAnswered ? messages.flow.next : messages.flow.skip}
             isSkipped={isSkipped}
+            attention={justCleared}
             counterLabel={counterLabel}
           />
 

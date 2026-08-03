@@ -18,6 +18,13 @@ export type FlowNavProps = {
   previousLabel: string;
   /** Highlight the control because this question was explicitly skipped. */
   isSkipped?: boolean;
+  /**
+   * Highlight the control because the answer was just cleared — re-tapping an
+   * already-chosen position, which leaves the question unanswered again right
+   * as someone is looking at it. A transient nudge toward "Přeskočit" rather
+   * than `isSkipped`'s persisted state.
+   */
+  attention?: boolean;
   /** e.g. "Otázka 3 ze 42", for assistive tech. */
   counterLabel: string;
 };
@@ -31,6 +38,7 @@ export function FlowNav({
   forwardLabel,
   previousLabel,
   isSkipped = false,
+  attention = false,
   counterLabel,
 }: FlowNavProps) {
   return (
@@ -54,7 +62,7 @@ export function FlowNav({
 
       <button
         type="button"
-        className={`${styles.button} ${styles.forward} ${isSkipped ? styles.skipped : ''}`}
+        className={`${styles.button} ${styles.forward} ${isSkipped || attention ? styles.skipped : ''}`}
         onClick={onForward}
       >
         <span>{forwardLabel}</span>
