@@ -1,3 +1,4 @@
+import { Backdrop } from '@vk/ui';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Radio_Canada } from 'next/font/google';
 import type { ReactNode } from 'react';
@@ -47,7 +48,21 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   // of HTML — no flash of the default theme before hydration.
   return (
     <html lang="cs" data-theme="default" className={`${display.variable} ${sans.variable}`}>
-      <body>{children}</body>
+      <body>
+        {/*
+          The backdrop lives here, not in `AppShell`, precisely because this
+          element survives navigation. Rendered per screen it was remounted on
+          every route change, which restarted the shader's clock — so moving
+          from the last question to the recap made the whole wash jump to a
+          different frame. One instance under the root layout drifts on
+          undisturbed while the screens above it change.
+        */}
+        <div className="backdropLayer">
+          <Backdrop />
+        </div>
+
+        {children}
+      </body>
     </html>
   );
 }

@@ -38,3 +38,16 @@ body {
   font-family: var(--vk-typeface-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+/*
+ * The one element the router never replaces. Kept at the document level so the
+ * animated wash is continuous across every navigation — see the comment in
+ * `layout.tsx`. Not a CSS module: it is a child of `<body>`, which no module
+ * owns.
+ */
+.backdropLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}

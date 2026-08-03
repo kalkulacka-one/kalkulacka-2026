@@ -1,16 +1,18 @@
+/*
+ * Transparent: the backdrop is a fixed layer under `<body>` now, and `<body>`
+ * itself carries `--vk-color-page` for the case where a theme turns the
+ * backdrop off. Painting the page colour here too would cover the wash.
+ */
 .shell {
   position: relative;
   height: 100%;
   overflow: hidden;
-  /* What shows through when a theme turns the backdrop off. */
-  background: var(--vk-color-page);
 }
 
 /*
- * Everything but the backdrop. Needs its own stacking context so it paints
- * above the backdrop's canvas regardless of DOM order — a position:absolute
- * element with z-index:auto (the backdrop) paints above plain in-flow content
- * by default, so this has to opt in to sitting on top explicitly.
+ * Needs its own stacking context so it paints above the backdrop layer
+ * regardless of DOM order — that layer is `position: fixed` with `z-index: 0`,
+ * so plain in-flow content here has to opt in to sitting on top explicitly.
  */
 .content {
   position: relative;
