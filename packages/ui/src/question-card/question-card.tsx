@@ -136,12 +136,14 @@ export function QuestionCard({
           className={`${styles.action} ${styles.important}`}
           aria-pressed={selection.important}
           aria-label={labels.important}
-          title={labels.important}
           onPointerDown={stopPropagation}
           onClick={onToggleImportant}
           tabIndex={inert ? -1 : undefined}
         >
           <Icon name="star" size={23} filled={selection.important} />
+          <span className={styles.tooltip} aria-hidden="true">
+            {labels.important}
+          </span>
         </button>
 
         <button
