@@ -1,0 +1,25 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+
+  padding: 0.1875rem 0.5rem;
+  border-radius: var(--vk-radius-pill);
+
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--vk-tracking-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.agree {
+  background: var(--vk-color-agree-wash);
+  color: var(--vk-color-agree);
+}
+
+.neutral {
+  background: var(--vk-color-neutral-wash);
+  color: var(--vk-color-text-muted);
+}

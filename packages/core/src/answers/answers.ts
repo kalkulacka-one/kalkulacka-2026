@@ -90,9 +90,16 @@ export function toUserAnswers(questions: Question[], answers: AnswerMap): UserAn
   return questions.map((q) => answers[q.id]).filter((a): a is UserAnswer => a !== undefined);
 }
 
-/** How many questions have a real position recorded (skips do not count). */
-export function countAnswered(answers: AnswerMap): number {
-  return Object.values(answers).filter((a) => a.answer !== undefined).length;
+/**
+ * How many of *these* questions have a real position recorded (skips do not count).
+ *
+ * Scoped to the question list rather than counting the stored map, because the
+ * two can disagree: answers persist in the browser across a calculator's
+ * question set changing, and counting the map produced "Zodpovězeno 43 z 42" —
+ * a total larger than the thing it was a total of.
+ */
+export function countAnswered(questions: Question[], answers: AnswerMap): number {
+  return questions.filter((q) => answers[q.id]?.answer !== undefined).length;
 }
 
 /** How many questions were explicitly skipped. */

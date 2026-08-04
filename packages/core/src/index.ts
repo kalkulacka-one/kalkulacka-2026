@@ -41,6 +41,17 @@ export type {
 } from './domain/types';
 export { getFixtureIndex, getPardubiceCalculator, PARDUBICE_TOPICS } from './fixtures/index';
 export {
+  type AnswerDistribution,
+  buildAnswerDistribution,
+  buildQuestionConsensus,
+  buildTopicMatches,
+  MIN_TOPIC_ANSWERS,
+  type QuestionConsensus,
+  selectAgainstTheGrain,
+  selectImportant,
+  type TopicMatch,
+} from './insights/insights';
+export {
   answerToNumber,
   type CandidateMatch,
   calculateBaseScore,

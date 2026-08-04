@@ -115,7 +115,7 @@ export type RecapTotals = {
 };
 
 export function countRecapTotals(questions: Question[], answers: AnswerMap): RecapTotals {
-  const answered = countAnswered(answers);
+  const answered = countAnswered(questions, answers);
 
   return {
     total: questions.length,

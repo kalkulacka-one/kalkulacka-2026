@@ -163,6 +163,40 @@
   --vk-space-6: 2rem;
   --vk-space-7: 3rem;
 
+  /* --- Type scale --------------------------------------------------------
+   * Structure, not brand: a theme picks the *typefaces*, this decides the sizes
+   * they are set at. Components had been choosing their own — eleven distinct
+   * font-size literals across the design system, and two different definitions
+   * of "the screen title" — which is how two screens end up looking like two
+   * products. Reach for a step here rather than typing a rem value.
+   *
+   * The two largest steps are fluid because they are the only type big enough
+   * for the difference between a phone and a desktop to matter.
+   */
+  --vk-text-2xs: 0.6875rem;
+  --vk-text-xs: 0.75rem;
+  --vk-text-sm: 0.8125rem;
+  --vk-text-base: 0.875rem;
+  --vk-text-md: 0.9375rem;
+  --vk-text-lg: 1rem;
+  --vk-text-xl: 1.25rem;
+  --vk-text-2xl: 1.5rem;
+  /* Section and screen headings. */
+  --vk-text-title: clamp(1.625rem, 1.3rem + 1.5vw, 2.25rem);
+  /* The one hero size, for a screen that is mostly its own title. */
+  --vk-text-display: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+
+  --vk-leading-tight: 1.1;
+  --vk-leading-snug: 1.3;
+  --vk-leading-normal: 1.45;
+  --vk-leading-relaxed: 1.55;
+
+  /* Headings are cut tighter than body copy; both are constants of the system
+     rather than per-component taste. */
+  --vk-tracking-tight: -0.045em;
+  --vk-tracking-snug: -0.01em;
+  --vk-tracking-wide: 0.02em;
+
   --vk-border-width: 1.5px;
   --vk-focus-width: 3px;
   --vk-focus-offset: 2px;

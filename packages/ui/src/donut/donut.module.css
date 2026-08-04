@@ -1,0 +1,76 @@
+.wrap {
+  position: relative;
+  flex: none;
+}
+
+/* Rotated so the first segment starts at twelve o'clock rather than at three,
+   which is where a stroke-dash ring would otherwise begin. */
+.svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.track,
+.segment {
+  fill: none;
+  stroke-width: 13;
+}
+
+.track {
+  stroke: var(--vk-color-surface-sunken);
+}
+
+/* Butt caps, not round: rounded ends would eat into the gaps and make two
+   adjacent segments touch again at exactly the size the gap was added to fix. */
+.segment {
+  stroke-linecap: butt;
+}
+
+.agree {
+  stroke: var(--vk-color-agree);
+}
+
+.disagree {
+  stroke: var(--vk-color-disagree);
+}
+
+.neutral {
+  stroke: var(--vk-color-neutral);
+}
+
+/*
+ * Unanswered reads as absence without disappearing. At 0.28 this was all but
+ * invisible on the dark theme, where the muted ink is already close to the
+ * surface behind it — a segment nobody can see is a share of the whole silently
+ * unaccounted for.
+ */
+.none {
+  stroke: oklch(from var(--vk-color-text-muted) l c h / 0.55);
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.0625rem;
+}
+
+.value {
+  font-family: var(--vk-typeface-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--vk-color-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.75rem;
+  color: var(--vk-color-text-muted);
+}

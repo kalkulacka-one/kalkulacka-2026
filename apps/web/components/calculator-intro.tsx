@@ -43,7 +43,7 @@ export function CalculatorIntro({
   const router = useRouter();
   const [confirmingRestart, setConfirmingRestart] = useState(false);
 
-  const answered = countAnswered(answers);
+  const answered = countAnswered(questions, answers);
   // Held back until the persisted answers land, so the primary action does not
   // change its mind from "Začít" to "Pokračovat" a frame after it appears.
   const inProgress = useAnswersReady() && answered > 0;

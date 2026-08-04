@@ -1,5 +1,5 @@
+import { AnswerMark } from '../answer-mark/answer-mark';
 import { Icon } from '../icon/icon';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden';
 import styles from './recap-row.module.css';
 
 /**
@@ -76,14 +76,7 @@ export function RecapRow({
         <button type="button" className={styles.open} onClick={onOpen}>
           <span className={styles.title}>{title}</span>
 
-          <span className={`${styles.mark} ${styles[tone]}`}>
-            {/* The same heavy marks the question card's own answer buttons use —
-                this row is a compressed reading of that card, not a different
-                visual language for the same two answers. */}
-            {tone === 'agree' ? <Icon name="check" size={11} /> : null}
-            {tone === 'disagree' ? <Icon name="cross" size={11} /> : null}
-            <VisuallyHidden>{labels.answer}</VisuallyHidden>
-          </span>
+          <AnswerMark tone={tone} label={labels.answer} />
         </button>
       </div>
     </li>

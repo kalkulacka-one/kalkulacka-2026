@@ -1,0 +1,185 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vk-space-4);
+}
+
+.stage {
+  position: relative;
+  width: 9.5rem;
+  height: 9.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- The ring ------------------------------------------------------------- */
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Starts at twelve o'clock rather than at three. */
+  transform: rotate(-90deg);
+}
+
+.ringTrack,
+.ringFill {
+  fill: none;
+  stroke-width: 4;
+}
+
+.ringTrack {
+  stroke: var(--vk-color-surface-sunken);
+}
+
+.ringFill {
+  stroke: var(--vk-color-agree);
+  stroke-linecap: round;
+  /* 2πr for r=45. */
+  stroke-dasharray: 282.74;
+  animation: count 1.3s cubic-bezier(0.6, 0, 0.35, 1) both;
+}
+
+@keyframes count {
+  from {
+    stroke-dashoffset: 282.74;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* --- The gate ------------------------------------------------------------- */
+
+/*
+ * A circular aperture the tape is pulled through, sitting inside the ring. The
+ * round clip is what marries the two ideas: the same circle that counts the
+ * progress is the window the answers are read through.
+ */
+.gate {
+  position: relative;
+  width: 7rem;
+  height: 7rem;
+  border-radius: var(--vk-radius-pill);
+  overflow: hidden;
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  animation: shutter 0.22s ease 1.15s both;
+}
+
+@keyframes shutter {
+  to {
+    opacity: 0;
+  }
+}
+
+.tape {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+  /* Starts clear of the aperture so the first mark travels in rather than being
+     there on frame one. */
+  padding-left: 7rem;
+  width: max-content;
+  animation: roll 1.15s linear both;
+}
+
+@keyframes roll {
+  to {
+    transform: translateX(-48rem);
+  }
+}
+
+.sprockets {
+  position: absolute;
+  left: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding-left: 7rem;
+  width: max-content;
+  /* Pulled by the same keyframes as the tape, so holes and marks stay locked to
+     each other — a strip whose perforations drift against its frames reads as
+     two layers rather than one piece of film. */
+  animation: roll 1.15s linear both;
+}
+
+.top {
+  top: 0.5rem;
+}
+
+.bottom {
+  bottom: 0.5rem;
+}
+
+.hole {
+  flex: none;
+  width: 2.125rem;
+  height: 0.3125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hole::before {
+  content: "";
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-border-strong);
+}
+
+/* --- The resolve ---------------------------------------------------------- */
+
+/*
+ * The logo's own percent sign, landing as the gate closes. The overshoot is what
+ * makes it read as arriving rather than fading up.
+ */
+.percent {
+  position: absolute;
+  color: var(--vk-color-text-strong);
+  animation: land 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1.22s both;
+}
+
+@keyframes land {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.label {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: 0.9375rem;
+  color: var(--vk-color-text-muted);
+  text-align: center;
+}
+
+/*
+ * Nothing moves. The tape is the part that would be unpleasant — a strip of
+ * high-contrast marks travelling at speed is exactly the motion this preference
+ * exists to switch off — so the gate is not merely stopped but removed, and the
+ * percent mark and the label carry the moment on their own.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .gate {
+    display: none;
+  }
+
+  .ringFill {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .percent {
+    animation: none;
+  }
+}

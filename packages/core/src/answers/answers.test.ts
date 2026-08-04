@@ -84,7 +84,7 @@ describe('skipQuestion', () => {
     const answers = skipQuestion({}, 'q1');
     expect(answers.q1).toBeDefined();
     expect(answers.q1?.answer).toBeUndefined();
-    expect(countAnswered(answers)).toBe(0);
+    expect(countAnswered(questions, answers)).toBe(0);
   });
 
   it('drops an important flag armed before skipping, since it never attached to a position', () => {
@@ -100,7 +100,16 @@ describe('progress helpers', () => {
   it('counts only real positions', () => {
     let answers = setAnswer({}, 'q1', true);
     answers = skipQuestion(answers, 'q2');
-    expect(countAnswered(answers)).toBe(1);
+    expect(countAnswered(questions, answers)).toBe(1);
+  });
+
+  it('ignores stored answers to questions this calculator no longer asks', () => {
+    // Answers outlive a question set in the browser, and counting the stored map
+    // rather than the questions reported "43 z 42".
+    let answers = setAnswer({}, 'q1', true);
+    answers = setAnswer(answers, 'retired-question', true);
+
+    expect(countAnswered(questions, answers)).toBe(1);
   });
 
   it('treats a skip as visited for completeness', () => {

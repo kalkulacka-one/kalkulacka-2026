@@ -4,7 +4,7 @@ import styles from './button.module.css';
 
 export type ButtonProps = {
   children: ReactNode;
-  variant?: 'solid' | 'ghost' | 'outline';
+  variant?: 'solid' | 'ghost' | 'outline' | 'plate';
   size?: 'small' | 'medium' | 'large';
   /** Icon shown before the label. */
   iconStart?: IconName;

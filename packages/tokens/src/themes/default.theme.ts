@@ -56,10 +56,15 @@ export const defaultTheme = defineTheme({
      * as light as still clears 4.5:1 against white. `#3b82f6`/`#f87171` (the
      * original brightened pair) landed at 3.68:1 / 2.77:1 — these are the
      * same hue pulled back down until white ink reads again.
+     *
+     * `disagree`'s chroma is pulled in a notch further than `agree`'s
+     * (0.17 vs. 0.21 in OKLCH) at the same lightness and the same 4.68:1
+     * contrast — red at blue's own chroma reads hotter than blue does at
+     * that chroma, so matching the number instead of the look overshot it.
      */
     dark: {
       agree: '#2c6cee',
-      disagree: '#df2e2e',
+      disagree: '#cb463f',
       neutral: '#cbd5e1',
 
       page: '#0b1220',

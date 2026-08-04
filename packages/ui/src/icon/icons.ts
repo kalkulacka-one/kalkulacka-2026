@@ -56,6 +56,18 @@ export const icons = {
       'M14.8585 3.3987e-05L18.2758 3.36491L12.5553 8.99735L18.2758 14.6298L14.8584 17.9946L9.13789 12.3622L3.4174 17.9946L0 14.6297L5.72047 8.99733L0 3.36485L3.41742 0L9.13792 5.6325L14.8585 3.3987e-05Z',
     ],
   },
+  /**
+   * "Nevím" — a position taken that carries no direction.
+   *
+   * On the cross's own 19×18 box so the three marks size identically from one
+   * `size` prop, and cut to the same weight: a bar this heavy sits between a
+   * check and a cross without either looking thin next to it.
+   */
+  neutral: {
+    viewBox: '0 0 19 18',
+    mode: 'fill',
+    paths: ['M0 6.8H19V11.2H0V6.8Z'],
+  },
   /** "Pro mě důležité" — outlined until active, then filled. */
   star: {
     viewBox: '0 0 24 23',

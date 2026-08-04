@@ -75,6 +75,31 @@
   background: var(--vk-color-neutral-wash);
 }
 
+/*
+ * Chrome that floats over the animated backdrop: the back link, the share
+ * action, the shell's menu trigger. Deliberately the same values as
+ * `IconButton`'s `surface` variant — these three sit within a few hundred
+ * pixels of each other on the results screen, and any drift between them reads
+ * as three unrelated controls rather than one set.
+ *
+ * Translucent rather than opaque, because the contrast behind them is never the
+ * same two frames running.
+ */
+.plate {
+  background: oklch(from var(--vk-color-surface) l c h / 0.72);
+  color: var(--vk-color-text-muted);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  backdrop-filter: var(--vk-plate-blur);
+}
+
+.plate:hover:not(:disabled) {
+  background: var(--vk-color-surface);
+  color: var(--vk-color-text-strong);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border-strong),
+    var(--vk-shadow-card-back);
+}
+
 /* --- Sizes ------------------------------------------------------------ */
 
 .small {

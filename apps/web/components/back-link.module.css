@@ -1,0 +1,12 @@
+/*
+ * Every screen puts this at the top of a flex column, whose default
+ * `align-items: stretch` would pull the button to the full width of the page.
+ * `Button` deliberately does not accept a `className` — its appearance is the
+ * design system's to decide — so the alignment lives on a wrapper rather than
+ * being smuggled into the control itself.
+ */
+.back {
+  display: inline-flex;
+  align-self: flex-start;
+  max-width: 100%;
+}

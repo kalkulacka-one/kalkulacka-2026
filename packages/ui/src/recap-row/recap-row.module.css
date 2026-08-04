@@ -160,42 +160,5 @@
   font-weight: 500;
 }
 
-/* --- The answer mark ---------------------------------------------------- */
-
-.mark {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.125rem;
-  height: 2.125rem;
-  border-radius: var(--vk-radius-pill);
-  transition: background var(--vk-duration-base) ease;
-}
-
-/*
- * Fixed white ink on both marks, in every theme — not the derived `-on` token
- * the card's own buttons use, which flips to near-black once a theme's accent
- * gets light enough (the dark theme's brighter blue/red). That flip reads as
- * the icon *inverting* between themes; a small filled dot has no room for that
- * kind of surprise, so the ink is pinned rather than computed.
- */
-.agree {
-  background: var(--vk-color-agree);
-  color: white;
-}
-
-.disagree {
-  background: var(--vk-color-disagree);
-  color: white;
-}
-
-/*
- * No answer — a dashed ring, whether the question was explicitly skipped or
- * simply never reached. The recap doesn't act on that distinction, so it
- * doesn't draw one: both are "still open", and this is the one mark for it.
- */
-.none {
-  background: none;
-  border: var(--vk-border-width) dashed oklch(from var(--vk-color-text-muted) l c h / 0.5);
-}
+/* The answer mark itself is `AnswerMark` — shared with the results comparison,
+   so the two screens can't drift on what a "yes" looks like. */

@@ -6,11 +6,12 @@
  *  - styling lives in co-located `.module.css` files that reference only `var(--vk-*)`
  *  - no data fetching, no routing, no domain knowledge
  */
-export { AnswerPill, type AnswerPillProps, type AnswerTone } from './answer-pill/answer-pill';
+export { AnswerMark, type AnswerMarkProps, type AnswerMarkTone } from './answer-mark/answer-mark';
 export { AppHeader, type AppHeaderProps } from './app-header/app-header';
 export { Avatar, type AvatarProps } from './avatar/avatar';
 export { Backdrop, type BackdropProps } from './backdrop/backdrop';
 export { Button, type ButtonProps } from './button/button';
+export { Calculating, type CalculatingProps } from './calculating/calculating';
 export { Card, type CardProps } from './card/card';
 export { Chip, type ChipProps } from './chip/chip';
 export {
@@ -19,6 +20,7 @@ export {
   type ComparisonRow,
 } from './comparison-list/comparison-list';
 export { Dialog, type DialogProps } from './dialog/dialog';
+export { Donut, type DonutProps, type DonutSegment } from './donut/donut';
 export {
   FilterChips,
   type FilterChipsProps,
@@ -34,13 +36,10 @@ export {
   KeyboardHints,
   type KeyboardHintsProps,
 } from './keyboard-hints/keyboard-hints';
-export {
-  LoadingIndicator,
-  type LoadingIndicatorProps,
-} from './loading-indicator/loading-indicator';
-export { Logo, type LogoProps } from './logo/logo';
-export { MatchCard, type MatchCardProps } from './match-card/match-card';
+export { Logo, type LogoProps, PercentMark } from './logo/logo';
+export { MatchRow, type MatchRowProps } from './match-row/match-row';
 export { Menu, type MenuItem, type MenuProps } from './menu/menu';
+export { Meter, type MeterProps } from './meter/meter';
 export { OptionRow, type OptionRowProps } from './option-row/option-row';
 export {
   ProgressSegments,
@@ -74,5 +73,6 @@ export {
 } from './recap-row/recap-row';
 export { SearchField, type SearchFieldProps } from './search-field/search-field';
 export { StickyBar, type StickyBarProps } from './sticky-bar/sticky-bar';
+export { Tag, type TagProps } from './tag/tag';
 export { TutorialStep, type TutorialStepProps } from './tutorial-step/tutorial-step';
 export { VisuallyHidden } from './visually-hidden/visually-hidden';

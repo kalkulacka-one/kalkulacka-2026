@@ -1,0 +1,53 @@
+.mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--vk-radius-pill);
+  transition: background var(--vk-duration-base) ease;
+}
+
+.medium {
+  width: 2.125rem;
+  height: 2.125rem;
+}
+
+.small {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/*
+ * Fixed white ink on the filled marks, in every theme — not the derived `-on`
+ * token the card's own buttons use, which flips to near-black once a theme's
+ * accent gets light enough (the dark theme's brighter blue/red). That flip reads
+ * as the icon *inverting* between themes; a small filled mark has no room for
+ * that kind of surprise, so the ink is pinned rather than computed.
+ */
+.agree {
+  background: var(--vk-color-agree);
+  color: white;
+}
+
+.disagree {
+  background: var(--vk-color-disagree);
+  color: white;
+}
+
+/*
+ * An explicit "nevím". Filled like a real answer, because it is one — but in the
+ * neutral ink, so it reads as a position without a direction rather than as a
+ * third opinion competing with the two that have one.
+ */
+.neutral {
+  background: var(--vk-color-neutral);
+  color: white;
+}
+
+/* No answer — a dashed ring, whether the question was explicitly skipped or
+   simply never reached. Neither screen acts on that distinction, so neither
+   draws one. */
+.none {
+  background: none;
+  border: var(--vk-border-width) dashed oklch(from var(--vk-color-text-muted) l c h / 0.5);
+}

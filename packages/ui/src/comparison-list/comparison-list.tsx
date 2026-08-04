@@ -1,4 +1,4 @@
-import { AnswerPill, type AnswerTone } from '../answer-pill/answer-pill';
+import { AnswerMark, type AnswerMarkTone } from '../answer-mark/answer-mark';
 import { Icon } from '../icon/icon';
 import styles from './comparison-list.module.css';
 
@@ -6,9 +6,9 @@ export type ComparisonRow = {
   questionId: string;
   statement: string;
   /** The user's recorded position. */
-  user: { tone: AnswerTone; label: string };
+  user: { tone: AnswerMarkTone; label: string };
   /** The candidate's. */
-  candidate: { tone: AnswerTone; label: string };
+  candidate: { tone: AnswerMarkTone; label: string };
   /** Whether the two agreed. `'none'` when one side didn't answer. */
   agreement: 'match' | 'mismatch' | 'none';
   /** The user marked this one "pro mě důležité". */
@@ -32,38 +32,63 @@ export type ComparisonListProps = {
 /**
  * Answer-by-answer, the user against one candidate.
  *
+ * The two positions lead the row as a pair of marks in fixed columns, so 42 rows
+ * can be read straight down — where the two circles differ is the whole point of
+ * the screen, and that pattern only emerges if they line up. They are the same
+ * marks the recap uses, at the smaller size.
+ *
  * Rows keep their original question order rather than being sorted by agreement:
  * this is a record of what was asked, and re-ordering it would make a candidate
  * look better or worse depending on which end you read first.
  */
 export function ComparisonList({ rows, labels }: ComparisonListProps) {
   return (
-    <ul className={styles.list}>
-      {rows.map((row) => (
-        <li key={row.questionId} className={`${styles.row} ${styles[row.agreement]}`}>
-          <p className={styles.statement}>
-            {row.important ? (
-              <Icon name="starThin" size={14} filled className={styles.star} />
-            ) : null}
-            {row.statement}
-            {row.important ? <span className={styles.srOnly}> ({labels.important})</span> : null}
-          </p>
+    <div className={styles.wrap}>
+      {/*
+        The candidate's column heading is allowed to run across the statement
+        column rather than being truncated to the width of its circle: archive
+        party names reach 85 characters, and clipping one to "SPOLEČN…" in the
+        heading that identifies whose answers these are is worse than letting it
+        extend into empty space.
+      */}
+      <div className={styles.head} aria-hidden="true">
+        <span className={styles.headYou}>{labels.you}</span>
+        <span className={styles.headCandidate}>{labels.candidate}</span>
+      </div>
 
-          <div className={styles.answers}>
-            <span className={styles.side}>
-              <span className={styles.who}>{labels.you}</span>
-              <AnswerPill tone={row.user.tone} label={row.user.label} size="small" />
-            </span>
+      <ul className={styles.list}>
+        {rows.map((row) => (
+          <li key={row.questionId} className={styles.row}>
+            <AnswerMark
+              tone={row.user.tone}
+              label={`${labels.you}: ${row.user.label}`}
+              size="small"
+            />
+            <AnswerMark
+              tone={row.candidate.tone}
+              label={`${labels.candidate}: ${row.candidate.label}`}
+              size="small"
+            />
 
-            <span className={styles.side}>
-              <span className={styles.who}>{labels.candidate}</span>
-              <AnswerPill tone={row.candidate.tone} label={row.candidate.label} size="small" />
-            </span>
-          </div>
+            <p className={styles.statement}>
+              {/* The design system's own star — the same heavy mark the question
+                  card and the recap wear for "pro mě důležité", not a text
+                  asterisk standing in for it. */}
+              {row.important ? <Icon name="star" size={13} filled className={styles.star} /> : null}
+              {row.statement}
+              {row.important ? <span className={styles.srOnly}> ({labels.important})</span> : null}
+            </p>
 
-          {row.comment ? <p className={styles.comment}>{row.comment}</p> : null}
-        </li>
-      ))}
-    </ul>
+            {/*
+              A grid child in its own right rather than nested under the
+              statement: on a narrow screen it takes the full row, including the
+              space beneath the marks, instead of being squeezed into the same
+              column as the question it answers.
+            */}
+            {row.comment ? <p className={styles.comment}>{row.comment}</p> : null}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

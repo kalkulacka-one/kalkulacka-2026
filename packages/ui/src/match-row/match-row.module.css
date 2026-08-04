@@ -1,0 +1,284 @@
+/*
+ * The row rises into place from below, and the list staggers the delays so the
+ * ranking assembles bottom-up with the winner landing last. The animation is on
+ * the `<li>` rather than the button so it never fights the button's own hover
+ * and press transforms.
+ *
+ * The shadow lives here too, not on the button — see `.row` below for why.
+ * Radius matches the brand's signature asymmetric card (square top-left,
+ * rounded elsewhere), scaled to this row's size via `--vk-radius-control`
+ * rather than the fixed 30px the big question card uses.
+ */
+.item {
+  list-style: none;
+  display: flex;
+
+  border-radius: 0 var(--vk-radius-control) var(--vk-radius-control) var(--vk-radius-control);
+  box-shadow: var(--vk-shadow-surface);
+
+  animation: rise var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  transition: box-shadow var(--vk-duration-base) ease;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The three states the row's shadow can be in, driven off the button inside —
+   see `.row` immediately below for why the shadow can't simply live there. */
+.item:has(.row:hover) {
+  box-shadow: var(--vk-shadow-card-back);
+}
+
+.item:has(.row[aria-pressed="true"]) {
+  box-shadow: var(--vk-shadow-card-lifted);
+}
+
+/* A candidate nobody can compare doesn't float above the page like an answer
+   card — see `.row:disabled` below. */
+.item:has(.row:disabled) {
+  box-shadow: none;
+}
+
+.row {
+  position: relative;
+
+  /*
+   * Clips the top-edge bar to the card's rounded corners — and that is *all*
+   * this does. It cannot also carry the box-shadow: an element's own
+   * `overflow: hidden` clips its own box-shadow along with its content, which
+   * is what silently cropped every row's shadow here before. The shadow moved
+   * up to `.item`, which has no overflow of its own and can show it in full;
+   * `border-radius: inherit` keeps the two shapes identical without repeating
+   * the asymmetric formula twice.
+   */
+  overflow: hidden;
+  border-radius: inherit;
+
+  display: grid;
+  grid-template-columns: 1.25rem auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--vk-space-4);
+
+  width: 100%;
+  padding: var(--vk-space-4);
+
+  border: none;
+  background: var(--vk-color-surface);
+  text-align: left;
+  cursor: pointer;
+
+  transition: transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* --- The match bar, along the top edge --------------------------------- */
+
+/*
+ * The unfilled remainder has to stay visible, or the bar reads as a stripe of
+ * arbitrary length rather than a proportion of something. `surface-sunken` is
+ * near-invisible against a dark card; the border tone holds in both modes.
+ */
+.edge {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.3125rem;
+  background: var(--vk-color-border);
+}
+
+/*
+ * Grown with `transform` rather than by animating `width`: the width is already
+ * correct on the first frame, so nothing reflows on each tick.
+ */
+.edgeFill {
+  display: block;
+  height: 100%;
+  background: var(--vk-color-agree);
+  transform-origin: left center;
+  animation: grow var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* --- States --------------------------------------------------------------
+ * Lift on hover, press in on click, and float when open. All three are the same
+ * gesture at different depths, which is what makes the open row read as the one
+ * you reached for rather than as a differently-decorated row. The shadow half of
+ * "lift" is on `.item` above; this is the scale half.
+ */
+
+/*
+ * Scale, not a lift. Translating the row upward slides it toward its neighbour
+ * and leaves a widening gap beneath, so a slow read down the list reads as the
+ * rows shuffling; growing in place keeps every row where it was put.
+ */
+.row:hover {
+  transform: scale(1.008);
+}
+
+.row:active {
+  transform: scale(0.985);
+  transition-duration: var(--vk-duration-fast);
+}
+
+.row:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+/*
+ * The open comparison's row: fractionally larger, plus a subtle inset ring in
+ * the match colour — thin and translucent, so it reads as a state on the card
+ * rather than as a second, competing edge drawn around it. Inset rather than
+ * outset for the same reason the shadow had to move: an outer ring on this
+ * element would be clipped by its own `overflow: hidden` exactly like the
+ * shadow was.
+ */
+.row[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 var(--vk-border-width) oklch(from var(--vk-color-agree) l c h / 0.45);
+  transform: scale(1.015);
+}
+
+.row[aria-pressed="true"]:hover {
+  transform: scale(1.022);
+}
+
+.row[aria-pressed="true"]:active {
+  transform: scale(0.985);
+}
+
+/*
+ * A candidate who answered nothing can't be compared, so there is no comparison
+ * to open. The row still lists them — being absent from the results entirely
+ * would be its own kind of misrepresentation — it just isn't a button that does
+ * anything.
+ *
+ * Outlined rather than blanked out. Stripping the surface entirely left this row
+ * floating on the page with nothing to read against — on the dark theme it all
+ * but disappeared, which is the opposite of the point: a party that answered
+ * nothing has to be visibly *present and unrankable*, not visibly missing.
+ */
+.row:disabled {
+  cursor: default;
+  background: oklch(from var(--vk-color-surface) l c h / 0.4);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  transform: none;
+}
+
+.row:disabled .noAnswer {
+  color: var(--vk-color-text-subtle);
+}
+
+/* --- Contents ------------------------------------------------------------ */
+
+.rank {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.name {
+  min-width: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-base);
+  font-weight: 600;
+  line-height: var(--vk-leading-snug);
+  letter-spacing: var(--vk-tracking-snug);
+  color: var(--vk-color-text-strong);
+
+  /* Party names in the archive run to 85 characters. Two lines is the ceiling;
+     past that the rows stop sharing a rhythm and the ranking is hard to scan. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.noAnswer {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-xs);
+  color: var(--vk-color-text-muted);
+}
+
+.percent {
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-xl);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-snug);
+  color: var(--vk-color-text-strong);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- The top match -------------------------------------------------------
+ * Bigger, not differently built: the same row one step up in scale, so it reads
+ * as the head of this list rather than a separate kind of card above it.
+ */
+.winner .row {
+  padding: var(--vk-space-5) var(--vk-space-4);
+}
+
+.winner .name {
+  font-size: var(--vk-text-lg);
+}
+
+.winner .percent {
+  font-size: var(--vk-text-2xl);
+}
+
+/*
+ * Desktop gets the room. The ranking is the answer this screen exists to give,
+ * and on a phone the same padding would spend the whole viewport on four rows.
+ */
+@media (min-width: 64rem) {
+  .row {
+    padding: var(--vk-space-5);
+  }
+
+  .winner .row {
+    padding: var(--vk-space-6) var(--vk-space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    animation: none;
+  }
+
+  .edgeFill {
+    animation: none;
+  }
+
+  .row,
+  .row:hover,
+  .row:active,
+  .row[aria-pressed="true"],
+  .row[aria-pressed="true"]:hover {
+    transform: none;
+  }
+}

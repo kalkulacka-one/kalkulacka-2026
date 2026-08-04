@@ -11,13 +11,14 @@ import {
   toRecapAnswerTone,
 } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
-import { Button, FilterChips, Icon, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
+import { Button, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
 import Link from 'next/link';
 import { useCallback, useRef, useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
 import { toCardContent } from '../lib/question-content';
 import { AppShell } from './app-shell';
+import { BackLink } from './back-link';
 import styles from './recap.module.css';
 
 export type RecapProps = {
@@ -148,10 +149,10 @@ export function Recap({
           */}
           <header className={styles.header} data-collapsed={headerCollapsed || undefined}>
             <div className={styles.headerInner}>
-              <Link className={styles.back} href={questionPath(ref, questions.length)}>
-                <Icon name="chevronLeftThin" size={16} />
-                {messages.recap.backToQuestions}
-              </Link>
+              <BackLink
+                href={questionPath(ref, questions.length)}
+                label={messages.recap.backToQuestions}
+              />
 
               <div className={styles.headline}>
                 <div className={styles.titles}>

@@ -1,0 +1,54 @@
+.track {
+  width: 100%;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-surface-sunken);
+  overflow: hidden;
+}
+
+.medium {
+  height: 0.5rem;
+}
+
+.small {
+  height: 0.3125rem;
+}
+
+/*
+ * Grown with `transform` rather than by animating `width`: the width is already
+ * correct on the first frame, so the bar can never be measured mid-animation and
+ * nothing reflows on each tick. `transform-origin` is what makes it read as
+ * filling rather than sliding in.
+ */
+.fill {
+  height: 100%;
+  border-radius: var(--vk-radius-pill);
+  transform-origin: left center;
+  animation: grow var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.agree {
+  background: var(--vk-color-agree);
+}
+
+.neutral {
+  background: var(--vk-color-neutral);
+}
+
+/*
+ * The bar's job is to be comparable at a glance, and it does that standing
+ * still. Anyone who has asked for less motion gets the final state on frame one.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    animation: none;
+  }
+}

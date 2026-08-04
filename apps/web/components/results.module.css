@@ -7,11 +7,334 @@
   padding: var(--vk-space-6);
 }
 
+/*
+ * On a phone this whole column scrolls: the ranking, then the dashboard under
+ * it, as one page. On a desktop it stops scrolling and hands that job to the two
+ * panes individually — see the breakpoint at the bottom.
+ */
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/*
+ * The reading column. Capped and centred like every other screen rather than
+ * run to the window's edges — on a wide monitor a full-bleed two-pane layout
+ * puts the ranking and the dashboard in different postcodes and makes both feel
+ * like filler stretched to fit.
+ */
+.inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-5);
+
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding-top: var(--vk-space-5);
+}
+
+/*
+ * A grid rather than a flex row, because the back link and the title need to
+ * swap which row they share depending on the viewport, and a flex row can only
+ * reorder siblings — it cannot pull an element out of a nested group. On a
+ * phone, back and share are the two *controls* and sit together on their own
+ * line, with the title given a full-width line of its own rather than being
+ * squeezed between them with a wide dead gap on either side. On a desktop the
+ * same three pieces resolve into the previous look — back over title, share
+ * bottom-aligned beside both — by naming the areas differently, not by
+ * duplicating the markup.
+ */
+.head {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "back share" "title title";
+  align-items: start;
+  column-gap: var(--vk-space-4);
+  row-gap: var(--vk-space-3);
+}
+
+.headBack {
+  grid-area: back;
+  justify-self: start;
+  min-width: 0;
+}
+
+/* The recap's title, to the letter — this screen follows it directly, and two
+   consecutive steps of one task reading as two products is exactly what the
+   type scale exists to prevent. */
+.title {
+  grid-area: title;
+  margin: 0;
+  min-width: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-title);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
+  color: var(--vk-color-text);
+  text-wrap: balance;
+}
+
+.shareBox {
+  grid-area: share;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--vk-space-2);
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .head {
+    /* Back resumes sitting directly over the title, and share spans both rows
+       to bottom-align with it — the grid area repeated across two rows is what
+       makes it span them, no explicit `grid-row` needed. */
+    grid-template-areas: "back share" "title share";
+    align-items: end;
+  }
+}
+
+.shareHint {
+  margin: 0;
+  max-width: 18rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-xs);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+  text-align: right;
+  text-wrap: pretty;
+}
+
+.panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--vk-space-5);
+  align-items: start;
+}
+
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--vk-space-3);
+  gap: var(--vk-space-4);
   margin: 0;
-  padding: 0;
+  padding: 0 0 var(--vk-space-4);
   list-style: none;
+}
+
+/* --- The detail pane ------------------------------------------------------ */
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/*
+ * On a phone, an open comparison is a bottom sheet.
+ *
+ * The recap established that changing an answer means opening the real question
+ * rather than unfolding a drawer under a row, and the same reasoning holds here:
+ * 42 comparison rows expanded inside a list leave you scrolling to find your way
+ * back out. It stops short of the top edge so the ranking stays visible behind
+ * it — the sheet is a layer over this screen, not a different screen.
+ *
+ * Closed, this element is just the dashboard sitting under the ranking, so
+ * nothing is duplicated to get both behaviours.
+ */
+.detail[data-open] {
+  position: fixed;
+  inset: max(4rem, env(safe-area-inset-top, 0px)) 0 0;
+  z-index: 20;
+
+  border-radius: var(--vk-radius-card-sheet, 1.25rem) var(--vk-radius-card-sheet, 1.25rem) 0 0;
+  background: oklch(from var(--vk-color-surface) l c h / 0.86);
+  backdrop-filter: var(--vk-plate-blur);
+  box-shadow: var(--vk-shadow-card-lifted);
+  overflow: hidden;
+
+  animation: sheetIn var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* While a finger is on the handle the sheet must track it exactly; a transition
+   here would make it lag behind and feel elastic in the wrong way. */
+.detail[data-dragging] {
+  transition: none;
+}
+
+/* The grab handle. Phone only — on a desktop the pane is a column, not a sheet,
+   and there is nothing to drag it away from. */
+.grip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--vk-space-3) 0 var(--vk-space-2);
+  /* Claims the vertical gesture from the browser so a drag doesn't also scroll. */
+  touch-action: none;
+  cursor: grab;
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+.grip::before {
+  content: "";
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-border-strong);
+}
+
+.detailHead {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--vk-space-4);
+  padding: var(--vk-space-4) var(--vk-space-5);
+}
+
+.detailHeading {
+  min-width: 0;
+}
+
+.detailTitle {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-lg);
+  font-weight: 600;
+  line-height: var(--vk-leading-snug);
+  letter-spacing: var(--vk-tracking-snug);
+  color: var(--vk-color-text-strong);
+}
+
+.detailPercent {
+  margin: 0.125rem 0 0;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-2xl);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-snug);
+  /* Not the accent: the bar on the row behind this pane already spends that
+     colour on the same number, and repeating it here made the heading compete
+     with the ranking rather than label it. */
+  color: var(--vk-color-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * No padding of its own: `ComparisonList` carries its own inset so that its
+ * column heading can stick to this box's real top edge and span it fully.
+ */
+.detailBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+}
+
+/*
+ * Closed, the pane is the dashboard flowing under the list — no surface of its
+ * own, because the cards inside it already have one.
+ */
+.detail:not([data-open]) .detailBody {
+  overflow: visible;
+}
+
+/* --- Two panes ------------------------------------------------------------
+ * The width at which the ranking and a comparison can be read at once. Below it
+ * they take turns; above it the ranking never scrolls away while you read
+ * somebody's answers, which is the whole reason this screen has two panes.
+ */
+@media (min-width: 64rem) {
+  .screen {
+    overflow: hidden;
+  }
+
+  /*
+   * The ranking is the answer this screen exists to give, so it gets the fixed,
+   * generous column and the dashboard takes what is left. Sized in `rem` rather
+   * than a fraction: a party row has a legibility width that does not scale with
+   * the monitor, and a `1fr` column simply made the rows longer.
+   */
+  .panes {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: 30rem minmax(0, 1fr);
+    gap: var(--vk-space-6);
+    align-items: stretch;
+  }
+
+  /*
+   * The scroll container clips at its padding box — and `overflow-y: auto`
+   * silently makes the horizontal axis clip too — so the padding here is not
+   * spacing, it is the room the rows' shadows and the selected row's scale need
+   * in order not to be sliced off against the edges. 4px of it was nowhere near
+   * enough and every card looked cropped. Negative margins put the column back
+   * where it was, so nothing moves visually.
+   */
+  .list {
+    overflow-y: auto;
+    padding: var(--vk-space-4) var(--vk-space-4) var(--vk-space-6);
+    margin: calc(var(--vk-space-4) * -1) calc(var(--vk-space-4) * -1) 0;
+  }
+
+  .grip {
+    display: none;
+  }
+
+  /* Never a sheet at this width — the pane it would cover is the one thing the
+     comparison is meant to be read against. */
+  .detail,
+  .detail[data-open] {
+    position: static;
+    inset: auto;
+    min-height: 0;
+    border-radius: var(--vk-radius-control);
+    animation: none;
+    transform: none;
+  }
+
+  .detail[data-open] {
+    background: oklch(from var(--vk-color-surface) l c h / 0.86);
+    backdrop-filter: var(--vk-plate-blur);
+    box-shadow: var(--vk-shadow-surface);
+  }
+
+  .detail:not([data-open]) {
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .detail:not([data-open]) .detailBody {
+    overflow-y: auto;
+    padding-bottom: var(--vk-space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail[data-open] {
+    animation: none;
+  }
 }

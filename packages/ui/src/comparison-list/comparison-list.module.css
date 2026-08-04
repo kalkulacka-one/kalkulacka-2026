@@ -1,71 +1,163 @@
+/*
+ * The list owns its own inset rather than being padded by whatever contains it.
+ *
+ * That is what lets the column heading below be *sticky and full-bleed*: it
+ * cancels this padding with a negative margin so its background reaches both
+ * edges of the scroll container. Padded from outside instead, the heading could
+ * only ever be as wide as the text column, and rows slid past in the gap beside
+ * it — which is exactly how it looked before.
+ */
+.wrap {
+  --comparison-inset: var(--vk-space-5);
+  --comparison-columns: 1.5rem 1.5rem minmax(0, 1fr);
+
+  padding: 0 var(--comparison-inset) var(--comparison-inset);
+}
+
+.head,
+.row {
+  display: grid;
+  grid-template-columns: var(--comparison-columns);
+  gap: var(--vk-space-4);
+}
+
+.head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  margin-inline: calc(var(--comparison-inset) * -1);
+  padding: var(--vk-space-4) var(--comparison-inset) var(--vk-space-3);
+
+  /*
+   * Nearly opaque, not merely tinted. The sheet this sits in is itself
+   * translucent, so a heading at 0.8 was glass over glass and the statements
+   * scrolling underneath read straight through the column labels. Enough alpha
+   * to stay a surface, with the blur doing the rest.
+   */
+  background: oklch(from var(--vk-color-surface) l c h / 0.95);
+  backdrop-filter: var(--vk-plate-blur);
+}
+
+.headYou,
+.headCandidate {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--vk-tracking-wide);
+  text-transform: uppercase;
+  color: var(--vk-color-text-muted);
+  min-width: 0;
+}
+
+.headYou {
+  text-align: center;
+}
+
+/* Spans the candidate's own column and the statement column beside it, so a long
+   party name extends into empty space instead of being clipped. */
+.headCandidate {
+  grid-column: 2 / -1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--vk-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vk-space-2);
-  padding-left: var(--vk-space-3);
-  border-left: 3px solid var(--vk-color-border);
+  align-items: start;
+  row-gap: var(--vk-space-3);
+  padding: var(--vk-space-4) 0;
+  border-bottom: var(--vk-border-width) solid var(--vk-color-border);
 }
 
-.match {
-  border-left-color: var(--vk-color-agree);
-}
-
-.mismatch {
-  border-left-color: var(--vk-color-disagree);
-}
-
-.none {
-  border-left-color: var(--vk-color-border);
+.row:last-child {
+  border-bottom: none;
 }
 
 .statement {
+  grid-column: 3;
   margin: 0;
+  min-width: 0;
+  /* Optically centres the first line against its pair of marks. */
+  padding-top: 0.125rem;
   font-family: var(--vk-typeface-sans);
-  font-size: 0.9375rem;
-  line-height: 1.4;
+  font-size: var(--vk-text-base);
+  line-height: var(--vk-leading-normal);
   color: var(--vk-color-text);
 }
 
 .star {
-  vertical-align: -0.1em;
-  margin-right: 0.25rem;
+  vertical-align: -0.15em;
+  margin-right: 0.375rem;
   color: var(--vk-color-text-muted);
 }
 
-.answers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vk-space-2) var(--vk-space-4);
-}
-
-.side {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--vk-space-2);
-}
-
-.who {
-  font-family: var(--vk-typeface-sans);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--vk-color-text-subtle);
-}
-
+/*
+ * The party's own words.
+ *
+ * Full width on a phone — the whole row, including the space under the marks —
+ * rather than indented into the statement's column. At that width the column is
+ * already narrow enough that a quotation set inside it wrapped every four or
+ * five words.
+ *
+ * Marked by a quotation mark set as a watermark rather than by a rule down the
+ * left. A border is the same device the statement's own column edge uses, so the
+ * two competed; a quote says "someone is speaking" on its own, which is exactly
+ * the distinction being drawn.
+ */
 .comment {
+  grid-column: 1 / -1;
+  position: relative;
   margin: 0;
+  padding-left: var(--vk-space-6);
   font-family: var(--vk-typeface-sans);
-  font-size: 0.875rem;
-  line-height: 1.45;
+  font-size: var(--vk-text-sm);
+  line-height: var(--vk-leading-normal);
   color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+/*
+ * The raised opening mark, not Czech's low one.
+ *
+ * Czech opens a quotation on the baseline, which is right when the marks
+ * actually bracket the text — but this is a watermark with no closing partner,
+ * and a baseline glyph at this size hung level with the paragraph's second line
+ * and read as debris in the margin. The raised shape sits where a drop cap would
+ * and is the one people parse as "quoted".
+ *
+ * Decorative: never read out, and the statement above already establishes whose
+ * answer this is.
+ */
+.comment::before {
+  content: "\201C";
+  position: absolute;
+  left: 0;
+  top: -0.5rem;
+  font-family: var(--vk-typeface-display);
+  font-size: 2.75rem;
+  line-height: 1;
+  color: oklch(from var(--vk-color-text-muted) l c h / 0.3);
+  pointer-events: none;
+}
+
+/*
+ * Once there is width for it, the comment tucks under the statement it belongs
+ * to. The marks' columns stay clear, which keeps the two circles reading as one
+ * uninterrupted vertical pair down the whole list.
+ */
+@media (min-width: 34rem) {
+  .comment {
+    grid-column: 3;
+  }
 }
 
 .srOnly {

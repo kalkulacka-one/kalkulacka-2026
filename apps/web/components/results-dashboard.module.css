@@ -1,0 +1,295 @@
+/*
+ * Container queries, not media queries: the dashboard sits in the right pane on
+ * a desktop and full-width under the list on a phone, so what it can afford is a
+ * question about the space it was given, not about the window.
+ *
+ * The container has to be a *wrapper* around the grid rather than the grid
+ * itself — `@container` resolves against an element's nearest ancestor
+ * container, never against the element that declares one, so a rule matching
+ * `.grid` while `.grid` is the container can never fire.
+ */
+/*
+ * `display: flex` here is what actually puts a gap between the multi-column
+ * grid and the summary card below it — they are siblings, and the grid's own
+ * `margin-bottom` on its cards only spaces cards *within* the column flow. Left
+ * as a plain block, the two sat flush against each other with no seam at all.
+ */
+.container {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+}
+
+/*
+ * Multi-column flow rather than a grid.
+ *
+ * These four cards hold unrelated amounts of content — the donut is short, the
+ * topic list is long — and a grid gives every card in a row the height of the
+ * tallest, leaving a hole under the short one whether the cards stretch into it
+ * or not. Columns let each card be its own height and the next one start
+ * immediately, which is the packing this content actually wants.
+ */
+.grid {
+  columns: 1;
+  column-gap: var(--vk-space-4);
+}
+
+.grid > .card {
+  /* Columns break anywhere by default, including through the middle of a card. */
+  break-inside: avoid;
+  margin-bottom: var(--vk-space-4);
+}
+
+@container (min-width: 34rem) {
+  .grid {
+    columns: 2;
+  }
+}
+
+/*
+ * Outlined and flat, where a result row is solid and lifted.
+ *
+ * These cards are context, not the answer — the ranking beside them is what
+ * someone came for, and when both were opaque white tiles with the same shadow
+ * the screen read as two equal halves. Drawing these as ruled areas on the page
+ * instead of objects resting on it puts them a layer back without having to
+ * shrink or mute the type inside them.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  padding: var(--vk-space-5);
+  border-radius: var(--vk-radius-control);
+  background: oklch(from var(--vk-color-surface) l c h / 0.45);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  font-weight: 600;
+  letter-spacing: var(--vk-tracking-snug);
+  color: var(--vk-color-text-strong);
+}
+
+.cardSubtitle {
+  margin: -0.25rem 0 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text-muted);
+}
+
+.note {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-2xs);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+}
+
+.empty {
+  margin: var(--vk-space-2) 0 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text-muted);
+}
+
+/* --- How you answered ----------------------------------------------------- */
+
+.distribution {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-4);
+  flex-wrap: wrap;
+  margin-top: var(--vk-space-2);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.legendItem {
+  display: grid;
+  grid-template-columns: 0.625rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+.swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--vk-radius-pill);
+}
+
+/* The donut's own four inks, so the key can't drift from the ring it explains. */
+.agree {
+  background: var(--vk-color-agree);
+}
+
+.disagree {
+  background: var(--vk-color-disagree);
+}
+
+.neutral {
+  background: var(--vk-color-neutral);
+}
+
+.none {
+  background: oklch(from var(--vk-color-text-muted) l c h / 0.55);
+}
+
+.legendLabel {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text);
+}
+
+.legendValue {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  font-weight: 600;
+  color: var(--vk-color-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Topics --------------------------------------------------------------- */
+
+.topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+  margin: var(--vk-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topicRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.375rem;
+}
+
+.topicName {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vk-space-2);
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  font-weight: 600;
+  color: var(--vk-color-text-strong);
+}
+
+/* How many answers the row rests on. Present on every row rather than only the
+   thin ones, so it reads as information rather than as a warning. */
+.topicCount {
+  font-weight: 500;
+  color: var(--vk-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.topicBest {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--vk-space-2);
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-xs);
+  color: var(--vk-color-text-muted);
+  min-width: 0;
+}
+
+.topicBest > :first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topicPercent {
+  flex: none;
+  font-weight: 600;
+  color: var(--vk-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Important / against the grain ---------------------------------------- */
+
+.consensusList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+  margin: var(--vk-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consensusRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--vk-space-3);
+}
+
+.consensusBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.consensusTitle {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  font-weight: 600;
+  line-height: var(--vk-leading-snug);
+  color: var(--vk-color-text-strong);
+}
+
+.consensusCount {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-xs);
+  color: var(--vk-color-text-muted);
+}
+
+/* --- The copyable summary -------------------------------------------------- */
+
+.prompt {
+  width: 100%;
+  margin-top: var(--vk-space-2);
+  padding: var(--vk-space-3);
+  border: var(--vk-border-width) solid var(--vk-color-border);
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface-sunken);
+  color: var(--vk-color-text);
+  font-family: var(--vk-typeface-mono);
+  font-size: var(--vk-text-xs);
+  line-height: var(--vk-leading-relaxed);
+  resize: vertical;
+}
+
+.prompt:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.promptActions {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+  flex-wrap: wrap;
+}
+
+.promptActions .note {
+  flex: 1;
+  min-width: 12rem;
+}

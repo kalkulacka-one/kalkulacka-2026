@@ -32,55 +32,16 @@
   margin-top: auto;
 }
 
-/*
- * A plate rather than bare text: this sits over a moving backdrop, and a link
- * whose contrast changes as the wash drifts under it is a link that reads as
- * an accident. The plate also gives it an edge to be a *control* against the
- * page, which bare 15px muted type never had.
- */
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--vk-space-1);
-  align-self: flex-start;
-
-  min-height: 2.25rem;
-  padding: 0 var(--vk-space-3) 0 var(--vk-space-2);
-
-  border-radius: var(--vk-radius-pill);
-  background: oklch(from var(--vk-color-surface) l c h / 0.7);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
-  backdrop-filter: var(--vk-plate-blur);
-
-  font-family: var(--vk-typeface-sans);
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--vk-color-text-muted);
-  text-decoration: none;
-
-  transition:
-    background var(--vk-duration-base) ease,
-    color var(--vk-duration-base) ease;
-}
-
-.back:hover {
-  background: var(--vk-color-surface);
-  color: var(--vk-color-text-strong);
-}
-
-.back:focus-visible {
-  outline: var(--vk-focus-width) solid var(--vk-focus-color);
-  outline-offset: var(--vk-focus-offset);
-}
+/* The back link is `BackLink` — shared with the recap and the results, so the
+   three screens can't drift on what "the way back" looks like. */
 
 .title {
   margin: 0;
   font-family: var(--vk-typeface-display);
-  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  font-size: var(--vk-text-display);
   font-weight: 700;
-  letter-spacing: -0.045em;
-  line-height: 1.1;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
   color: var(--vk-color-text);
   text-wrap: balance;
 }
@@ -89,8 +50,8 @@
   margin: 0;
   max-width: 34rem;
   font-family: var(--vk-typeface-sans);
-  font-size: 1rem;
-  line-height: 1.55;
+  font-size: var(--vk-text-lg);
+  line-height: var(--vk-leading-relaxed);
   color: var(--vk-color-text-muted);
   text-wrap: pretty;
 }

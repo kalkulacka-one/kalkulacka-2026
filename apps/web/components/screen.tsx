@@ -1,8 +1,7 @@
-import { Icon } from '@vk/ui';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { CalculatorRef } from '../lib/paths';
 import { AppShell } from './app-shell';
+import { BackLink } from './back-link';
 import styles from './screen.module.css';
 
 export type ScreenProps = {
@@ -51,12 +50,7 @@ export function Screen({
       <main className={styles.screen}>
         <div className={styles.inner}>
           <header className={styles.header}>
-            {back ? (
-              <Link className={styles.back} href={back.href}>
-                <Icon name="chevronLeftThin" size={16} />
-                {back.label}
-              </Link>
-            ) : null}
+            {back ? <BackLink href={back.href} label={back.label} /> : null}
 
             <h1 className={styles.title}>{title}</h1>
             {description ? <p className={styles.description}>{description}</p> : null}

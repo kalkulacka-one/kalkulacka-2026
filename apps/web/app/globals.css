@@ -25,14 +25,33 @@ body {
   overscroll-behavior: none;
 }
 
+/*
+ * Painted on the root as well as the body so the area behind iOS Safari's
+ * collapsing address bar is the page colour rather than white — that strip is
+ * outside the body's box whatever height it is given.
+ */
 html {
   background: var(--vk-color-page);
 }
 
 body {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
+
+  /*
+   * The *dynamic* viewport, not `100%`.
+   *
+   * A fixed body sized to `100%` gets the small viewport on iOS — the screen
+   * minus browser chrome — so the app stopped short of the bottom of the phone
+   * and left a band of page colour under the address bar. `dvh` tracks the
+   * chrome as it collapses, so the layout uses the whole screen and the sticky
+   * pieces stay where they belong. The `100%` above stays as the fallback for
+   * anything without `dvh`.
+   */
+  height: 100dvh;
   background: var(--vk-color-page);
   color: var(--vk-color-text);
   font-family: var(--vk-typeface-sans);
