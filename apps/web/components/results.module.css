@@ -40,6 +40,15 @@
   max-width: 80rem;
   margin: 0 auto;
   padding-top: var(--vk-space-5);
+
+  /*
+   * This column runs to the bottom of the screen (`viewport="full"`), so the
+   * last row would come to rest under the address bar with no way to bring it
+   * out. The bar's own height, added as trailing space, is what lets it scroll
+   * clear — and it is 0 wherever the browser has no bar to hide behind, so
+   * nothing is padded for nothing on a desktop.
+   */
+  padding-bottom: var(--vk-inset-bottom);
 }
 
 /*
@@ -135,6 +144,10 @@
 /* --- The detail pane ------------------------------------------------------ */
 
 .detail {
+  /* How far the sheet stops short of the top edge — see below. Named because
+     the sheet's height is derived from it and the two must not drift. */
+  --sheet-top: max(4rem, env(safe-area-inset-top, 0px));
+
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -155,7 +168,18 @@
 .detail[data-open],
 .detail[data-closing] {
   position: fixed;
-  inset: max(4rem, env(safe-area-inset-top, 0px)) 0 0;
+  /*
+   * Anchored to the top with an explicit height, rather than pinned with
+   * `bottom: 0`. A fixed box's bottom edge resolves against the *visible*
+   * viewport, so `0` would stop the sheet in a hard line above Safari's
+   * address bar; measured downward in `lvh` it reaches the bottom of the
+   * screen instead, and the comparison carries on under the glass exactly
+   * like the ranking behind it. Same reasoning as `<body>` in `globals.css`.
+   */
+  top: var(--sheet-top);
+  right: 0;
+  left: 0;
+  height: calc(100lvh - var(--sheet-top));
   z-index: 20;
 
   border-radius: var(--vk-radius-card-sheet, 1.25rem) var(--vk-radius-card-sheet, 1.25rem) 0 0;
@@ -261,6 +285,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Matches `ComparisonList`'s own inset (--vk-space-5) so the chips line up
+   with the statements and marks scrolling beneath them. */
+.comparisonFilters {
+  flex: none;
+  padding: 0 var(--vk-space-5) var(--vk-space-3);
+}
+
 /*
  * No padding of its own: `ComparisonList` carries its own inset so that its
  * column heading can stick to this box's real top edge and span it fully.
@@ -271,6 +302,17 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0;
+}
+
+/*
+ * As a sheet this box is pinned to the bottom of the *screen*, so its last
+ * comparison row has the same problem the ranking behind it does — see
+ * `.inner`. Only in that state: as a desktop column it ends nowhere near the
+ * screen's edge.
+ */
+.detail[data-open] .detailBody,
+.detail[data-closing] .detailBody {
+  padding-bottom: var(--vk-inset-bottom);
 }
 
 /*
@@ -315,7 +357,11 @@
    */
   .list {
     overflow-y: auto;
-    padding: var(--vk-space-4) var(--vk-space-4) var(--vk-space-6);
+    /* At this width each pane scrolls on its own and reaches the bottom of the
+       screen, so both take over the trailing space `.inner` was carrying for
+       the single-column layout — a tablet in landscape still has an address
+       bar for the last row to get stuck under. */
+    padding: var(--vk-space-4) var(--vk-space-4) calc(var(--vk-space-6) + var(--vk-inset-bottom));
     margin: calc(var(--vk-space-4) * -1) calc(var(--vk-space-4) * -1) 0;
   }
 
@@ -330,6 +376,7 @@
   .detail[data-closing] {
     position: static;
     inset: auto;
+    height: auto;
     min-height: 0;
     border-radius: var(--vk-radius-control);
     transform: none;
@@ -378,7 +425,8 @@
 
   .detail:not([data-open]):not([data-closing]) .detailBody {
     overflow-y: auto;
-    padding-bottom: var(--vk-space-5);
+    /* The other of the two panes — same trailing space, same reason. */
+    padding-bottom: calc(var(--vk-space-5) + var(--vk-inset-bottom));
   }
 }
 

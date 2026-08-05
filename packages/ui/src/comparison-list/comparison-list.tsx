@@ -27,6 +27,12 @@ export type ComparisonListProps = {
     /** Accessible marker for a starred question, e.g. "Pro mě důležité". */
     important: string;
   };
+  /**
+   * Changing this remounts the row list, replaying its entrance animation —
+   * the same `key={filter}` trick the recap uses so switching "Shody" to
+   * "Neshody" reads as a new result landing rather than a silent swap.
+   */
+  resetKey?: string | number;
 };
 
 /**
@@ -41,7 +47,7 @@ export type ComparisonListProps = {
  * this is a record of what was asked, and re-ordering it would make a candidate
  * look better or worse depending on which end you read first.
  */
-export function ComparisonList({ rows, labels }: ComparisonListProps) {
+export function ComparisonList({ rows, labels, resetKey }: ComparisonListProps) {
   return (
     <div className={styles.wrap}>
       {/*
@@ -49,27 +55,18 @@ export function ComparisonList({ rows, labels }: ComparisonListProps) {
         column rather than being truncated to the width of its circle: archive
         party names reach 85 characters, and clipping one to "SPOLEČN…" in the
         heading that identifies whose answers these are is worse than letting it
-        extend into empty space.
+        extend into empty space. "Vy" needs no such room — it stays put in the
+        one column it labels, which is what keeps this heading a single line
+        instead of the two the previous, fully-overlapping layout wrapped to.
       */}
       <div className={styles.head} aria-hidden="true">
-        <span className={styles.headYou}>{labels.you}</span>
         <span className={styles.headCandidate}>{labels.candidate}</span>
+        <span className={styles.headYou}>{labels.you}</span>
       </div>
 
-      <ul className={styles.list}>
+      <ul className={styles.list} key={resetKey}>
         {rows.map((row) => (
           <li key={row.questionId} className={styles.row}>
-            <AnswerMark
-              tone={row.user.tone}
-              label={`${labels.you}: ${row.user.label}`}
-              size="small"
-            />
-            <AnswerMark
-              tone={row.candidate.tone}
-              label={`${labels.candidate}: ${row.candidate.label}`}
-              size="small"
-            />
-
             <p className={styles.statement}>
               {/* The design system's own star — the same heavy mark the question
                   card and the recap wear for "pro mě důležité", not a text
@@ -78,6 +75,17 @@ export function ComparisonList({ rows, labels }: ComparisonListProps) {
               {row.statement}
               {row.important ? <span className={styles.srOnly}> ({labels.important})</span> : null}
             </p>
+
+            <AnswerMark
+              tone={row.candidate.tone}
+              label={`${labels.candidate}: ${row.candidate.label}`}
+              size="small"
+            />
+            <AnswerMark
+              tone={row.user.tone}
+              label={`${labels.you}: ${row.user.label}`}
+              size="small"
+            />
 
             {/*
               A grid child in its own right rather than nested under the

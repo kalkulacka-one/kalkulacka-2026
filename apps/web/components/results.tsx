@@ -19,6 +19,7 @@ import {
   Calculating,
   ComparisonList,
   type ComparisonRow,
+  FilterChips,
   IconButton,
   MatchRow,
   StickyBar,
@@ -60,6 +61,8 @@ const ROW_STAGGER = 0.06;
 /** Matches the closing animation's duration in the CSS (`--vk-duration-base`). */
 const CLOSE_MS = 150;
 
+type ComparisonFilter = 'all' | 'match' | 'mismatch' | 'important';
+
 const TONES: Record<string, AnswerMarkTone> = {
   true: 'agree',
   false: 'disagree',
@@ -97,6 +100,8 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
    * of the dashboard just appearing underneath it.
    */
   const [closingId, setClosingId] = useState<string | undefined>(undefined);
+  /** Which of a comparison's rows are shown — reset whenever a different candidate opens. */
+  const [comparisonFilter, setComparisonFilter] = useState<ComparisonFilter>('all');
   const [waited, setWaited] = useState(false);
   /** `idle` until the share button is pressed, then whether the copy landed. */
   const [shareState, setShareState] = useState<'idle' | 'done' | 'failed'>('idle');
@@ -215,6 +220,57 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
     );
   }, [calculator, answers, selected]);
 
+  // Starting over on the filter every time a different comparison opens, so a
+  // "Neshody" pick made on one candidate can't silently hide rows on the next.
+  useEffect(() => {
+    setComparisonFilter('all');
+  }, [shownId]);
+
+  const comparisonCounts = useMemo(() => {
+    const counts = { all: 0, match: 0, mismatch: 0, important: 0 };
+    for (const row of comparison ?? []) {
+      counts.all += 1;
+      if (row.agreement === 'match') counts.match += 1;
+      else if (row.agreement === 'mismatch') counts.mismatch += 1;
+      if (row.important) counts.important += 1;
+    }
+    return counts;
+  }, [comparison]);
+
+  // Only offered when they would leave something — same rule the recap's own
+  // filter chips follow for "Nezodpovězené" and "Důležité".
+  const comparisonFilterOptions = [
+    { id: 'all' as const, label: messages.results.filterAll, count: comparisonCounts.all },
+    ...(comparisonCounts.match > 0
+      ? [{ id: 'match' as const, label: messages.results.filterMatches, count: comparisonCounts.match }]
+      : []),
+    ...(comparisonCounts.mismatch > 0
+      ? [
+          {
+            id: 'mismatch' as const,
+            label: messages.results.filterMismatches,
+            count: comparisonCounts.mismatch,
+          },
+        ]
+      : []),
+    ...(comparisonCounts.important > 0
+      ? [
+          {
+            id: 'important' as const,
+            label: messages.results.filterImportant,
+            count: comparisonCounts.important,
+          },
+        ]
+      : []),
+  ];
+
+  const visibleComparison = useMemo(() => {
+    if (!comparison) return comparison;
+    if (comparisonFilter === 'all') return comparison;
+    if (comparisonFilter === 'important') return comparison.filter((row) => row.important);
+    return comparison.filter((row) => row.agreement === comparisonFilter);
+  }, [comparison, comparisonFilter]);
+
   /*
    * Two separate reasons to wait, and both must clear: the deliberate beat
    * above, and the persisted answers actually having arrived. Without the
@@ -264,6 +320,9 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       calculatorName={calculator.name}
       electionName={calculator.electionName}
       calculator={{ id: calculator.id, ...ref }}
+      /* The one screen with nothing to press along its bottom edge: let the
+         ranking run under Safari's glass rather than stop in a line above it. */
+      viewport="full"
     >
       <main className={styles.screen}>
         <div className={styles.inner}>
@@ -361,14 +420,28 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
                     />
                   </div>
 
+                  {comparisonCounts.match > 0 ||
+                  comparisonCounts.mismatch > 0 ||
+                  comparisonCounts.important > 0 ? (
+                    <div className={styles.comparisonFilters}>
+                      <FilterChips
+                        label={messages.results.filterLabel}
+                        options={comparisonFilterOptions}
+                        value={comparisonFilter}
+                        onChange={(id) => setComparisonFilter(id as ComparisonFilter)}
+                      />
+                    </div>
+                  ) : null}
+
                   <div className={styles.detailBody}>
                     <ComparisonList
-                      rows={comparison}
+                      rows={visibleComparison ?? []}
                       labels={{
                         you: messages.results.you,
                         candidate: selected.candidate.shortName,
                         important: messages.results.important,
                       }}
+                      resetKey={comparisonFilter}
                     />
                   </div>
                 </>
