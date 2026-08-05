@@ -1,4 +1,7 @@
+'use client';
+
 import { Avatar } from '../avatar/avatar';
+import { useLogoAccent } from '../avatar/logo-accent';
 import { partyColor } from '../party-color';
 import { Tag } from '../tag/tag';
 import styles from './match-row.module.css';
@@ -55,9 +58,14 @@ export function MatchRow({
   delay = 0,
 }: MatchRowProps) {
   const comparable = matchPercentage !== undefined;
-  // Seeded on the name rather than an id: every candidate has one, and it's
-  // what the bar and the avatar's ring are keying the same colour off.
-  const accent = partyColor(name);
+  /*
+   * The logo's own colour when there is a logo to read one from — resolved
+   * async, so this starts `undefined` and the seeded palette colour below
+   * carries the bar and the ring until it lands (or forever, for a party
+   * with no picture, which is what that palette is actually for).
+   */
+  const logoAccent = useLogoAccent(avatarUrl);
+  const accent = logoAccent ?? partyColor(name);
 
   return (
     <li
