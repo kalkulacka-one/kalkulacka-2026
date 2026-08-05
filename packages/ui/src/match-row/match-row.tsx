@@ -86,7 +86,7 @@ export function MatchRow({
         <Avatar name={name} src={avatarUrl} size={winner ? 'large' : 'medium'} />
 
         <span className={styles.identity}>
-          {winner && winnerLabel ? <Tag tone="agree">{winnerLabel}</Tag> : null}
+          {winner && winnerLabel ? <Tag tone="neutral">{winnerLabel}</Tag> : null}
           <span className={styles.name}>{name}</span>
           {comparable ? null : <span className={styles.noAnswer}>{noAnswerLabel}</span>}
         </span>
