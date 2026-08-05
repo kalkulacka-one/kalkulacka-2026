@@ -57,6 +57,9 @@ const CALCULATING_MS = 1700;
 /** Seconds between two rows arriving. Nine rows land inside half a second. */
 const ROW_STAGGER = 0.06;
 
+/** Matches the closing animation's duration in the CSS (`--vk-duration-base`). */
+const CLOSE_MS = 150;
+
 const TONES: Record<string, AnswerMarkTone> = {
   true: 'agree',
   false: 'disagree',
@@ -87,6 +90,13 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
 
   /** The candidate whose comparison is open. Nothing is open on arrival — the dashboard holds the pane. */
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+  /**
+   * Set for the duration of the close animation only — the comparison for
+   * this id keeps rendering (and the pane keeps its sheet/popover styling)
+   * after `selectedId` clears, so there is something to animate out instead
+   * of the dashboard just appearing underneath it.
+   */
+  const [closingId, setClosingId] = useState<string | undefined>(undefined);
   const [waited, setWaited] = useState(false);
   /** `idle` until the share button is pressed, then whether the copy landed. */
   const [shareState, setShareState] = useState<'idle' | 'done' | 'failed'>('idle');
@@ -117,10 +127,36 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
     setShareState((await copyText(window.location.href)) ? 'done' : 'failed');
   }, []);
 
-  const closeComparison = useCallback(() => setSelectedId(undefined), []);
+  /*
+   * The button/Escape route: play the pane's exit animation, then swap to the
+   * dashboard once it's finished. A drag dismissal skips this entirely — see
+   * `dismissDrag` below — because `useDragDismiss` has already animated the
+   * sheet away by the time it calls its own callback.
+   */
+  const closeComparison = useCallback(() => {
+    setSelectedId((current) => {
+      if (current !== undefined) setClosingId(current);
+      return undefined;
+    });
+  }, []);
+  const dismissDrag = useCallback(() => setSelectedId(undefined), []);
+  /* Picking a row while another comparison is still closing cuts the exit
+     short — the new one is what's on screen now, so there's nothing left to
+     animate out. */
+  const selectCandidate = useCallback((candidateId: string) => {
+    setClosingId(undefined);
+    setSelectedId(candidateId);
+  }, []);
+
+  useEffect(() => {
+    if (closingId === undefined) return;
+    const timer = window.setTimeout(() => setClosingId(undefined), CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [closingId]);
+
   const { sheetRef, handleProps, dragging } = useDragDismiss({
     open: selectedId !== undefined,
-    onDismiss: closeComparison,
+    onDismiss: dismissDrag,
   });
 
   /*
@@ -152,9 +188,12 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
     };
   }, [calculator, answers, results]);
 
+  /** The comparison rendered in the pane — kept alive through `closingId` so it has something to animate out with. */
+  const shownId = selectedId ?? closingId;
+
   const selected = useMemo(
-    () => results.find((result) => result.candidate.id === selectedId),
-    [results, selectedId],
+    () => results.find((result) => result.candidate.id === shownId),
+    [results, shownId],
   );
 
   const comparison = useMemo(() => {
@@ -276,7 +315,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
                   winner={rank === 1}
                   winnerLabel={messages.results.winner}
                   selected={candidate.id === selectedId}
-                  onSelect={() => setSelectedId(candidate.id)}
+                  onSelect={() => selectCandidate(candidate.id)}
                   /* Reversed, so the list assembles from the bottom and the top
                    match is the last thing to land. */
                   delay={(results.length - 1 - index) * ROW_STAGGER}
@@ -294,6 +333,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
               ref={sheetRef as React.RefObject<HTMLElement>}
               className={styles.detail}
               data-open={selected ? '' : undefined}
+              data-closing={closingId ? '' : undefined}
               data-dragging={dragging ? '' : undefined}
             >
               {selected && comparison ? (

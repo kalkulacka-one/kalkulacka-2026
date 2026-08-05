@@ -152,7 +152,8 @@
  * Closed, this element is just the dashboard sitting under the ranking, so
  * nothing is duplicated to get both behaviours.
  */
-.detail[data-open] {
+.detail[data-open],
+.detail[data-closing] {
   position: fixed;
   inset: max(4rem, env(safe-area-inset-top, 0px)) 0 0;
   z-index: 20;
@@ -163,12 +164,32 @@
   box-shadow: var(--vk-shadow-card-lifted);
   overflow: hidden;
 
-  animation: sheetIn var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1);
   transition: transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.detail[data-open] {
+  animation: sheetIn var(--vk-duration-slow) var(--vk-easing-spring);
+}
+
+/*
+ * The tap-to-close route (the X, Escape): the drag dismissal already
+ * animates itself by writing the transform directly as a finger releases it
+ * (see `use-drag-dismiss.ts`), so this only plays when there was no drag —
+ * the sheet sliding back down instead of the dashboard just appearing under
+ * it the instant the state clears.
+ */
+.detail[data-closing] {
+  animation: sheetOut var(--vk-duration-base) var(--vk-easing-exit) forwards;
 }
 
 @keyframes sheetIn {
   from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheetOut {
+  to {
     transform: translateY(100%);
   }
 }
@@ -305,36 +326,65 @@
   /* Never a sheet at this width — the pane it would cover is the one thing the
      comparison is meant to be read against. */
   .detail,
-  .detail[data-open] {
+  .detail[data-open],
+  .detail[data-closing] {
     position: static;
     inset: auto;
     min-height: 0;
     border-radius: var(--vk-radius-control);
-    animation: none;
     transform: none;
   }
 
-  .detail[data-open] {
+  .detail[data-open],
+  .detail[data-closing] {
     background: oklch(from var(--vk-color-surface) l c h / 0.86);
     backdrop-filter: var(--vk-plate-blur);
     box-shadow: var(--vk-shadow-surface);
   }
 
-  .detail:not([data-open]) {
+  /*
+   * A popover rather than a sheet at this width: the comparison settles into
+   * place instead of sliding up from an edge, since there is no edge here for
+   * it to travel from.
+   */
+  .detail[data-open] {
+    animation: panelIn var(--vk-duration-slow) var(--vk-easing-spring);
+  }
+
+  .detail[data-closing] {
+    animation: panelOut var(--vk-duration-base) var(--vk-easing-exit) forwards;
+  }
+
+  @keyframes panelIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  @keyframes panelOut {
+    to {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98);
+    }
+  }
+
+  .detail:not([data-open]):not([data-closing]) {
     background: none;
     backdrop-filter: none;
     box-shadow: none;
     overflow: visible;
   }
 
-  .detail:not([data-open]) .detailBody {
+  .detail:not([data-open]):not([data-closing]) .detailBody {
     overflow-y: auto;
     padding-bottom: var(--vk-space-5);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .detail[data-open] {
+  .detail[data-open],
+  .detail[data-closing] {
     animation: none;
   }
 }
