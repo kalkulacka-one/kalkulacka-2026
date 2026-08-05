@@ -140,15 +140,19 @@
 }
 
 /*
- * The open comparison's row: fractionally larger, plus a subtle inset ring in
- * the match colour — thin and translucent, so it reads as a state on the card
- * rather than as a second, competing edge drawn around it. Inset rather than
- * outset for the same reason the shadow had to move: an outer ring on this
- * element would be clipped by its own `overflow: hidden` exactly like the
- * shadow was.
+ * The open comparison's row: fractionally larger, plus a wash tint over the
+ * surface rather than a ring drawn around it — a coloured border reads as
+ * decoration competing with the match bar above it, where a tinted card reads
+ * as a state the card itself is in.
+ *
+ * Layered over the solid surface colour rather than swapped in for it: the
+ * wash is translucent, and a bare `background: wash` leaves the row seeing
+ * through to whatever sits behind it in the stack — including its own and its
+ * neighbours' shadows — which showed up as a smudged halo at the corners.
  */
 .row[aria-pressed="true"] {
-  box-shadow: inset 0 0 0 var(--vk-border-width) oklch(from var(--vk-color-agree) l c h / 0.45);
+  background:
+    oklch(from var(--vk-color-agree) l c h / 0.14), var(--vk-color-surface);
   transform: scale(1.015);
 }
 
