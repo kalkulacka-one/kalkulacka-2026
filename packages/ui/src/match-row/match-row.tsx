@@ -1,4 +1,5 @@
 import { Avatar } from '../avatar/avatar';
+import { partyColor } from '../party-color';
 import { Tag } from '../tag/tag';
 import styles from './match-row.module.css';
 
@@ -54,6 +55,9 @@ export function MatchRow({
   delay = 0,
 }: MatchRowProps) {
   const comparable = matchPercentage !== undefined;
+  // Seeded on the name rather than an id: every candidate has one, and it's
+  // what the bar and the avatar's ring are keying the same colour off.
+  const accent = partyColor(name);
 
   return (
     <li
@@ -66,6 +70,13 @@ export function MatchRow({
         aria-pressed={selected}
         onClick={onSelect}
         disabled={!comparable}
+        style={
+          {
+            '--row-accent': accent,
+            '--avatar-wash': `oklch(from ${accent} l c h / 0.16)`,
+            '--avatar-ring': `oklch(from ${accent} l c h / 0.6)`,
+          } as React.CSSProperties
+        }
       >
         {/* Decorative: the percentage is text a few pixels away, and a screen
             reader announcing the bar as well would read the same number twice. */}
