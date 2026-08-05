@@ -1,3 +1,11 @@
+/*
+ * `--avatar-wash` / `--avatar-ring` are set by `MatchRow` on the row this
+ * avatar sits inside — pre-mixed there (from the same accent the match bar
+ * uses) rather than derived here, because deriving them from a fallback
+ * colour in this file would apply the same alpha to the fallback too, and
+ * quietly wash out every avatar with no such ancestor (Storybook's, chiefly).
+ * Unset, both default to the plain neutral look this always had.
+ */
 .avatar {
   position: relative;
   flex: none;
@@ -7,8 +15,24 @@
 
   border-radius: var(--vk-radius-pill);
   overflow: hidden;
-  background: var(--vk-color-neutral-soft);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  background: var(--avatar-wash, var(--vk-color-neutral-soft));
+}
+
+/*
+ * The ring lives on a pseudo-element rather than the avatar's own box-shadow:
+ * a logo image sits `inset: 0`, flush with the same edge, and an absolutely
+ * positioned child paints over its parent's box-shadow — so the ring vanished
+ * on every avatar that actually had a picture and only survived on the
+ * initials fallback. `::after` is generated last, which is what keeps it on
+ * top of the image.
+ */
+.avatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--avatar-ring, var(--vk-color-border));
+  pointer-events: none;
 }
 
 .small {
