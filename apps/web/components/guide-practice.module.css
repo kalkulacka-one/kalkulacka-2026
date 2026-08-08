@@ -1,0 +1,63 @@
+.practice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-5);
+}
+
+/*
+ * The deck positions its cards absolutely, so the stage is what gives the card
+ * a height. It is capped rather than fluid: this card is a demonstration sitting
+ * in a reading column, not the flow's full-viewport stage, and a full-height one
+ * would push the checklist it is teaching off the screen.
+ */
+.stage {
+  position: relative;
+  height: clamp(17rem, 46vh, 21rem);
+  width: 100%;
+}
+
+/*
+ * A nudge, until the card is touched for the first time.
+ *
+ * Three passes and then still: the point is to say "this moves", and a card
+ * that keeps twitching beside the text explaining it competes with the text.
+ * The whole thing hangs off `--vk-duration-*`, so reduced motion collapses it
+ * to nothing without a second rule here.
+ */
+.nudging {
+  animation: nudge calc(var(--vk-duration-slow) * 4) var(--vk-easing-spring) 3;
+  animation-delay: var(--vk-duration-slow);
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  30% {
+    transform: translateX(-1.25rem) rotate(-1.2deg);
+  }
+  65% {
+    transform: translateX(0.75rem) rotate(0.7deg);
+  }
+}
+
+.under {
+  display: flex;
+  justify-content: center;
+  margin-top: calc(var(--vk-space-5) * -1 + var(--vk-space-3));
+}
+
+.status {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  color: var(--vk-color-text-muted);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusDone {
+  color: var(--vk-color-agree);
+  font-weight: 600;
+}

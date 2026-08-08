@@ -118,4 +118,14 @@ describe('adaptArchiveIndex', () => {
     const senate = index.districts.find((d) => d.electionId === 'senatni-2022');
     expect(senate?.showCode).toBe(true);
   });
+
+  it('infers each election’s district kind from whether its districts are numbered', () => {
+    const kind = (id: string) => index.elections.find((e) => e.id === id)?.districtKind;
+
+    expect(kind('senatni-2022')).toBe('senate');
+    expect(kind('komunalni-2022')).toBe('municipality');
+    // A presidential election has no districts to number at all, so it falls to
+    // the default rather than being left undefined.
+    expect(kind('prezidentske-2023')).toBe('municipality');
+  });
 });

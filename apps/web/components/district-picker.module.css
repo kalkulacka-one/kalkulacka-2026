@@ -1,9 +1,45 @@
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-7);
+  padding-bottom: var(--vk-space-6);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+}
+
+.groupHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-1);
+}
+
+.groupHeading {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-base);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vk-color-text-muted);
+}
+
+.groupHint {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  color: var(--vk-color-text-subtle);
+}
+
 .list {
   display: flex;
   flex-direction: column;
   gap: var(--vk-space-2);
   margin: 0;
-  padding: 0 0 var(--vk-space-6);
+  padding: 0;
   list-style: none;
 }
 
@@ -16,7 +52,14 @@
   color: var(--vk-color-text-muted);
 }
 
+/*
+ * `position: relative` is load-bearing: the badge carries a visually-hidden
+ * "Obvod" prefix, and that helper positions itself absolutely against the
+ * nearest positioned ancestor — without this it escapes to the page and drags
+ * the layout with it.
+ */
 .code {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;

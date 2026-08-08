@@ -6,21 +6,17 @@
     "label": "Nabídka",
     "close": "Zavřít",
     "cancel": "Zrušit",
-
     "help": "Jak to funguje",
     "helpDetail": "Připomenutí, jak se odpovídá",
-
     "darkMode": "Tmavý režim",
     "darkModeDetail": "Přepne aplikaci do tmavého vzhledu",
     "lightMode": "Světlý režim",
     "lightModeDetail": "Přepne aplikaci do světlého vzhledu",
-
     "restart": "Začít znovu",
     "restartDetail": "Smaže vaše odpovědi",
     "restartTitle": "Začít znovu?",
     "restartDescription": "Smažeme všechny vaše odpovědi v této kalkulačce a vrátíme vás na první otázku. Tuhle akci nelze vzít zpět.",
     "restartConfirm": "Smazat a začít znovu",
-
     "leave": "Opustit kalkulačku",
     "leaveDetail": "Postup zůstane uložený",
     "leaveTitle": "Opustit kalkulačku?",
@@ -59,15 +55,36 @@
     "showResults": "Zobrazit výsledky"
   },
   "picker": {
-    "title": "Vyberte město",
-    "description": "Kalkulačka porovná vaše názory s programy kandidujících stran ve vašem městě.",
-    "searchLabel": "Hledat město",
-    "searchPlaceholder": "Začněte psát název města",
     "searchClear": "Vymazat hledání",
-    "empty": "Žádné město neodpovídá hledání.",
-    "districtCode": "Obvod {code}",
+    "districtCodeLabel": "Obvod",
     "unavailable": "Připravujeme",
-    "unavailableDescription": "Data pro toto město zatím nemáme. Zkuste Pardubice."
+    "groupAvailable": "Hotové kalkulačky",
+    "municipality": {
+      "title": "Vyberte město",
+      "description": "Kalkulačka porovná vaše názory s programy stran, které kandidují ve vašem městě.",
+      "searchLabel": "Hledat město",
+      "searchPlaceholder": "Začněte psát název města",
+      "empty": "Žádné město neodpovídá hledání „{query}“.",
+      "groupUnavailableHint": "Pro tahle města kalkulačku teprve chystáme.",
+      "resultCount": {
+        "one": "{count} město",
+        "few": "{count} města",
+        "many": "{count} měst"
+      }
+    },
+    "senate": {
+      "title": "Vyberte volební obvod",
+      "description": "Kalkulačka porovná vaše názory s odpověďmi kandidátů do Senátu ve vašem obvodu. Letos se volí jen v třetině obvodů.",
+      "searchLabel": "Hledat obvod",
+      "searchPlaceholder": "Začněte psát název nebo číslo obvodu",
+      "empty": "Žádný obvod neodpovídá hledání „{query}“.",
+      "groupUnavailableHint": "Pro tyhle obvody kalkulačku teprve chystáme.",
+      "resultCount": {
+        "one": "{count} obvod",
+        "few": "{count} obvody",
+        "many": "{count} obvodů"
+      }
+    }
   },
   "intro": {
     "eyebrow": "Volební kalkulačka",
@@ -86,6 +103,14 @@
   },
   "guide": {
     "title": "Jak to funguje",
+    "practiceLead": "Vyzkoušejte si to na cvičné kartě — nic z ní se nikam nezapočítá.",
+    "practiceTopic": "Cvičná otázka",
+    "practiceTitle": "Nanečisto",
+    "practiceStatement": "Zkuste si na téhle kartě všechna gesta.",
+    "practiceHint": "Táhněte kartu, nebo použijte tlačítka pod ní.",
+    "practiceProgress": "Vyzkoušeno {done} ze {total}",
+    "practiceDone": "Máte to v ruce. Můžeme začít doopravdy.",
+    "stepDone": "Vyzkoušeno",
     "agreeTitle": "Souhlasím",
     "agreeDescription": "Táhněte kartu doleva, nebo klepněte na Souhlasím.",
     "disagreeTitle": "Nesouhlasím",

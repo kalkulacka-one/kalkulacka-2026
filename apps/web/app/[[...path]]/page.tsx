@@ -45,7 +45,13 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
       href: stepPath({ electionKey: route.electionKey, district: district.slug }, 'intro'),
     }));
 
-    return <DistrictPicker electionName={election.name} districts={districts} />;
+    return (
+      <DistrictPicker
+        electionName={election.name}
+        districtKind={election.districtKind}
+        districts={districts}
+      />
+    );
   }
 
   if (route.kind === 'calculator') {

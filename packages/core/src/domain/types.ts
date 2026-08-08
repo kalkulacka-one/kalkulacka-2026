@@ -94,13 +94,23 @@ export type Calculator = {
   candidateAnswers: Record<string, CandidateAnswer[]>;
 };
 
+/**
+ * What a voter is choosing between when they pick a district.
+ *
+ * The picker's whole vocabulary hangs off this — "město" and "obvod" decline
+ * differently in every sentence on the screen, so it cannot be papered over
+ * with one neutral word. The archive format does not state it, so the adapter
+ * infers it from whether the election's districts are numbered.
+ */
+export type DistrictKind = 'municipality' | 'senate';
+
 /** An election, as listed on the picker. */
 export type Election = {
   id: string;
   key: string;
   name: string;
   description?: string;
-  /** Whether districts show their code alongside the name (senate districts do). */
+  districtKind: DistrictKind;
   from?: string;
   to?: string;
 };

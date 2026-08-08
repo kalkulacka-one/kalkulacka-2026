@@ -36,6 +36,7 @@ export type {
   Candidate,
   CandidateAnswer,
   District,
+  DistrictKind,
   Election,
   PartyRef,
   Question,

@@ -20,6 +20,43 @@ type Story = StoryObj<typeof meta>;
 
 export const Single: Story = {};
 
+/** Ticked off by the practice card on `/navod`. */
+export const Done: Story = { args: { done: true, doneLabel: 'Vyzkoušeno' } };
+
+/** Mid-practice: what the checklist looks like with two of four tried. */
+export const PartlyDone: Story = {
+  render: () => (
+    <>
+      <TutorialStep
+        icon="arrowLeft"
+        title="Souhlasím"
+        description="Táhněte kartu doleva, nebo klepněte na Souhlasím."
+        done
+        doneLabel="Vyzkoušeno"
+      />
+      <TutorialStep
+        icon="arrowRight"
+        title="Nesouhlasím"
+        description="Táhněte kartu doprava, nebo klepněte na Nesouhlasím."
+        done
+        doneLabel="Vyzkoušeno"
+      />
+      <TutorialStep
+        icon="starThin"
+        title="Pro mě důležité"
+        description="Otázka označená hvězdičkou má ve výsledku dvojnásobnou váhu."
+        done={false}
+      />
+      <TutorialStep
+        icon="arrowDown"
+        title="Přeskočit"
+        description="Otázku, na kterou nechcete odpovídat, můžete přeskočit."
+        done={false}
+      />
+    </>
+  ),
+};
+
 /** The set as the tutorial screen shows it. */
 export const Sequence: Story = {
   render: () => (

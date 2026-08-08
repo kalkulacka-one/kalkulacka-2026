@@ -117,12 +117,25 @@ export function adaptArchiveCalculator(
 export function adaptArchiveIndex(raw: unknown): CalculatorIndex {
   const parsed: ArchiveIndex = archiveIndexSchema.parse(raw);
 
+  /*
+   * The archive has no field saying what kind of district an election is
+   * divided into, but it does number senate districts and not municipalities —
+   * so `show_district_code` on the election's own calculators is the fact, read
+   * one level up. `some` rather than `every`: an election is senate-shaped if
+   * any of its districts is numbered, which keeps a single row with a missing
+   * flag from silently reclassifying the whole election.
+   */
+  const numbered = new Set(
+    parsed.calculators.filter((c) => c.show_district_code).map((c) => c.election_id),
+  );
+
   return {
     elections: parsed.elections.map((e) => ({
       id: e.id,
       key: e.key,
       name: e.name,
       description: text(e.description),
+      districtKind: numbered.has(e.id) ? ('senate' as const) : ('municipality' as const),
       from: e.from ?? undefined,
       to: e.to ?? undefined,
     })),

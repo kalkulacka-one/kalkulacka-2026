@@ -2,7 +2,7 @@ import { getMessages } from '@vk/i18n';
 import { Button, StickyBar } from '@vk/ui';
 import Link from 'next/link';
 import { type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
-import { GuideSteps } from './guide-steps';
+import { GuidePractice } from './guide-practice';
 import { Screen } from './screen';
 
 export type GuideProps = {
@@ -14,9 +14,9 @@ const messages = getMessages();
 /**
  * How the flow works, before the first card.
  *
- * A server component — nothing here reads the answer store, so it costs no
- * client JavaScript. The functional-first pass explains the gestures in words;
- * teaching them with a live demo card is Phase 6.
+ * The screen itself stays a server component; only the practice card below it
+ * is interactive, so the header, the back link and the sticky CTA still cost no
+ * client JavaScript.
  */
 export function Guide({ calculator }: GuideProps) {
   const { name: calculatorName, electionKey, district } = calculator;
@@ -26,6 +26,7 @@ export function Guide({ calculator }: GuideProps) {
     <Screen
       calculator={calculator}
       title={messages.guide.title}
+      description={messages.guide.practiceLead}
       back={{ href: stepPath(ref, 'intro'), label: calculatorName }}
       footer={
         <StickyBar>
@@ -35,7 +36,7 @@ export function Guide({ calculator }: GuideProps) {
         </StickyBar>
       }
     >
-      <GuideSteps />
+      <GuidePractice />
     </Screen>
   );
 }

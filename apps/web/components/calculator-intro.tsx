@@ -28,7 +28,13 @@ const messages = getMessages();
  * on the question they stopped at rather than being sent back to question 1.
  */
 export function CalculatorIntro({ calculator, candidateCount, questions }: CalculatorIntroProps) {
-  const { id: calculatorId, name: calculatorName, electionKey, district } = calculator;
+  const {
+    id: calculatorId,
+    name: calculatorName,
+    electionName,
+    electionKey,
+    district,
+  } = calculator;
   const answers = useCalculatorAnswers(calculatorId);
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
   const router = useRouter();
@@ -50,7 +56,11 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
     <Screen
       calculator={calculator}
       title={calculatorName}
-      back={{ href: electionPath(electionKey), label: messages.picker.title }}
+      /* The election, not the picker's own heading: every other back link on
+         the site names the place it returns to, and "Vyberte město" named an
+         instruction instead — which also meant it had to be re-worded the
+         moment a senate election, where it is an obvod, used the same link. */
+      back={{ href: electionPath(electionKey), label: electionName }}
       description={format(messages.intro.description, {
         questions: plural(questions.length, {
           one: messages.intro.questionCountOne,
