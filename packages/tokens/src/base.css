@@ -198,6 +198,25 @@
   /* The one hero size, for a screen that is mostly its own title. */
   --vk-text-display: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
 
+  /* --- Breakpoint scale ---------------------------------------------------
+   * Not usable as `var()` inside `@media`/`@container` — the CSS spec doesn't
+   * resolve custom properties at parse time, so this is a documented scale
+   * for humans to match, not a functional token. Components had been mixing
+   * px and rem for the same handful of widths (860px next to 64rem) and
+   * hand-tuning a max-width to sit 0.01rem under a min-width elsewhere to
+   * avoid both firing at once; both are gone. Every `@media`/`@container`
+   * width query in the app should be one of these seven values, named in a
+   * comment at the query site:
+   *   26rem     — collapse a dialog to its compact layout
+   *   34rem     — a card/list nudges toward a wider layout
+   *   37.5rem   — a container-queried element (600px) has room for its wide state
+   *   44rem     — filter chips stop wrapping
+   *   53.75rem  — desktop nav chrome appears (860px; physical keyboard assumed)
+   *   56rem     — recap goes two-column (use range syntax `width < 56rem` /
+   *               `width >= 56rem`, not a hand-tuned max-width epsilon)
+   *   64rem     — the main two-pane desktop layout (results, match list, screen)
+   */
+
   --vk-leading-tight: 1.1;
   --vk-leading-snug: 1.3;
   --vk-leading-normal: 1.45;

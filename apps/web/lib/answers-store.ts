@@ -75,9 +75,12 @@ export const useAnswersStore = create<AnswersState>()(
   ),
 );
 
+/** Stable reference so an unanswered calculator doesn't defeat downstream memoization. */
+const EMPTY_ANSWERS: AnswerMap = {};
+
 /** Empty until the persisted state has loaded, so SSR and the client agree. */
 export function useCalculatorAnswers(calculatorId: string): AnswerMap {
-  return useAnswersStore((state) => state.byCalculator[calculatorId]) ?? {};
+  return useAnswersStore((state) => state.byCalculator[calculatorId]) ?? EMPTY_ANSWERS;
 }
 
 /**

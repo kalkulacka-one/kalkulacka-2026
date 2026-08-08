@@ -15,18 +15,16 @@ import { Button, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui
 import Link from 'next/link';
 import { useCallback, useRef, useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
-import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
+import { type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { toCardContent } from '../lib/question-content';
 import { AppShell } from './app-shell';
 import { BackLink } from './back-link';
 import styles from './recap.module.css';
 
 export type RecapProps = {
-  calculatorId: string;
-  calculatorName: string;
-  electionName: string;
+  calculator: CalculatorShellInfo;
   questions: Question[];
-} & CalculatorRef;
+};
 
 const messages = getMessages();
 
@@ -40,14 +38,8 @@ const messages = getMessages();
  * balanced composition, and a recap that scrolled the title and the call to
  * action off the top made the step after it feel like a different product.
  */
-export function Recap({
-  calculatorId,
-  calculatorName,
-  electionName,
-  electionKey,
-  district,
-  questions,
-}: RecapProps) {
+export function Recap({ calculator, questions }: RecapProps) {
+  const { id: calculatorId, electionKey, district } = calculator;
   const ready = useAnswersReady();
   const answers = useCalculatorAnswers(calculatorId);
   const setAnswer = useAnswersStore((s) => s.setAnswer);
@@ -134,11 +126,7 @@ export function Recap({
   };
 
   return (
-    <AppShell
-      calculatorName={calculatorName}
-      electionName={electionName}
-      calculator={{ id: calculatorId, ...ref }}
-    >
+    <AppShell calculator={calculator}>
       <main className={styles.screen}>
         <div className={styles.inner}>
           {/*

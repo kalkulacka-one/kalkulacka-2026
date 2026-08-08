@@ -46,7 +46,7 @@
   padding-bottom: max(var(--vk-space-4), env(safe-area-inset-bottom, 0px));
 }
 
-@media (min-width: 860px) {
+@media (min-width: 53.75rem) {
   .center {
     gap: 0.5rem;
   }
@@ -65,7 +65,7 @@
   width: 100%;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 53.75rem) {
   .stage {
     flex: 0 1 33.75rem;
   }

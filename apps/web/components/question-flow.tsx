@@ -12,17 +12,13 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
-import { stepPath } from '../lib/paths';
+import { type CalculatorShellInfo, stepPath } from '../lib/paths';
 import { toCardContent } from '../lib/question-content';
 import { AppShell } from './app-shell';
 import styles from './question-flow.module.css';
 
 export type QuestionFlowProps = {
-  calculatorId: string;
-  calculatorName: string;
-  electionName: string;
-  electionKey: string;
-  district: string;
+  calculator: CalculatorShellInfo;
   questions: Question[];
   /** 1-based, from the URL. */
   initialPosition: number;
@@ -30,15 +26,8 @@ export type QuestionFlowProps = {
 
 const messages = getMessages();
 
-export function QuestionFlow({
-  calculatorId,
-  calculatorName,
-  electionName,
-  electionKey,
-  district,
-  questions,
-  initialPosition,
-}: QuestionFlowProps) {
+export function QuestionFlow({ calculator, questions, initialPosition }: QuestionFlowProps) {
+  const { id: calculatorId, electionKey, district } = calculator;
   const [index, setIndex] = useState(() =>
     Math.min(Math.max(initialPosition - 1, 0), questions.length - 1),
   );
@@ -177,11 +166,7 @@ export function QuestionFlow({
   });
 
   return (
-    <AppShell
-      calculatorName={calculatorName}
-      electionName={electionName}
-      calculator={{ id: calculatorId, electionKey, district }}
-    >
+    <AppShell calculator={calculator}>
       <div className={styles.flow}>
         <div className={styles.progress}>
           <ProgressSegments

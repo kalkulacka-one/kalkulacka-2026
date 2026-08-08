@@ -269,7 +269,7 @@
  * the app's own gutters and max-width already eat a good chunk of the
  * viewport before the card ever sees it.
  */
-@container card (min-width: 600px) {
+@container card (min-width: 37.5rem) {
   .answerLabel {
     display: inline;
   }

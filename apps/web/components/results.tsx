@@ -29,7 +29,7 @@ import { buildAiPrompt } from '../lib/ai-prompt';
 import { answerLabelOf } from '../lib/answer-labels';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { copyText } from '../lib/clipboard';
-import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
+import { type CalculatorRef, type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { useDragDismiss } from '../lib/use-drag-dismiss';
 import { AppShell } from './app-shell';
 import { BackLink } from './back-link';
@@ -66,6 +66,12 @@ type ComparisonFilter = 'all' | 'match' | 'mismatch' | 'important';
 export function Results({ calculator, electionKey, district }: ResultsProps) {
   const answers = useCalculatorAnswers(calculator.id);
   const ref = { electionKey, district };
+  const shellInfo: CalculatorShellInfo = {
+    id: calculator.id,
+    name: calculator.name,
+    electionName: calculator.electionName,
+    ...ref,
+  };
 
   const answered = countAnswered(calculator.questions, answers);
   const results = useMemo(() => buildResults(calculator, answers), [calculator, answers]);
@@ -277,11 +283,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       // Inside the shell like every other screen: the header and the backdrop
       // carrying straight through is what makes this read as a moment in the
       // flow rather than the app blinking out and coming back.
-      <AppShell
-        calculatorName={calculator.name}
-        electionName={calculator.electionName}
-        calculator={{ id: calculator.id, ...ref }}
-      >
+      <AppShell calculator={shellInfo}>
         <main className={styles.calculating}>
           <Calculating label={messages.results.calculating} />
         </main>
@@ -292,9 +294,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
   if (answered === 0) {
     return (
       <Screen
-        calculatorName={calculator.name}
-        electionName={calculator.electionName}
-        calculator={{ id: calculator.id, ...ref }}
+        calculator={shellInfo}
         title={messages.results.emptyTitle}
         description={messages.results.emptyDescription}
         footer={
@@ -312,9 +312,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
 
   return (
     <AppShell
-      calculatorName={calculator.name}
-      electionName={calculator.electionName}
-      calculator={{ id: calculator.id, ...ref }}
+      calculator={shellInfo}
       /* The ranking is read, not acted on: scrolling the document is what lets
          it carry on under Safari's glass rather than stop in a line above it. */
       scroll="document"

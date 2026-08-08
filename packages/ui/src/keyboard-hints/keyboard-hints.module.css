@@ -8,7 +8,7 @@
   display: none;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 53.75rem) {
   .hints {
     display: flex;
     justify-content: center;

@@ -91,7 +91,7 @@
 }
 
 /* Matches the answer-label breakpoint in question-card.module.css. */
-@container deck (min-width: 600px) {
+@container deck (min-width: 37.5rem) {
   .short {
     display: none;
   }

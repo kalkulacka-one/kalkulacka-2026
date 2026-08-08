@@ -89,7 +89,7 @@
  * content every time, with `.headerInner`'s `overflow: hidden` doing the
  * clipping as the row shrinks.
  */
-@media (max-width: 55.99rem) {
+@media (width < 56rem) {
   .header {
     display: grid;
     grid-template-rows: 1fr;

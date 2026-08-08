@@ -9,6 +9,19 @@ import { buildRoute, type FlowStep, questionPath } from '@vk/core';
  */
 export type CalculatorRef = { electionKey: string; district: string };
 
+/**
+ * What the shell (`Screen`/`AppShell`) needs to know about the open
+ * calculator — display strings for the header plus enough to build its menu's
+ * links. One object instead of three same-shaped props threaded separately
+ * through every screen: `electionName`, `calculatorName` and a `calculator`
+ * ref were always sourced from the same `Calculator` at the call site anyway.
+ */
+export type CalculatorShellInfo = {
+  id: string;
+  name: string;
+  electionName: string;
+} & CalculatorRef;
+
 export function stepPath(ref: CalculatorRef, step: FlowStep, param?: string): string {
   return buildRoute({ kind: 'calculator', ...ref, step, ...(param ? { param } : {}) });
 }

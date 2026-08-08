@@ -1,15 +1,13 @@
 import { getMessages } from '@vk/i18n';
 import { Button, StickyBar } from '@vk/ui';
 import Link from 'next/link';
-import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
+import { type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { GuideSteps } from './guide-steps';
 import { Screen } from './screen';
 
 export type GuideProps = {
-  calculatorId: string;
-  calculatorName: string;
-  electionName: string;
-} & CalculatorRef;
+  calculator: CalculatorShellInfo;
+};
 
 const messages = getMessages();
 
@@ -20,20 +18,13 @@ const messages = getMessages();
  * client JavaScript. The functional-first pass explains the gestures in words;
  * teaching them with a live demo card is Phase 6.
  */
-export function Guide({
-  calculatorId,
-  calculatorName,
-  electionName,
-  electionKey,
-  district,
-}: GuideProps) {
+export function Guide({ calculator }: GuideProps) {
+  const { name: calculatorName, electionKey, district } = calculator;
   const ref = { electionKey, district };
 
   return (
     <Screen
-      calculatorName={calculatorName}
-      electionName={electionName}
-      calculator={{ id: calculatorId, ...ref }}
+      calculator={calculator}
       title={messages.guide.title}
       back={{ href: stepPath(ref, 'intro'), label: calculatorName }}
       footer={

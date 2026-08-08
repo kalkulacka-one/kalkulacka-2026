@@ -1,18 +1,24 @@
 import { getMessages } from '@vk/i18n';
 import { AppHeader } from '@vk/ui';
 import type { ReactNode } from 'react';
-import type { CalculatorRef } from '../lib/paths';
+import type { CalculatorShellInfo } from '../lib/paths';
 import { AppMenu } from './app-menu';
 import styles from './app-shell.module.css';
 import { ScrollMode, type ScrollModeValue } from './scroll-mode';
 
 export type AppShellProps = {
-  /** The election's display name, shown next to the wordmark. */
+  /**
+   * The election's display name, shown next to the wordmark. Only needed on
+   * its own for the region picker, before a calculator is chosen — every
+   * other screen gets it from `calculator.electionName` instead.
+   */
   electionName?: string;
-  /** The chosen region/district, shown between the election type and year. */
-  calculatorName?: string;
-  /** Passed to the menu; without it, restart and leave are not offered. */
-  calculator?: { id: string } & CalculatorRef;
+  /**
+   * The open calculator's display info and menu links. Once present, it also
+   * supplies the header's election name — `electionName` above is then
+   * ignored, so callers only ever need to pass one or the other.
+   */
+  calculator?: CalculatorShellInfo;
   /**
    * What scrolls on this screen.
    *
@@ -40,13 +46,7 @@ const messages = getMessages();
  * here — it sits in the root layout, which the router keeps alive across
  * navigations, so the wash never restarts mid-flow.
  */
-export function AppShell({
-  electionName,
-  calculatorName,
-  calculator,
-  scroll = 'pinned',
-  children,
-}: AppShellProps) {
+export function AppShell({ electionName, calculator, scroll = 'pinned', children }: AppShellProps) {
   return (
     <div className={styles.shell}>
       <ScrollMode mode={scroll} />
@@ -55,8 +55,8 @@ export function AppShell({
         <div className={styles.bar}>
           <AppHeader
             title={messages.app.title}
-            electionName={electionName}
-            calculatorName={calculatorName}
+            electionName={calculator?.electionName ?? electionName}
+            calculatorName={calculator?.name}
             actions={<AppMenu calculator={calculator} />}
           />
         </div>

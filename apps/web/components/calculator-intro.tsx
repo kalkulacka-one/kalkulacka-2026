@@ -7,18 +7,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
-import { type CalculatorRef, electionPath, questionPath, stepPath } from '../lib/paths';
+import { type CalculatorShellInfo, electionPath, questionPath, stepPath } from '../lib/paths';
 import styles from './calculator-intro.module.css';
 import { RestartDialog } from './restart-dialog';
 import { Screen } from './screen';
 
 export type CalculatorIntroProps = {
-  calculatorId: string;
-  calculatorName: string;
-  electionName: string;
+  calculator: CalculatorShellInfo;
   candidateCount: number;
   questions: Question[];
-} & CalculatorRef;
+};
 
 const messages = getMessages();
 
@@ -29,15 +27,8 @@ const messages = getMessages();
  * localStorage, so someone returning to a half-finished calculator should land
  * on the question they stopped at rather than being sent back to question 1.
  */
-export function CalculatorIntro({
-  calculatorId,
-  calculatorName,
-  electionName,
-  electionKey,
-  district,
-  candidateCount,
-  questions,
-}: CalculatorIntroProps) {
+export function CalculatorIntro({ calculator, candidateCount, questions }: CalculatorIntroProps) {
+  const { id: calculatorId, name: calculatorName, electionKey, district } = calculator;
   const answers = useCalculatorAnswers(calculatorId);
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
   const router = useRouter();
@@ -57,8 +48,7 @@ export function CalculatorIntro({
 
   return (
     <Screen
-      electionName={electionName}
-      calculator={{ id: calculatorId, electionKey, district }}
+      calculator={calculator}
       title={calculatorName}
       back={{ href: electionPath(electionKey), label: messages.picker.title }}
       description={format(messages.intro.description, {

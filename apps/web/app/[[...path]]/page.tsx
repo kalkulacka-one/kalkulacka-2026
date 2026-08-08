@@ -53,39 +53,32 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     if (!calculator) notFound();
 
     const ref = { electionKey: route.electionKey, district: route.district ?? '' };
+    const shellInfo = {
+      id: calculator.id,
+      name: calculator.name,
+      electionName: calculator.electionName,
+      ...ref,
+    };
 
     switch (route.step) {
       case 'intro':
         return (
           <CalculatorIntro
-            {...ref}
-            calculatorId={calculator.id}
-            calculatorName={calculator.name}
-            electionName={calculator.electionName}
+            calculator={shellInfo}
             candidateCount={calculator.candidates.length}
             questions={calculator.questions}
           />
         );
 
       case 'guide':
-        return (
-          <Guide
-            {...ref}
-            calculatorId={calculator.id}
-            calculatorName={calculator.name}
-            electionName={calculator.electionName}
-          />
-        );
+        return <Guide calculator={shellInfo} />;
 
       case 'question': {
         const position = Number.parseInt(route.param ?? '1', 10);
 
         return (
           <QuestionFlow
-            {...ref}
-            calculatorId={calculator.id}
-            calculatorName={calculator.name}
-            electionName={calculator.electionName}
+            calculator={shellInfo}
             // Only the questions cross to the client; candidates and their
             // answers are only needed on the results screen.
             questions={calculator.questions}
@@ -95,15 +88,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
       }
 
       case 'review':
-        return (
-          <Recap
-            {...ref}
-            calculatorId={calculator.id}
-            calculatorName={calculator.name}
-            electionName={calculator.electionName}
-            questions={calculator.questions}
-          />
-        );
+        return <Recap calculator={shellInfo} questions={calculator.questions} />;
 
       /*
        * `comparison` deep-links into the same screen. The results list already
