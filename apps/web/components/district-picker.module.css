@@ -1,8 +1,89 @@
+/*
+ * A fixed frame around a scrolling list — the recap's structure, not
+ * `Screen`'s. `Screen` scrolls the whole document, which took the title, the
+ * description and the search box (the one thing you actually type into) off
+ * the top of a phone screen the moment the result list grew past a few rows.
+ * Here only `.listWrap` moves; everything above it holds still.
+ */
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+}
+
+.inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding-top: var(--vk-space-7);
+}
+
+.header {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+  padding-bottom: var(--vk-space-1);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-display);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
+  color: var(--vk-color-text);
+  text-wrap: balance;
+}
+
+.description {
+  margin: 0;
+  max-width: 34rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-lg);
+  line-height: var(--vk-leading-relaxed);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+/* --- The list ------------------------------------------------------------
+ * Same shape as the recap's `.listShell`/`.listWrap`/fade pair: the list (or
+ * the empty state) fills a positioned box, and the fades sit over its edges
+ * to signal there is more content in that direction than the box shows.
+ */
+.listShell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.listWrap {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  /* Room for row focus rings, which a tight scroll box would clip. */
+  padding-inline: 3px;
+  margin-inline: -3px;
+  padding-bottom: var(--vk-space-6);
+}
+
 .results {
   display: flex;
   flex-direction: column;
   gap: var(--vk-space-7);
-  padding-bottom: var(--vk-space-6);
 }
 
 .group {
@@ -73,4 +154,46 @@
   font-weight: 700;
   color: var(--vk-color-text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Edge fades ------------------------------------------------------------
+ * Each toggles independently: the top fade only once the list has actually
+ * scrolled down, the bottom only while there is more below than the box
+ * shows. A search that narrows the list to two rows leaves both off.
+ */
+.topFade,
+.bottomFade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 2.5rem;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity var(--vk-duration-base) ease;
+}
+
+.topFade[data-visible],
+.bottomFade[data-visible] {
+  opacity: 1;
+}
+
+.topFade {
+  top: 0;
+  background: linear-gradient(to bottom, var(--vk-color-page) 0%, transparent 65%);
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+}
+
+.bottomFade {
+  bottom: 0;
+  background: linear-gradient(to top, var(--vk-color-page) 0%, transparent 65%);
+  mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topFade,
+  .bottomFade {
+    transition: none;
+  }
 }

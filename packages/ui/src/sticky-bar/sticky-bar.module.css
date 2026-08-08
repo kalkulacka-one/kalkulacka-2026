@@ -40,6 +40,20 @@
     var(--vk-shadow-card-back);
 }
 
+/*
+ * A second action turns the plate from a wide, short pill into something
+ * closer to square the moment the two labels don't fit one line and wrap
+ * (`.bar`'s own `flex-wrap`) — and a pill radius on a squarish box is clamped
+ * to half its *height*, which reads as an overinflated blob rather than a
+ * panel. Keyed on child count rather than on the wrap itself (not
+ * expressible in CSS without measuring): a bar that can wrap should look like
+ * this consistently, not flip radius mid-resize right as it crosses the
+ * breakpoint that causes the wrap.
+ */
+.floating:has(> :nth-child(2)) {
+  border-radius: var(--vk-radius-control);
+}
+
 .flat {
   background: none;
 }
