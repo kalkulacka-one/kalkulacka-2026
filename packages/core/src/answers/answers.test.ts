@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Question } from '../domain/types';
 import {
   type AnswerMap,
+  answerTone,
   countAnswered,
   firstUnansweredIndex,
   isComplete,
@@ -160,5 +161,20 @@ describe('toUserAnswers', () => {
     answers = setAnswer(answers, 'q1', false);
 
     expect(toUserAnswers(questions, answers).map((a) => a.questionId)).toEqual(['q1', 'q3']);
+  });
+});
+
+describe('answerTone', () => {
+  it('maps a position to its side', () => {
+    expect(answerTone(true)).toBe('agree');
+    expect(answerTone(false)).toBe('disagree');
+  });
+
+  it('keeps an explicit neutral distinct from no answer at all', () => {
+    // The recap-only helper this replaced folded both into `none`, so a "Nevím"
+    // drew the same mark as an untouched question while the recap's filter
+    // counted it as answered.
+    expect(answerTone(null)).toBe('neutral');
+    expect(answerTone(undefined)).toBe('none');
   });
 });

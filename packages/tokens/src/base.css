@@ -179,6 +179,18 @@
   --vk-text-base: 0.875rem;
   --vk-text-md: 0.9375rem;
   --vk-text-lg: 1rem;
+  /*
+   * Body copy asking to be read first: nav labels, an option's title, the lead
+   * line of a dialog or a tutorial step. Named rather than numbered for the same
+   * reason `title` and `display` are — it is a job, not just a rung.
+   *
+   * It earns its place: six components had each independently typed `1.0625rem`
+   * for exactly this, which is the scale telling us a step was missing rather
+   * than six people being careless. 17px also continues the 1px ladder the steps
+   * below run on (11 · 12 · 13 · 14 · 15 · 16), so it is the rung that was
+   * skipped, not a new invention.
+   */
+  --vk-text-lead: 1.0625rem;
   --vk-text-xl: 1.25rem;
   --vk-text-2xl: 1.5rem;
   /* Section and screen headings. */
@@ -239,9 +251,15 @@
 /*
  * A theme with both a light and a dark palette resolves its colours via
  * `light-dark()`, which follows the OS preference by default. These two rules
- * are the hook for a manual light/dark toggle: nothing sets `data-mode` today
- * (there is no toggle UI yet), but forcing one mode later is a one-line
- * `element.dataset.mode = 'dark'` away rather than a new feature.
+ * are the override hook, and they are load-bearing: the app's mode toggle
+ * (`apps/web/lib/color-mode.ts`) writes `data-mode` onto `<html>`, and an
+ * inline script in the root layout writes it again before hydration so a
+ * stored preference does not flash the OS one first.
+ *
+ * Absent an explicit override the attribute is simply not set, `color-scheme:
+ * light dark` stands, and the page tracks the OS pick with no JavaScript at
+ * all — which is why the toggle only ever has to *add* an attribute, never
+ * keep one in sync.
  */
 :root[data-mode="light"] {
   color-scheme: light;

@@ -32,6 +32,25 @@ export function format(template: string, values: Record<string, string | number>
 }
 
 /**
+ * A percentage, written the way the locale writes it.
+ *
+ * Czech puts a *non-breaking* space before the sign, so "63 %" stays one
+ * unbreakable unit instead of leaving "63" at the end of a line and "%" at the
+ * start of the next. The character below is an explicit `\u00a0` escape rather
+ * than a typed space: three call sites had each written this template inline,
+ * every one of them with a plain U+0020, under a comment asserting the opposite.
+ * Written as an escape the rule is visible in the source and cannot be silently
+ * undone by a reformat.
+ *
+ * It lives here because it is a locale decision, not an app one — English closes
+ * the gap entirely ("63%"), and next-intl's number formatting will supply that
+ * per-locale when a second locale lands.
+ */
+export function percent(value: number): string {
+  return `${Math.round(value)}\u00a0%`;
+}
+
+/**
  * Czech's three cardinal forms: 1 · 2–4 · 0 and 5+.
  *
  * Hand-written because the placeholder accessor above has no ICU. The rule

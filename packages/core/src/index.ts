@@ -15,6 +15,8 @@ export {
 export {
   type AnswerMap,
   type AnswerSegmentState,
+  type AnswerTone,
+  answerTone,
   clearAnswer,
   countAnswered,
   countSkipped,
@@ -78,14 +80,12 @@ export {
   RECAP_FILTER_IMPORTANT,
   RECAP_FILTER_UNANSWERED,
   RECAP_TOPIC_PREFIX,
-  type RecapAnswerTone,
   type RecapEntry,
   type RecapFilterId,
   type RecapFilterOption,
   type RecapTotals,
   topicFilterId,
   topicOf,
-  toRecapAnswerTone,
 } from './recap/recap';
 export {
   buildRoute,

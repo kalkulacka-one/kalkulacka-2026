@@ -17,7 +17,7 @@
     padding: var(--vk-space-4) 0 var(--vk-space-2);
 
     font-family: var(--vk-typeface-sans);
-    font-size: 0.875rem;
+    font-size: var(--vk-text-base);
     color: var(--vk-color-text-muted);
   }
 }
@@ -51,7 +51,7 @@ kbd.key {
   box-shadow: inset 0 0 0 1px var(--vk-color-border-strong);
 
   font-family: var(--vk-typeface-sans);
-  font-size: 0.8125rem;
+  font-size: var(--vk-text-sm);
   font-weight: 500;
   color: var(--vk-color-text);
 }

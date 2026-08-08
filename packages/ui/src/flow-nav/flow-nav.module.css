@@ -18,7 +18,7 @@
   color: var(--vk-color-neutral);
 
   font-family: var(--vk-typeface-sans);
-  font-size: 1.0625rem;
+  font-size: var(--vk-text-lead);
   font-weight: 700;
   letter-spacing: -0.01em;
 
@@ -71,7 +71,7 @@
 .counter {
   justify-self: center;
   font-family: var(--vk-typeface-sans);
-  font-size: 1.0625rem;
+  font-size: var(--vk-text-lead);
   letter-spacing: -0.01em;
   color: var(--vk-color-text-subtle);
 }

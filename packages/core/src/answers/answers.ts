@@ -85,6 +85,33 @@ export function clearAnswer(answers: AnswerMap, questionId: string): AnswerMap {
   return rest;
 }
 
+/**
+ * How a recorded position reads as a mark. Mirrors @vk/ui's `AnswerMarkTone`.
+ *
+ * `neutral` is an explicit "Nevím" — a real answer that takes no side — and is
+ * deliberately distinct from `none`, the absence of any answer at all. Nothing
+ * in the question flow produces `null` today (the card offers agree and
+ * disagree only), but candidates' imported answers do, and the domain type
+ * allows it, so the distinction is carried rather than collapsed.
+ */
+export type AnswerTone = 'agree' | 'disagree' | 'neutral' | 'none';
+
+/**
+ * The one mapping from a stored answer to the tone that draws it.
+ *
+ * Had been written out three separate times — twice in the results screen's own
+ * components and once here as a recap-only helper that folded `null` into
+ * `none`, so an explicit "Nevím" was indistinguishable from an unanswered
+ * question on the recap while the recap's *filter* counted it as answered.
+ * One definition removes that disagreement and the drift that produced it.
+ */
+export function answerTone(answer: AnswerValue | undefined): AnswerTone {
+  if (answer === true) return 'agree';
+  if (answer === false) return 'disagree';
+  if (answer === null) return 'neutral';
+  return 'none';
+}
+
 /** Answers in question order — the shape `calculateMatches` expects. */
 export function toUserAnswers(questions: Question[], answers: AnswerMap): UserAnswer[] {
   return questions.map((q) => answers[q.id]).filter((a): a is UserAnswer => a !== undefined);

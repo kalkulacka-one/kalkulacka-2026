@@ -70,7 +70,7 @@
 
 .label {
   font-family: var(--vk-typeface-sans);
-  font-size: 1.0625rem;
+  font-size: var(--vk-text-lead);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--vk-color-text-strong);
@@ -83,7 +83,7 @@
 
 .meta {
   font-family: var(--vk-typeface-sans);
-  font-size: 0.875rem;
+  font-size: var(--vk-text-base);
   color: var(--vk-color-text-muted);
 }
 

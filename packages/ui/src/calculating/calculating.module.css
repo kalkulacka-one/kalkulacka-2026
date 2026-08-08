@@ -158,7 +158,7 @@
 .label {
   margin: 0;
   font-family: var(--vk-typeface-sans);
-  font-size: 0.9375rem;
+  font-size: var(--vk-text-md);
   color: var(--vk-color-text-muted);
   text-align: center;
 }

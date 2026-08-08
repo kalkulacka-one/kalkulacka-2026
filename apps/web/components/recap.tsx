@@ -2,13 +2,13 @@
 
 import {
   type AnswerValue,
+  answerTone,
   buildRecapFilters,
   countRecapTotals,
   filterRecapQuestions,
   type Question,
   RECAP_FILTER_ALL,
   type RecapFilterId,
-  toRecapAnswerTone,
 } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
 import { Button, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
@@ -219,7 +219,7 @@ export function Recap({
                         <RecapRow
                           key={question.id}
                           title={question.title}
-                          tone={toRecapAnswerTone(answer?.answer)}
+                          tone={answerTone(answer?.answer)}
                           important={answer?.isImportant === true}
                           skipped={answer?.skipped === true}
                           labels={{

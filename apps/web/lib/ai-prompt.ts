@@ -1,5 +1,5 @@
 import type { AnswerValue, CandidateResult, QuestionConsensus, TopicMatch } from '@vk/core';
-import { format, getMessages } from '@vk/i18n';
+import { format, getMessages, percent } from '@vk/i18n';
 
 const messages = getMessages();
 
@@ -16,10 +16,6 @@ export type AiPromptInput = {
 
 /** How many parties the summary names before it stops being a summary. */
 const TOP_MATCHES = 3;
-
-function percent(value: number): string {
-  return `${Math.round(value)} %`;
-}
 
 function positionOf(answer: AnswerValue): string {
   const { dashboard } = messages.results;

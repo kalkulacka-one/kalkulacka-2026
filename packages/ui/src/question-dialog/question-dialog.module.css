@@ -90,7 +90,7 @@
   color: var(--vk-color-neutral-on);
 
   font-family: var(--vk-typeface-sans);
-  font-size: 1.0625rem;
+  font-size: var(--vk-text-lead);
   font-weight: 600;
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -133,7 +133,7 @@
   cursor: pointer;
 
   font-family: var(--vk-typeface-sans);
-  font-size: 0.875rem;
+  font-size: var(--vk-text-base);
   font-weight: 600;
   letter-spacing: -0.01em;
 

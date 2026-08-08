@@ -65,12 +65,7 @@ export {
   type QuestionDialogLabels,
   type QuestionDialogProps,
 } from './question-dialog/question-dialog';
-export {
-  RecapRow,
-  type RecapRowLabels,
-  type RecapRowProps,
-  type RecapTone,
-} from './recap-row/recap-row';
+export { RecapRow, type RecapRowLabels, type RecapRowProps } from './recap-row/recap-row';
 export { SearchField, type SearchFieldProps } from './search-field/search-field';
 export { StickyBar, type StickyBarProps } from './sticky-bar/sticky-bar';
 export { Tag, type TagProps } from './tag/tag';

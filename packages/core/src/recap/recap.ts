@@ -1,6 +1,6 @@
 import type { AnswerMap } from '../answers/answers';
 import { countAnswered } from '../answers/answers';
-import type { AnswerValue, Question } from '../domain/types';
+import type { Question } from '../domain/types';
 
 /**
  * What the recap screen derives from the answers.
@@ -26,9 +26,6 @@ export function topicFilterId(topic: string): RecapFilterId {
   return `${RECAP_TOPIC_PREFIX}${topic}`;
 }
 
-/** How a row's answer mark reads. Mirrors @vk/ui's `RecapTone`. */
-export type RecapAnswerTone = 'agree' | 'disagree' | 'none';
-
 /** A filter chip, before its label is translated. Mirrors @vk/ui's `FilterOption`. */
 export type RecapFilterOption = {
   id: RecapFilterId;
@@ -52,12 +49,6 @@ export type RecapEntry = {
  */
 export function topicOf(question: Question): string | undefined {
   return question.tags[0];
-}
-
-export function toRecapAnswerTone(answer: AnswerValue | undefined): RecapAnswerTone {
-  if (answer === true) return 'agree';
-  if (answer === false) return 'disagree';
-  return 'none';
 }
 
 export function matchesRecapFilter(

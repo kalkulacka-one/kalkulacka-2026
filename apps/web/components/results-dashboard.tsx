@@ -2,13 +2,15 @@
 
 import {
   type AnswerDistribution,
+  answerTone,
   MIN_TOPIC_ANSWERS,
   type QuestionConsensus,
   type TopicMatch,
 } from '@vk/core';
-import { format, getMessages } from '@vk/i18n';
-import { AnswerMark, type AnswerMarkTone, Button, Donut, type DonutSegment, Meter } from '@vk/ui';
+import { format, getMessages, percent } from '@vk/i18n';
+import { AnswerMark, Button, Donut, type DonutSegment, Meter } from '@vk/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { answerLabelOf } from '../lib/answer-labels';
 import { copyText } from '../lib/clipboard';
 import styles from './results-dashboard.module.css';
 
@@ -23,18 +25,6 @@ export type ResultsDashboardProps = {
   prompt: string;
 };
 
-function toneOf(answer: boolean | null): AnswerMarkTone {
-  if (answer === true) return 'agree';
-  if (answer === false) return 'disagree';
-  return 'neutral';
-}
-
-function answerLabelOf(answer: boolean | null): string {
-  if (answer === true) return messages.results.answerYes;
-  if (answer === false) return messages.results.answerNo;
-  return messages.results.answerNeutral;
-}
-
 /** A question with how much company you had on it — shared by two of the cards. */
 function ConsensusRow({ entry }: { entry: QuestionConsensus }) {
   const { dashboard } = messages.results;
@@ -43,7 +33,7 @@ function ConsensusRow({ entry }: { entry: QuestionConsensus }) {
   return (
     <li className={styles.consensusRow}>
       <AnswerMark
-        tone={toneOf(entry.userAnswer)}
+        tone={answerTone(entry.userAnswer)}
         label={answerLabelOf(entry.userAnswer)}
         size="small"
       />
@@ -162,7 +152,7 @@ export function ResultsDashboard({
                     <span className={styles.topicBest}>
                       {topic.best.candidate.shortName}
                       <span className={styles.topicPercent}>
-                        {Math.round(topic.best.matchPercentage)} %
+                        {percent(topic.best.matchPercentage)}
                       </span>
                     </span>
                   </li>

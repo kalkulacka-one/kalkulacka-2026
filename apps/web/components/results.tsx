@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  type AnswerValue,
+  answerTone,
   buildAnswerDistribution,
   buildComparison,
   buildQuestionConsensus,
@@ -12,9 +12,8 @@ import {
   selectAgainstTheGrain,
   selectImportant,
 } from '@vk/core';
-import { getMessages } from '@vk/i18n';
+import { getMessages, percent } from '@vk/i18n';
 import {
-  type AnswerMarkTone,
   Button,
   Calculating,
   ComparisonList,
@@ -27,6 +26,7 @@ import {
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
+import { answerLabelOf } from '../lib/answer-labels';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { copyText } from '../lib/clipboard';
 import { type CalculatorRef, questionPath, stepPath } from '../lib/paths';
@@ -62,27 +62,6 @@ const ROW_STAGGER = 0.06;
 const CLOSE_MS = 150;
 
 type ComparisonFilter = 'all' | 'match' | 'mismatch' | 'important';
-
-const TONES: Record<string, AnswerMarkTone> = {
-  true: 'agree',
-  false: 'disagree',
-  null: 'neutral',
-};
-
-function toneOf(answer: AnswerValue | undefined): AnswerMarkTone {
-  return answer === undefined ? 'none' : (TONES[String(answer)] ?? 'none');
-}
-
-function answerLabelOf(answer: AnswerValue | undefined): string {
-  if (answer === undefined) return messages.results.answerNone;
-  if (answer === null) return messages.results.answerNeutral;
-  return answer ? messages.results.answerYes : messages.results.answerNo;
-}
-
-/** Czech writes a non-breaking space before the percent sign. */
-function percentLabel(value: number): string {
-  return `${Math.round(value)} %`;
-}
 
 export function Results({ calculator, electionKey, district }: ResultsProps) {
   const answers = useCalculatorAnswers(calculator.id);
@@ -208,9 +187,9 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       (entry): ComparisonRow => ({
         questionId: entry.question.id,
         statement: entry.question.statement,
-        user: { tone: toneOf(entry.userAnswer), label: answerLabelOf(entry.userAnswer) },
+        user: { tone: answerTone(entry.userAnswer), label: answerLabelOf(entry.userAnswer) },
         candidate: {
-          tone: toneOf(entry.candidateAnswer),
+          tone: answerTone(entry.candidateAnswer),
           label: answerLabelOf(entry.candidateAnswer),
         },
         agreement: entry.agreement,
@@ -220,8 +199,18 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
     );
   }, [calculator, answers, selected]);
 
-  // Starting over on the filter every time a different comparison opens, so a
-  // "Neshody" pick made on one candidate can't silently hide rows on the next.
+  /*
+   * Starting over on the filter every time a different comparison opens, so a
+   * "Neshody" pick made on one candidate can't silently hide rows on the next.
+   *
+   * `shownId` is the effect's *trigger*, not an input it reads — which is why
+   * the exhaustive-deps rule reads it as surplus and offers to delete it. Taking
+   * that fix would leave an empty dependency array, resetting the filter once on
+   * mount and never again. The suppression below has to stay a single line and
+   * sit directly on the hook: Biome only parses the first line of a `//` run as
+   * the suppression, so a wrapped one silently detaches and stops working.
+   */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the dep is the reset trigger, not an input.
   useEffect(() => {
     setComparisonFilter('all');
   }, [shownId]);
@@ -242,7 +231,13 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
   const comparisonFilterOptions = [
     { id: 'all' as const, label: messages.results.filterAll, count: comparisonCounts.all },
     ...(comparisonCounts.match > 0
-      ? [{ id: 'match' as const, label: messages.results.filterMatches, count: comparisonCounts.match }]
+      ? [
+          {
+            id: 'match' as const,
+            label: messages.results.filterMatches,
+            count: comparisonCounts.match,
+          },
+        ]
       : []),
     ...(comparisonCounts.mismatch > 0
       ? [
@@ -366,9 +361,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
                   avatarUrl={candidate.avatarUrl}
                   matchPercentage={match.matchPercentage}
                   percentLabel={
-                    match.matchPercentage === undefined
-                      ? undefined
-                      : percentLabel(match.matchPercentage)
+                    match.matchPercentage === undefined ? undefined : percent(match.matchPercentage)
                   }
                   noAnswerLabel={messages.results.noAnswer}
                   winner={rank === 1}
@@ -408,7 +401,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
                       <h2 className={styles.detailTitle}>{selected.candidate.name}</h2>
                       {selected.match.matchPercentage !== undefined ? (
                         <p className={styles.detailPercent}>
-                          {percentLabel(selected.match.matchPercentage)}
+                          {percent(selected.match.matchPercentage)}
                         </p>
                       ) : null}
                     </div>

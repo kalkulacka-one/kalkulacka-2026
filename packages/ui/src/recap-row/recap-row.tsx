@@ -1,15 +1,17 @@
-import { AnswerMark } from '../answer-mark/answer-mark';
+import { AnswerMark, type AnswerMarkTone } from '../answer-mark/answer-mark';
 import { Icon } from '../icon/icon';
 import styles from './recap-row.module.css';
 
-/**
- * The three states a recap row can report. Skipped and never-reached read
- * identically here — both are "no position taken", and splitting them into two
- * marks asked someone to care about a distinction the recap itself doesn't act
- * on. `Přeskočit` still exists as an action; it just no longer draws a
- * different mark than leaving a question untouched would.
+/*
+ * The row's tone is `AnswerMarkTone` outright — it is handed straight to
+ * `AnswerMark` and this file draws nothing from it itself. It had been a
+ * narrower three-value `RecapTone` of its own, which bought no safety (the mark
+ * accepts all four) and quietly asserted that a recap row can never be
+ * `neutral`. Skipped and never-reached still read identically, both as `none`:
+ * both are "no position taken", and the recap acts on neither. `Přeskočit`
+ * remains an action, it just draws no different mark than leaving a question
+ * untouched.
  */
-export type RecapTone = 'agree' | 'disagree' | 'none';
 
 export type RecapRowLabels = {
   /** How this row's state reads aloud, e.g. "Souhlasím" or "Bez odpovědi". */
@@ -21,7 +23,7 @@ export type RecapRowLabels = {
 export type RecapRowProps = {
   /** The short name — the row's headline. */
   title: string;
-  tone: RecapTone;
+  tone: AnswerMarkTone;
   important: boolean;
   /**
    * Explicitly passed over. The mark still reads the same as a never-reached

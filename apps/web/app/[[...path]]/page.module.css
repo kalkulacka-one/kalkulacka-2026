@@ -13,7 +13,7 @@
 .title {
   margin: 0;
   font-family: var(--vk-typeface-display);
-  font-size: 1.625rem;
+  font-size: var(--vk-text-title);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--vk-color-text-strong);
@@ -22,7 +22,7 @@
 .description {
   margin: 0;
   font-family: var(--vk-typeface-sans);
-  font-size: 0.9375rem;
+  font-size: var(--vk-text-md);
   line-height: 1.6;
   color: var(--vk-color-text-muted);
 }

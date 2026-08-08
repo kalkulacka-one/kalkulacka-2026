@@ -11,7 +11,6 @@ import {
   RECAP_FILTER_IMPORTANT,
   RECAP_FILTER_UNANSWERED,
   topicFilterId,
-  toRecapAnswerTone,
 } from './recap';
 
 /** Named rather than indexed so the assertions below read as what they test. */
@@ -32,18 +31,6 @@ const q4 = question('q4', []);
 const questions: Question[] = [q1, q2, q3, q4];
 
 const labels = { all: 'Vše', unanswered: 'Nezodpovězené', important: 'Důležité' };
-
-describe('toRecapAnswerTone', () => {
-  it('maps a position to its side', () => {
-    expect(toRecapAnswerTone(true)).toBe('agree');
-    expect(toRecapAnswerTone(false)).toBe('disagree');
-  });
-
-  it('reads an explicit neutral and a missing answer the same', () => {
-    expect(toRecapAnswerTone(null)).toBe('none');
-    expect(toRecapAnswerTone(undefined)).toBe('none');
-  });
-});
 
 describe('matchesRecapFilter', () => {
   const answers: AnswerMap = toggleImportant(setAnswer({}, 'q1', true), 'q3');

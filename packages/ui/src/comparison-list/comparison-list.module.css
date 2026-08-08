@@ -172,6 +172,9 @@
   left: 0;
   top: -0.5rem;
   font-family: var(--vk-typeface-display);
+  /* Off the type scale on purpose: a watermark glyph, drawn at whatever size
+     balances the block it sits behind. It is never read, so it is artwork that
+     happens to be a character. */
   font-size: 2.75rem;
   line-height: 1;
   color: oklch(from var(--vk-color-text-muted) l c h / 0.3);

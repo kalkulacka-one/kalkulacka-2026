@@ -61,6 +61,9 @@
 
 .value {
   font-family: var(--vk-typeface-display);
+  /* Off the type scale on purpose: this is sized to the hole in the ring, not to
+     the reading column, so it answers to the donut's geometry rather than to the
+     step above or below it. A scale step here would be a coincidence. */
   font-size: 1.75rem;
   font-weight: 600;
   line-height: 1;
@@ -71,6 +74,6 @@
 
 .label {
   font-family: var(--vk-typeface-sans);
-  font-size: 0.75rem;
+  font-size: var(--vk-text-xs);
   color: var(--vk-color-text-muted);
 }
