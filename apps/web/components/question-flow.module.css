@@ -38,6 +38,11 @@
   flex-direction: column;
   justify-content: center;
   gap: var(--vk-space-5);
+  /*
+   * The shell's content column already stops at `dvh`, so on a phone in a
+   * browser this is only breathing room — the inset itself has a value where
+   * there is no address bar to have taken care of it (an installed PWA).
+   */
   padding-bottom: max(var(--vk-space-4), env(safe-area-inset-bottom, 0px));
 }
 

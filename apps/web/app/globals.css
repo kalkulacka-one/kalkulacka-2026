@@ -11,18 +11,74 @@ body {
 }
 
 /*
- * The whole app is one fixed-in-place screen — the question flow is never
- * meant to scroll. `overflow: hidden` on `.flow` (question-flow.module.css)
- * only stops its own box from scrolling; iOS Safari still elastic-bounces
- * the *document* itself on any drag that starts outside the swipe card's
- * `touch-action: none` area (header, progress bar, the gap around the nav).
- * Pinning html/body directly is the only thing that stops that at the source.
+ * Two document modes, picked per screen by `AppShell` (`ScrollMode` writes the
+ * attribute; the rules below are the two halves).
+ *
+ * ── What iOS 26 Safari actually does ──────────────────────────────────────
+ * Measured on an iPhone at `/probe`, screen 896:
+ *
+ *   layout viewport (100lvh, 100vh)   754   ← fixed elements are clipped here
+ *   100dvh, expanded bar              714
+ *   100dvh, minimised bar             754
+ *   100svh                            714
+ *   env(safe-area-inset-*)              0   ← reports nothing, notch included
+ *   the floating bar's real top edge  ~761
+ *
+ * Two consequences drive everything here. First, `position: fixed` content
+ * cannot paint below `100lvh`, so a pinned document can never put anything
+ * behind the glass — only content in normal flow, in a scrolling document,
+ * reaches the bottom of the screen. Second, the safe-area insets are useless
+ * on this browser: the bar is not described by `env()` at all, and `100dvh`
+ * reserves ~47px more than the bar actually occupies, which is why a bottom
+ * control sized against it floats visibly high.
+ *
+ * A scrolling document sidesteps both: `position: sticky` resolves against the
+ * layout viewport (754), landing a bar snugly above the glass, and the list
+ * behind it runs to the bottom edge. That is the `document` mode. It is not an
+ * iOS special case — it is the right answer everywhere, which is why there is
+ * no feature detection here.
+ */
+
+/*
+ * `pinned` — the question flow, which is never meant to scroll.
+ *
+ * `overflow: hidden` on `.flow` (question-flow.module.css) only stops its own
+ * box from scrolling; iOS Safari still elastic-bounces the *document* itself on
+ * any drag that starts outside the swipe card's `touch-action: none` area
+ * (header, progress bar, the gap around the nav). Pinning html/body directly is
+ * the only thing that stops that at the source.
  */
 html,
 body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/*
+ * `document` — every reading screen. The document itself is the scroller, so
+ * its content is the one thing on the page that can pass under the browser's
+ * glass. `overscroll-behavior` stays: it is pull-to-refresh and scroll
+ * chaining that need suppressing, not scrolling itself.
+ */
+html[data-vk-scroll="document"],
+html[data-vk-scroll="document"] body {
+  height: auto;
+  overflow: visible;
+}
+
+/*
+ * …but only where the problem exists. A desktop window has no floating address
+ * bar to pass under, and the fixed frame reads better there: the header stays
+ * put and the results' two panes scroll independently, which needs a bounded
+ * height to scroll inside. Same breakpoint the two-pane layout uses.
+ */
+@media (min-width: 64rem) {
+  html[data-vk-scroll="document"],
+  html[data-vk-scroll="document"] body {
+    height: 100%;
+    overflow: hidden;
+  }
 }
 
 /*
@@ -42,20 +98,35 @@ body {
   width: 100%;
 
   /*
-   * The *dynamic* viewport, not `100%`.
+   * The layout viewport — as much of the screen as a pinned document can use.
+   * `lvh` and not `dvh` because a pinned document never lets the address bar
+   * minimise, so `dvh` is stuck at its most pessimistic reading and would leave
+   * a visible band of nothing along the bottom.
    *
-   * A fixed body sized to `100%` gets the small viewport on iOS — the screen
-   * minus browser chrome — so the app stopped short of the bottom of the phone
-   * and left a band of page colour under the address bar. `dvh` tracks the
-   * chrome as it collapses, so the layout uses the whole screen and the sticky
-   * pieces stay where they belong. The `100%` above stays as the fallback for
-   * anything without `dvh`.
+   * `document` mode drops the pin below and this stops applying.
    */
-  height: 100dvh;
+  height: 100lvh;
   background: var(--vk-color-page);
   color: var(--vk-color-text);
   font-family: var(--vk-typeface-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Unpinned, and tall enough to fill the screen when a screen's content is
+ * short. `min-height`, so a long recap can simply run past it.
+ */
+html[data-vk-scroll="document"] body {
+  position: static;
+  height: auto;
+  min-height: 100lvh;
+}
+
+@media (min-width: 64rem) {
+  html[data-vk-scroll="document"] body {
+    position: fixed;
+    height: 100lvh;
+  }
 }
 
 /*
@@ -66,7 +137,18 @@ body {
  */
 .backdropLayer {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  /*
+   * `100lvh`, not `100%`: a fixed box's percentage height resolves against the
+   * initial containing block, which is the *small* viewport, so `100%` stopped
+   * the wash ~40px short. `lvh` is as far as this can go — iOS clips fixed
+   * layers at the layout viewport, so the strip actually behind the glass is
+   * painted by `html`'s background instead. It is the same `--vk-color-page`
+   * the wash is mixed over, and it is only ever seen through a heavy blur.
+   */
+  height: 100lvh;
   z-index: 0;
   pointer-events: none;
 }

@@ -10,6 +10,35 @@
 }
 
 /*
+ * In `document` mode the shell must not cap or clip anything: the page is as
+ * tall as its content and the document is what scrolls. `min-height` still
+ * fills the screen so a short screen's footer sits at the bottom rather than
+ * halfway up.
+ */
+:global(html[data-vk-scroll="document"]) .shell {
+  height: auto;
+  min-height: 100lvh;
+  overflow: visible;
+
+  /* A column, so `.content` can claim the leftover height with `flex: 1`. A
+     percentage `min-height` cannot: against an auto-height parent it resolves
+     to `auto`, which left a short screen's footer stranded under its content
+     rather than at the bottom of the page. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* The fixed frame comes back on a desktop — see the matching rules in
+   `globals.css`. */
+@media (min-width: 64rem) {
+  :global(html[data-vk-scroll="document"]) .shell {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+/*
  * Needs its own stacking context so it paints above the backdrop layer
  * regardless of DOM order — that layer is `position: fixed` with `z-index: 0`,
  * so plain in-flow content here has to opt in to sitting on top explicitly.
@@ -17,9 +46,28 @@
 .content {
   position: relative;
   z-index: 1;
-  height: 100%;
+
+  /*
+   * The *visible* viewport, for `pinned` screens only: nothing here can scroll,
+   * so every control has to be inside what the browser promises is unobstructed
+   * — and `dvh` is that promise. It reads a little generous under iOS 26's
+   * floating bar; that slack is Safari's own reserve, and the only number it
+   * exposes. A reading screen escapes it by scrolling instead (see `.shell`).
+   */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+:global(html[data-vk-scroll="document"]) .content {
+  height: auto;
+  flex: 1;
+}
+
+@media (min-width: 64rem) {
+  :global(html[data-vk-scroll="document"]) .content {
+    height: 100%;
+  }
 }
 
 /*
@@ -32,4 +80,54 @@
   padding-top: calc(var(--vk-fluid-header-top) + env(safe-area-inset-top, 0px));
   padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+}
+
+/*
+ * Persistent in a pinned screen for free — it is simply the first row of a
+ * column that never moves. Once the document scrolls (`document` mode) it has
+ * to hold its own place instead, which is what `position: sticky` is for.
+ */
+:global(html[data-vk-scroll="document"]) .bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding-bottom: var(--vk-space-3);
+}
+
+/*
+ * The glass surface — a `z-index: -1` layer behind the header's own content
+ * rather than painted on `.bar` directly, so it can fade in on its own instead
+ * of the header's background snapping in.
+ *
+ * It only appears once `ScrollMode` has marked the page as scrolled
+ * (`data-vk-header-surface`, set past a few pixels of movement). At rest —
+ * fresh load, or a screen shorter than the viewport — there is nothing behind
+ * the header for it to separate itself from, and a translucent panel with no
+ * content passing under it just draws a hard seam under the wordmark for no
+ * reason. Once something *is* scrolling underneath, the same translucent,
+ * blurred treatment `StickyBar` uses keeps the wash showing through rather
+ * than punching a flat panel out of it — tinted with the page colour, not the
+ * card colour, since this frames the *page*, not a card floating on it.
+ */
+:global(html[data-vk-scroll="document"]) .bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  opacity: 0;
+  background: oklch(from var(--vk-color-page) l c h / 0.82);
+  backdrop-filter: var(--vk-plate-blur);
+  box-shadow: 0 8px 20px -16px oklch(from var(--vk-shadow-color) l c h / 0.25);
+  transition: opacity var(--vk-duration-base) ease;
+}
+
+:global(html[data-vk-scroll="document"][data-vk-header-surface]) .bar::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html[data-vk-scroll="document"]) .bar::before {
+    transition: none;
+  }
 }

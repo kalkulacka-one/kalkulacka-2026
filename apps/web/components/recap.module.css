@@ -186,8 +186,14 @@
    * both inherit it, so the fade and the panel it holds the button in are the
    * same height by construction, not by two literals someone has to remember
    * to keep in sync.
+   *
+   * The band's own height, not the button's clearance from the edge — that
+   * clearance is `.footer`'s own small bottom padding now, so the button
+   * itself settles near the true bottom of `.content` (`100dvh`, already the
+   * correct, live-tracking edge — see `app-shell.module.css`) instead of
+   * floating centred partway up a tall band.
    */
-  --vk-recap-safe: 11rem;
+  --vk-recap-safe: 6rem;
 }
 
 .listWrap {
@@ -204,10 +210,11 @@
 
   /*
    * The bottom padding is what keeps the last row clear of both the blur and
-   * the control panel floating over it — tall enough to clear the button
-   * where it sits, centred inside `--vk-recap-safe-zone` below.
+   * the control panel floating over it — tall enough to clear the button now
+   * that it sits near the bottom of `--vk-recap-safe` rather than centred
+   * inside it.
    */
-  padding-bottom: 7.5rem;
+  padding-bottom: 5.5rem;
 }
 
 .list {
@@ -338,12 +345,13 @@
 /*
  * The control panel — floating over the blur rather than in a row beneath it,
  * so the list reads as continuing underneath it instead of stopping to make
- * room. Sized to the same height as the fade beneath it and centred inside
- * that height, so the button sits with equal air above and below it rather
- * than hugging the bottom edge. Centred horizontally on a phone;
- * `justify-content` moves to the right column edge on a desktop, where
- * "centred" would otherwise mean centred under a much wider two-column list
- * than the button has any relation to.
+ * room. Bottom-aligned within the band rather than centred in it: `.content`
+ * (`app-shell.module.css`) is already sized to `100dvh`, the live-tracking
+ * edge just above the browser's own chrome, so the button only needs a small
+ * margin off that edge, not half the band's height. Centred horizontally on
+ * a phone; `justify-content` moves to the right column edge on a desktop,
+ * where "centred" would otherwise mean centred under a much wider two-column
+ * list than the button has any relation to.
  */
 .footer {
   position: absolute;
@@ -353,8 +361,9 @@
   height: var(--vk-recap-safe);
   z-index: 3;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  padding-bottom: max(var(--vk-space-3), env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
 

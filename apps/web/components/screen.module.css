@@ -1,13 +1,18 @@
+/*
+ * Not a scroller. The document is (`AppShell scroll="document"`), which is what
+ * lets this screen's content pass under the browser's glass address bar and
+ * what puts a `StickyBar` at the bottom of the layout viewport rather than at
+ * `dvh`. An inner scroller could do neither.
+ */
 .screen {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  /* Keeps a flick inside this list from chaining to the pinned document. */
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
 }
 
 .inner {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--vk-space-5);
@@ -15,11 +20,32 @@
   width: 100%;
   max-width: 42rem;
   margin: 0 auto;
-  min-height: 100%;
 
   padding-top: var(--vk-space-7);
   padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+  /* The last thing on the page has to be able to clear the floating address
+     bar — see `--vk-scroll-tail`. */
+  padding-bottom: var(--vk-scroll-tail);
+}
+
+/*
+ * On a desktop the frame is fixed again (see `globals.css`), so this screen
+ * goes back to being its own scroller and the column back to filling it — that
+ * is what keeps `.footer` at the bottom of a short page rather than floating
+ * under the content.
+ */
+@media (min-width: 64rem) {
+  .screen {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .inner {
+    min-height: 100%;
+    padding-bottom: var(--vk-space-7);
+  }
 }
 
 .header {

@@ -320,9 +320,9 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       calculatorName={calculator.name}
       electionName={calculator.electionName}
       calculator={{ id: calculator.id, ...ref }}
-      /* The one screen with nothing to press along its bottom edge: let the
-         ranking run under Safari's glass rather than stop in a line above it. */
-      viewport="full"
+      /* The ranking is read, not acted on: scrolling the document is what lets
+         it carry on under Safari's glass rather than stop in a line above it. */
+      scroll="document"
     >
       <main className={styles.screen}>
         <div className={styles.inner}>

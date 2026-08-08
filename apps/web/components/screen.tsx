@@ -29,11 +29,10 @@ export type ScreenProps = {
  *
  * The flow is deliberately unscrollable — the deck fills the viewport and iOS
  * elastic bounce is pinned away at the document level in `globals.css`. Every
- * other screen has a list that must scroll, so scrolling happens *here*, inside
- * one container below the app header, rather than by unpinning the document and
- * reintroducing the bounce the flow spent Phase 2 getting rid of. Keeping the
- * header outside this box is also what makes it persistent: the menu stays in
- * the corner while a long recap scrolls past under it.
+ * other screen has a list that must scroll, and it is the *document* that
+ * scrolls for them (`scroll="document"`): an inner container was tidier, but it
+ * is also the one arrangement iOS will not let paint under its glass address
+ * bar, and it pins a `StickyBar` to `dvh` instead of to the bar itself.
  */
 export function Screen({
   title,
@@ -46,7 +45,12 @@ export function Screen({
   footer,
 }: ScreenProps) {
   return (
-    <AppShell electionName={electionName} calculatorName={calculatorName} calculator={calculator}>
+    <AppShell
+      electionName={electionName}
+      calculatorName={calculatorName}
+      calculator={calculator}
+      scroll="document"
+    >
       <main className={styles.screen}>
         <div className={styles.inner}>
           <header className={styles.header}>

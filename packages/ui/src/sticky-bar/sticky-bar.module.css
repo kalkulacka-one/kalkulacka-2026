@@ -6,9 +6,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Two Czech labels side by side do not fit a narrow phone — they stack
+     rather than run off the edge. Only ever relevant to a bar with more than
+     one action in it. */
+  flex-wrap: wrap;
   gap: var(--vk-space-3);
 
   padding: var(--vk-space-4) 0;
+  /* Sticks to the bottom of the layout viewport, which on a phone is a few
+     pixels above the browser's floating address bar — so this is breathing
+     room, not clearance. The inset only has a value where the bar is absent
+     and the hardware's own is exposed instead (an installed PWA). */
   margin-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
 }
 

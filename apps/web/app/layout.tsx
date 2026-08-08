@@ -38,10 +38,18 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0b1220' },
-    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
-  ],
+  /*
+   * One tag, no `prefers-color-scheme` pair.
+   *
+   * A media-gated pair follows the *OS*, which stops being the right answer
+   * the moment someone picks a mode in the app's menu — and a browser applies
+   * the first tag whose media matches, so the OS's answer would keep winning
+   * over anything written later. A single unconditional tag is the one
+   * `color-mode.ts` can own: the bootstrap script corrects it before first
+   * paint and the toggle rewrites it on every switch. This value is only what
+   * a browser sees in the served HTML, i.e. the light page colour.
+   */
+  themeColor: '#f8fafc',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

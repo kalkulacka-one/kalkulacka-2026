@@ -19,8 +19,6 @@
 
   padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 /*
@@ -41,14 +39,9 @@
   margin: 0 auto;
   padding-top: var(--vk-space-5);
 
-  /*
-   * This column runs to the bottom of the screen (`viewport="full"`), so the
-   * last row would come to rest under the address bar with no way to bring it
-   * out. The bar's own height, added as trailing space, is what lets it scroll
-   * clear — and it is 0 wherever the browser has no bar to hide behind, so
-   * nothing is padded for nothing on a desktop.
-   */
-  padding-bottom: var(--vk-inset-bottom);
+  /* The page's last row would otherwise come to rest under the address bar
+     with no way to bring it out — see `--vk-scroll-tail`. */
+  padding-bottom: var(--vk-scroll-tail);
 }
 
 /*
@@ -305,14 +298,14 @@
 }
 
 /*
- * As a sheet this box is pinned to the bottom of the *screen*, so its last
- * comparison row has the same problem the ranking behind it does — see
- * `.inner`. Only in that state: as a desktop column it ends nowhere near the
- * screen's edge.
+ * The sheet runs to the bottom of the layout viewport, a few pixels above the
+ * address bar rather than under it — a fixed box cannot reach past that on
+ * iOS, whatever height it is given. So this is ordinary breathing room under
+ * the last row, not clearance for a bar.
  */
 .detail[data-open] .detailBody,
 .detail[data-closing] .detailBody {
-  padding-bottom: var(--vk-inset-bottom);
+  padding-bottom: var(--vk-space-5);
 }
 
 /*
@@ -357,11 +350,7 @@
    */
   .list {
     overflow-y: auto;
-    /* At this width each pane scrolls on its own and reaches the bottom of the
-       screen, so both take over the trailing space `.inner` was carrying for
-       the single-column layout — a tablet in landscape still has an address
-       bar for the last row to get stuck under. */
-    padding: var(--vk-space-4) var(--vk-space-4) calc(var(--vk-space-6) + var(--vk-inset-bottom));
+    padding: var(--vk-space-4) var(--vk-space-4) var(--vk-space-6);
     margin: calc(var(--vk-space-4) * -1) calc(var(--vk-space-4) * -1) 0;
   }
 
@@ -425,8 +414,7 @@
 
   .detail:not([data-open]):not([data-closing]) .detailBody {
     overflow-y: auto;
-    /* The other of the two panes — same trailing space, same reason. */
-    padding-bottom: calc(var(--vk-space-5) + var(--vk-inset-bottom));
+    padding-bottom: var(--vk-space-5);
   }
 }
 

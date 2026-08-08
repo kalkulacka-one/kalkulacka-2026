@@ -197,6 +197,21 @@
   --vk-tracking-snug: -0.01em;
   --vk-tracking-wide: 0.02em;
 
+  /* --- The browser's own furniture ---------------------------------------
+   * Trailing space at the end of a scrolling screen, so its last row can
+   * travel out from under the browser's floating address bar instead of coming
+   * to rest beneath it.
+   *
+   * A constant, which is unsatisfying but honest: measured on iOS 26 (see the
+   * findings in `globals.css`) the bar is not described by `env()` — every
+   * safe-area inset reads 0, notch included — and `100lvh - 100dvh` is 40px
+   * when the bar is expanded and 0 once it minimises, which is backwards from
+   * what is needed and would reflow the page mid-scroll. Nothing the platform
+   * exposes describes the bar, so this is sized by eye against it, and the
+   * `max()` picks up the real inset where one exists (an installed PWA).
+   */
+  --vk-scroll-tail: max(4rem, env(safe-area-inset-bottom, 0px));
+
   --vk-border-width: 1.5px;
   --vk-focus-width: 3px;
   --vk-focus-offset: 2px;
