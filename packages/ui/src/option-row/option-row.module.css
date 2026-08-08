@@ -39,6 +39,22 @@
 }
 
 /*
+ * The same ring `:focus-visible` draws, applied by a prop instead of real
+ * focus — for a search field whose Enter key targets a row while the caret
+ * stays in the field itself. An outset ring, not inset: this row carries no
+ * `overflow: hidden` of its own to clip it against, unlike the cards
+ * elsewhere in the app that had to move their selected-state ring inset for
+ * exactly that reason.
+ */
+.highlighted {
+  background: var(--vk-color-surface-hover);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-surface),
+    0 0 0 var(--vk-focus-width) var(--vk-focus-color);
+}
+
+/*
  * Recessed rather than absent. `background: none` used to mean the row simply
  * showed the page through it — which, now that the page is a moving wash, made
  * the rows you *cannot* pick the liveliest things on the screen. A flat sunken

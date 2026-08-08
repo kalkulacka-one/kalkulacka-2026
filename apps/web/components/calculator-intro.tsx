@@ -72,7 +72,14 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
         <StickyBar>
           {inProgress ? (
             <>
-              <Button variant="ghost" size="large" onClick={() => setConfirmingRestart(true)}>
+              {/*
+                `plate`, not `ghost`: this button now floats directly over the
+                backdrop with no container behind it (`StickyBar` dropped its
+                panel), and `ghost`'s transparent background needs one to read
+                against. `plate` is the token already built for exactly this —
+                the back link, the share action, the shell's menu trigger.
+              */}
+              <Button variant="plate" size="large" onClick={() => setConfirmingRestart(true)}>
                 {messages.intro.restart}
               </Button>
               <Button as={Link} href={resumePath} size="large">

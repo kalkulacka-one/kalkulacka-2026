@@ -6,6 +6,7 @@ import { OptionRow, SearchField, VisuallyHidden } from '@vk/ui';
 import { useRouter } from 'next/navigation';
 import {
   type KeyboardEvent,
+  type RefObject,
   useCallback,
   useEffect,
   useId,
@@ -88,22 +89,59 @@ export function DistrictPicker({ electionName, districtKind, districts }: Distri
   const searching = query.trim().length > 0;
 
   /*
-   * Enter jumps straight to the top match instead of requiring a Tab into the
-   * list and a second Enter on the row — the point of typing into a search box
-   * is that the keyboard is the whole interaction. Only ever the first
-   * *available* match: an unavailable row has no `href`, so there is nowhere
-   * for Enter to go, and picking one silently would look like it did
-   * something.
+   * Which of `available` Enter would jump to — index rather than a district
+   * object, so it stays meaningful across re-renders without needing the
+   * district's own identity to be stable. Only ever indexes `available`: an
+   * unavailable row has no `href`, so it can never be the target and never
+   * receives the highlight, the same restriction Enter itself always had.
    */
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const highlightedRowRef = useRef<HTMLLIElement>(null);
+
+  // A fresh result set starts the highlight back at the top rather than
+  // carrying over an index from the previous, differently-ordered list.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on `query` as the trigger, not read in the body.
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [query]);
+
+  // Keyed on the query as well as the index: a fresh search can leave the
+  // list scrolled somewhere from the previous one even on the keystroke where
+  // the highlight lands back on index 0 and wouldn't otherwise register as a
+  // change. The highlighted row should always be the one in view, whichever
+  // of the two moved it there.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: both are triggers for the ref-driven scroll, neither is read in the body.
+  useEffect(() => {
+    highlightedRowRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [highlightedIndex, query]);
+
   const handleSearchKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
-      if (event.key !== 'Enter') return;
-      const first = available[0];
-      if (!first) return;
-      event.preventDefault();
-      router.push(first.href);
+      if (event.key === 'ArrowDown') {
+        if (available.length === 0) return;
+        event.preventDefault();
+        setHighlightedIndex((index) => Math.min(index + 1, available.length - 1));
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        if (available.length === 0) return;
+        event.preventDefault();
+        setHighlightedIndex((index) => Math.max(index - 1, 0));
+        return;
+      }
+
+      // Enter jumps straight to the highlighted match instead of requiring a
+      // Tab into the list and a second Enter on the row — the point of typing
+      // into a search box is that the keyboard is the whole interaction.
+      if (event.key === 'Enter') {
+        const target = available[highlightedIndex];
+        if (!target) return;
+        event.preventDefault();
+        router.push(target.href);
+      }
     },
-    [available, router],
+    [available, highlightedIndex, router],
   );
 
   // Only there to say "there's more above/below" — both start hidden, since a
@@ -182,6 +220,8 @@ export function DistrictPicker({ electionName, districtKind, districts }: Distri
                           unavailable.length > 0 ? messages.picker.groupAvailable : undefined
                         }
                         districts={available}
+                        highlightedIndex={highlightedIndex}
+                        highlightedRowRef={highlightedRowRef}
                       />
                     ) : null}
 
@@ -213,10 +253,19 @@ function DistrictGroup({
   heading,
   hint,
   districts,
+  highlightedIndex,
+  highlightedRowRef,
 }: {
   heading?: string;
   hint?: string;
   districts: PickerDistrict[];
+  /**
+   * The row within *this* group that Enter would jump to. Only ever passed to
+   * the available group's own call — the unavailable group renders the same
+   * component with neither prop, so none of its rows can end up highlighted.
+   */
+  highlightedIndex?: number;
+  highlightedRowRef?: RefObject<HTMLLIElement | null>;
 }) {
   const headingId = useId();
 
@@ -232,31 +281,39 @@ function DistrictGroup({
       ) : null}
 
       <ul className={styles.list}>
-        {districts.map((district) => (
-          <li key={`${district.code}-${district.slug}`}>
-            <OptionRow
-              href={district.href}
-              label={district.name}
-              disabled={!district.available}
-              /*
-               * No "Připravujeme" meta on the unavailable rows: they sit under
-               * a heading that already says it, thirty-four times over. The
-               * number is the badge rather than a second line, because knowing
-               * your obvod's number is how people find it — but a bare digit
-               * read out before a place name is not a sentence, hence the
-               * spoken prefix.
-               */
-              leading={
-                district.showCode ? (
-                  <span className={styles.code}>
-                    <VisuallyHidden>{messages.picker.districtCodeLabel}</VisuallyHidden>
-                    {district.code}
-                  </span>
-                ) : undefined
-              }
-            />
-          </li>
-        ))}
+        {districts.map((district, index) => {
+          const isHighlighted = index === highlightedIndex;
+
+          return (
+            <li
+              key={`${district.code}-${district.slug}`}
+              ref={isHighlighted ? highlightedRowRef : undefined}
+            >
+              <OptionRow
+                href={district.href}
+                label={district.name}
+                disabled={!district.available}
+                highlighted={isHighlighted}
+                /*
+                 * No "Připravujeme" meta on the unavailable rows: they sit
+                 * under a heading that already says it, thirty-four times
+                 * over. The number is the badge rather than a second line,
+                 * because knowing your obvod's number is how people find it —
+                 * but a bare digit read out before a place name is not a
+                 * sentence, hence the spoken prefix.
+                 */
+                leading={
+                  district.showCode ? (
+                    <span className={styles.code}>
+                      <VisuallyHidden>{messages.picker.districtCodeLabel}</VisuallyHidden>
+                      {district.code}
+                    </span>
+                  ) : undefined
+                }
+              />
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

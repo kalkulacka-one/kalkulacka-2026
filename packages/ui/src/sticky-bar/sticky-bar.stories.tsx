@@ -31,3 +31,21 @@ export const OverAList: Story = {
 export const Flat: Story = {
   args: { variant: 'flat' },
 };
+
+/**
+ * Two actions, as `calculator-intro.tsx` uses it. No panel wraps the pair —
+ * each floats on its own, the secondary one in `plate` (not `ghost`, which
+ * has nothing behind it to read against now).
+ */
+export const TwoActions: Story = {
+  args: {
+    children: (
+      <>
+        <Button variant="plate" size="large">
+          Začít znovu
+        </Button>
+        <Button size="large">Pokračovat v odpovídání</Button>
+      </>
+    ),
+  },
+};

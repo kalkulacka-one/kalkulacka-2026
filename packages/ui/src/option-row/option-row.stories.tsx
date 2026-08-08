@@ -24,6 +24,11 @@ export const SenateDistrict: Story = {
   },
 };
 
+/** What Enter would pick in a search field elsewhere on the screen. */
+export const Highlighted: Story = {
+  args: { meta: 'Komunální volby 2022', highlighted: true },
+};
+
 export const List: Story = {
   render: (args) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

@@ -15,6 +15,13 @@ export type OptionRowProps = {
   onClick?: () => void;
   /** Present but not selectable — e.g. a city whose data does not exist yet. */
   disabled?: boolean;
+  /**
+   * The one a keyboard shortcut elsewhere on the screen is about to activate —
+   * a search field's Enter jumping to the top result, say. Focus itself stays
+   * in that field, so this can't be conveyed by `:focus-visible`; the row
+   * needs to look targeted without actually holding focus.
+   */
+  highlighted?: boolean;
 };
 
 /**
@@ -31,6 +38,7 @@ export function OptionRow({
   href,
   onClick,
   disabled = false,
+  highlighted = false,
 }: OptionRowProps) {
   // A disabled row stops being a control rather than staying one that rejects
   // clicks: a dead link is still focusable and still announced as a link.
@@ -38,7 +46,7 @@ export function OptionRow({
 
   return (
     <Element
-      className={`${styles.row} ${disabled ? styles.disabled : ''}`}
+      className={`${styles.row} ${disabled ? styles.disabled : ''} ${highlighted ? styles.highlighted : ''}`}
       href={disabled ? undefined : href}
       onClick={disabled ? undefined : onClick}
       type={!disabled && Component === 'button' ? 'button' : undefined}
