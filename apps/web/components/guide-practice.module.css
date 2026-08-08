@@ -6,9 +6,8 @@
 
 /*
  * The deck positions its cards absolutely, so the stage is what gives the card
- * a height. It is capped rather than fluid: this card is a demonstration sitting
- * in a reading column, not the flow's full-viewport stage, and a full-height one
- * would push the checklist it is teaching off the screen.
+ * a height. It is capped rather than fluid: this card is a demonstration
+ * sitting in a reading column, not the flow's full-viewport stage.
  */
 .stage {
   position: relative;
@@ -17,7 +16,19 @@
 }
 
 /*
- * A nudge, until the card is touched for the first time.
+ * A phone gets a shorter card. The height above is sized for a real question —
+ * a topic, a title and often a detail paragraph — where this one carries a
+ * single short line, so on a narrow screen the extra 5rem is empty card
+ * spending viewport that the status line and the primary action need more.
+ */
+@media (width < 34rem) {
+  .stage {
+    height: 16rem;
+  }
+}
+
+/*
+ * A nudge, until the card is first used.
  *
  * Three passes and then still: the point is to say "this moves", and a card
  * that keeps twitching beside the text explaining it competes with the text.
@@ -48,16 +59,43 @@
   margin-top: calc(var(--vk-space-5) * -1 + var(--vk-space-3));
 }
 
+/*
+ * `min-height` reserves the two lines the status can grow to, so the card and
+ * the button above it do not jump every time the wording changes length under
+ * the reader's own hand.
+ */
 .status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-1);
+  min-height: 3.75rem;
+  text-align: center;
+}
+
+.line {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-lead);
+  font-weight: 600;
+  line-height: var(--vk-leading-snug);
+  color: var(--vk-color-text-strong);
+  text-wrap: balance;
+}
+
+.lineDone {
+  color: var(--vk-color-agree);
+}
+
+.count {
   margin: 0;
   font-family: var(--vk-typeface-sans);
   font-size: var(--vk-text-md);
   color: var(--vk-color-text-muted);
-  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
-.statusDone {
-  color: var(--vk-color-agree);
-  font-weight: 600;
+.details {
+  display: flex;
+  justify-content: center;
+  margin-top: calc(var(--vk-space-5) * -1 + var(--vk-space-2));
 }

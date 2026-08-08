@@ -4,23 +4,39 @@ import { format, getMessages } from '@vk/i18n';
 import { Button, type CardSelection, QuestionDeck, type QuestionDeckHandle } from '@vk/ui';
 import { useCallback, useRef, useState } from 'react';
 import styles from './guide-practice.module.css';
-import { GuideSteps, type PractisedGesture } from './guide-steps';
+import type { PractisedGesture } from './guide-steps';
+import { HelpDialog } from './help-dialog';
 
 const messages = getMessages();
 
 /** The four gestures the card can actually teach; the recap step is a screen. */
 const GESTURES: PractisedGesture[] = ['agree', 'disagree', 'important', 'skip'];
 
+/** What each gesture means, said at the moment it is made. */
+const FEEDBACK: Record<PractisedGesture, string> = {
+  agree: messages.guide.feedbackAgree,
+  disagree: messages.guide.feedbackDisagree,
+  important: messages.guide.feedbackImportant,
+  skip: messages.guide.feedbackSkip,
+};
+
 const NOTHING_SELECTED: CardSelection = { agree: false, disagree: false, important: false };
 
 /**
- * The practice card, and the checklist it ticks off.
+ * The practice card, and the running commentary that teaches from it.
  *
  * The tutorial used to describe the gestures in words and then drop the reader
- * onto question 1 having never made one. This is the same list, with a real
- * `QuestionDeck` above it on a throwaway statement — the identical component
- * the flow uses, so what is learned here is literally the control they meet
- * next, down to the drag physics and the hint toast.
+ * onto question 1 having never made one. This is a real `QuestionDeck` on a
+ * throwaway statement — the identical component the flow uses, so what is
+ * learned here is literally the control they meet next, down to the drag
+ * physics and the hint toast.
+ *
+ * There is deliberately no list of steps beside it. On a phone the five-item
+ * version pushed the card, the counter and the primary action below the fold
+ * between them; the card can teach what it means to swipe left far better than
+ * a sentence can, so the sentence became the thing that gave way. The prose
+ * still exists, one tap behind "Podrobný návod" and in the shell menu's help —
+ * the same `HelpDialog` in both places.
  *
  * Nothing it records leaves this component: there is no calculator id and no
  * store write, so a practice swipe cannot show up in the recap.
@@ -28,16 +44,19 @@ const NOTHING_SELECTED: CardSelection = { agree: false, disagree: false, importa
 export function GuidePractice() {
   const [practised, setPractised] = useState<Set<PractisedGesture>>(() => new Set());
   const [selection, setSelection] = useState<CardSelection>(NOTHING_SELECTED);
+  const [showHelp, setShowHelp] = useState(false);
 
   /**
-   * Whether the reader has laid a finger on the card yet — the nudge animation
-   * runs only until they have, so it teaches once instead of fidgeting for the
-   * whole time the page is open.
+   * The gesture just made, which the status line explains. Separate from the
+   * practised set because it is about *recency*, not coverage — trying agree a
+   * second time should say so again, even though nothing new was learned.
    */
-  const [touched, setTouched] = useState(false);
+  const [latest, setLatest] = useState<PractisedGesture | null>(null);
 
   const practise = useCallback((...gestures: PractisedGesture[]) => {
-    setTouched(true);
+    // The first one named is the one the status line reports: an upward flick
+    // that also answers is an answer, with important along for the ride.
+    setLatest(gestures[0] ?? null);
     setPractised((current) => {
       if (gestures.every((gesture) => current.has(gesture))) return current;
       const next = new Set(current);
@@ -69,8 +88,7 @@ export function GuidePractice() {
   /**
    * The button below the card, which the deck knows nothing about — so the
    * card has to be told to lift away by hand. Without it the only feedback for
-   * a tapped "Přeskočit" is a tick appearing further down the page, while the
-   * card sits there looking untouched.
+   * a tapped "Přeskočit" is a line of text changing under it.
    */
   const deckRef = useRef<QuestionDeckHandle>(null);
   const skipFromButton = useCallback(() => {
@@ -87,7 +105,7 @@ export function GuidePractice() {
 
   return (
     <div className={styles.practice}>
-      <div className={`${styles.stage} ${touched ? '' : styles.nudging}`}>
+      <div className={`${styles.stage} ${latest === null ? styles.nudging : ''}`}>
         <QuestionDeck
           ref={deckRef}
           current={{
@@ -115,9 +133,9 @@ export function GuidePractice() {
       {/*
         The flow reaches "Přeskočit" from `FlowNav`, which this screen has no
         room for — leaving the downward drag as the only way to try the fourth
-        gesture, and so leaving the checklist uncompletable by anyone working
-        with taps alone. The recap's question dialog puts the same control in
-        the same place for the same reason.
+        gesture, and so leaving it out of reach of anyone working with taps
+        alone. The recap's question dialog puts the same control in the same
+        place for the same reason.
       */}
       <div className={styles.under}>
         <Button variant="plate" size="small" iconStart="arrowDown" onClick={skipFromButton}>
@@ -125,20 +143,40 @@ export function GuidePractice() {
         </Button>
       </div>
 
-      {/* `aria-live` rather than a heading: the count changes under the
-          reader's own hand, so it is a status, not new content. */}
-      <p className={`${styles.status} ${complete ? styles.statusDone : ''}`} aria-live="polite">
-        {complete
-          ? messages.guide.practiceDone
-          : practised.size === 0
-            ? messages.guide.practiceHint
-            : format(messages.guide.practiceProgress, {
-                done: practised.size,
-                total: GESTURES.length,
-              })}
-      </p>
+      {/*
+        This is the teaching surface now that the step list is gone: it names
+        the gesture just made *and* what it does, at the moment the reader's
+        own hand made it. `aria-live` rather than a heading — the text changes
+        under them, so it is a status, not new content.
+      */}
+      <div className={styles.status} aria-live="polite">
+        <p className={`${styles.line} ${complete ? styles.lineDone : ''}`}>
+          {complete
+            ? messages.guide.practiceDone
+            : latest === null
+              ? messages.guide.practiceHint
+              : FEEDBACK[latest]}
+        </p>
 
-      <GuideSteps practised={practised} />
+        {latest !== null && !complete ? (
+          <p className={styles.count}>
+            {format(messages.guide.practiceProgress, {
+              done: practised.size,
+              total: GESTURES.length,
+            })}
+          </p>
+        ) : null}
+      </div>
+
+      <div className={styles.details}>
+        <Button variant="ghost" size="small" iconStart="info" onClick={() => setShowHelp(true)}>
+          {messages.guide.practiceDetails}
+        </Button>
+      </div>
+
+      {/* Carries the practice ticks through, so the list opened from here
+          shows what has already been tried rather than a blank checklist. */}
+      <HelpDialog open={showHelp} onClose={() => setShowHelp(false)} practised={practised} />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useAnswersStore } from '../lib/answers-store';
 import { useColorMode } from '../lib/color-mode';
 import { type CalculatorRef, questionPath } from '../lib/paths';
-import { GuideSteps } from './guide-steps';
+import { HelpDialog } from './help-dialog';
 import { RestartDialog } from './restart-dialog';
 
 export type AppMenuProps = {
@@ -97,15 +97,7 @@ export function AppMenu({ calculator }: AppMenuProps) {
     <>
       <Menu label={messages.menu.label} items={items} />
 
-      <Dialog
-        open={dialog === 'help'}
-        onClose={close}
-        title={messages.guide.title}
-        closeLabel={messages.menu.close}
-        size="wide"
-      >
-        <GuideSteps />
-      </Dialog>
+      <HelpDialog open={dialog === 'help'} onClose={close} />
 
       <RestartDialog open={dialog === 'restart'} onClose={close} onConfirm={handleRestart} />
 

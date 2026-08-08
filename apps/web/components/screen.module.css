@@ -54,8 +54,26 @@
   gap: var(--vk-space-4);
 }
 
+/*
+ * The bar's cage — and it has to be a big one.
+ *
+ * `StickyBar` is `position: sticky; bottom: 0`, but a sticky element can only
+ * travel inside its own containing block, and this wrapper was exactly the
+ * bar's own height. There was nowhere for it to go, so it never pinned on any
+ * Screen: on a phone the tutorial's "Rozumím, začít" sat 410px below the fold
+ * on a 1371px page, which is the opposite of what the component is for.
+ *
+ * Moving `position: sticky` up here fixes it, because *this* element's
+ * containing block is `.inner`, which spans the whole document. The bar inside
+ * keeps its own sticky declaration — inert now that it is always at the bottom
+ * of its parent, and still load-bearing in the recap, which lays the same
+ * component out for itself.
+ */
 .footer {
   margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: var(--vk-z-card-lifted);
 }
 
 /* The back link is `BackLink` — shared with the recap and the results, so the
