@@ -1,14 +1,23 @@
+/*
+ * Stacked on a phone, side by side from 34rem up — and which action leads
+ * flips with it. Two Czech labels don't fit one line below roughly 26–31rem
+ * (content-driven, so it moves with whatever the labels actually are), which
+ * is what `flex-wrap` alone used to handle; but reading order needs to flip
+ * with the *same* switch reordering can't hook to (there is no CSS "did this
+ * actually wrap" query), so the wrap is now a deliberate breakpoint instead,
+ * set comfortably above the widest measured natural wrap point rather than
+ * pinned to it — a `min-width` here that undershoots would fix one language's
+ * button lengths and re-break the layout for a longer one.
+ */
 .bar {
   position: sticky;
   bottom: 0;
   z-index: var(--vk-z-card-lifted);
 
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Two Czech labels side by side do not fit a narrow phone — they stack
-     rather than run off the edge. Only ever relevant to a bar with more than
-     one action in it. */
   flex-wrap: wrap;
   gap: var(--vk-space-3);
 
@@ -18,6 +27,29 @@
      room, not clearance. The inset only has a value where the bar is absent
      and the hardware's own is exposed instead (an installed PWA). */
   margin-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
+}
+
+/*
+ * Primary leads stacked — top-to-bottom, "what happens" before "the other
+ * option" — while the secondary stays visually first in the DOM (a screen
+ * reader or a Tab press meets it in that order regardless of the breakpoint,
+ * which is exactly why this is a visual `order`, not a markup reorder).
+ */
+.bar > :last-child {
+  order: -1;
+}
+
+@media (min-width: 34rem) {
+  .bar {
+    flex-direction: row;
+  }
+
+  /* Row layout puts the secondary back on the left — the conventional
+     placement once there's room to read the pair left-to-right instead of
+     top-to-bottom. */
+  .bar > :last-child {
+    order: 0;
+  }
 }
 
 /*
