@@ -7,7 +7,8 @@
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --port 3000",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@appsignal/javascript": "1.6.1",
@@ -28,6 +29,7 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "26.1.2",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
