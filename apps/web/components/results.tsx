@@ -184,7 +184,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
         // Routed through the same-origin proxy here only: the canvas export
         // needs readable pixels (the CDN sends no CORS header), everywhere
         // else on this screen keeps loading the CDN directly.
-        avatarUrl: toProxiedAssetUrl(candidate.avatarUrl, calculator.assetBase),
+        avatarUrl: toProxiedAssetUrl(candidate.avatarUrl, calculator),
         ...(match.matchPercentage === undefined
           ? { noAnswerLabel: messages.results.noAnswer }
           : {

@@ -13,13 +13,20 @@ const PROXY_PREFIX = '/api/assets/';
  * avatar, resolved against a different host entirely, or no `assetBase` at
  * all when running on fixtures — is left as-is rather than routed through a
  * proxy that would just reject it.
+ *
+ * The proxy resolves its path against `DATA_ENDPOINT`, while `assetBase` is
+ * the *calculator's* base — endpoint plus `{group}/{key}` (see
+ * `loadPlatformCalculator`, which also sets `electionId`/`districtCode` to
+ * exactly those two segments). Those segments must therefore be put back in
+ * front of the remainder, or the proxied path points at the endpoint root.
  */
 export function toProxiedAssetUrl(
   url: string | undefined,
-  assetBase: string | undefined,
+  calculator: { assetBase?: string; electionId: string; districtCode: string },
 ): string | undefined {
+  const { assetBase, electionId, districtCode } = calculator;
   if (!url || !assetBase || !url.startsWith(assetBase)) return url;
 
   const rest = url.slice(assetBase.length).replace(/^\/+/, '');
-  return rest ? `${PROXY_PREFIX}${rest}` : url;
+  return rest ? `${PROXY_PREFIX}${electionId}/${districtCode}/${rest}` : url;
 }
