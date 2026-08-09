@@ -2,7 +2,9 @@ import { activeLocale, getMessages } from '@vk/i18n';
 import { Backdrop } from '@vk/ui';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Radio_Canada } from 'next/font/google';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
+import { MonitoringBoot } from '../components/monitoring-boot';
 import { bootstrapColorMode } from '../lib/color-mode';
 
 import '@vk/tokens/base.css';
@@ -63,6 +65,8 @@ export const viewport: Viewport = {
   themeColor: '#f8fafc',
 };
 
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   // The theme is chosen server-side, so the correct brand is in the first byte
   // of HTML — no flash of the default theme before hydration.
@@ -107,6 +111,26 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div className="backdropLayer">
           <Backdrop />
         </div>
+
+        {/*
+          Plausible is cookieless: no identifier is written to the visitor's
+          device, so there is nothing here for a consent banner to gate — that's
+          the same posture production ships. Absent entirely without
+          `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`: no script tag, no request, on a fork
+          that hasn't configured an analytics domain. `src` is the first-party
+          path rewritten to plausible.io in `next.config.ts`, not the vendor's
+          own domain, so an adblocker measuring third-party requests doesn't
+          drop it.
+        */}
+        {plausibleDomain ? (
+          <Script
+            defer
+            data-domain={plausibleDomain}
+            src="/js/script.tagged-events.outbound-links.js"
+          />
+        ) : null}
+
+        <MonitoringBoot />
 
         {children}
       </body>

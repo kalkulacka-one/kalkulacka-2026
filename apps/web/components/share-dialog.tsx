@@ -15,6 +15,7 @@ import {
   VisuallyHidden,
 } from '@vk/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { trackEvent } from '../lib/analytics';
 import { copyText } from '../lib/clipboard';
 import { requestShareLink } from '../lib/session-sync';
 import styles from './share-dialog.module.css';
@@ -162,6 +163,13 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
       // nothing to report, and nothing to undo.
       if (result === 'cancelled' || result === 'shared') setStatus('idle');
       else setStatus(result === 'downloaded' ? 'saved' : 'failed');
+
+      // Both the OS share sheet and the direct-download fallback are a
+      // completed hand-off of the image — a cancelled sheet or a failed
+      // export is not.
+      if (result === 'shared' || result === 'downloaded') {
+        trackEvent('Result shared', { method: 'image' });
+      }
     } catch {
       setStatus('failed');
     }
@@ -189,7 +197,9 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
     // the address the reader is actually on — staging, a preview deployment,
     // an embed's host — and not whatever a build-time base URL said.
     const publicUrl = new URL(link.resultPath(publicId), window.location.origin).toString();
-    setLinkStatus((await copyText(publicUrl)) ? 'copied' : 'failed');
+    const copied = await copyText(publicUrl);
+    setLinkStatus(copied ? 'copied' : 'failed');
+    if (copied) trackEvent('Result shared', { method: 'link' });
   }, [link]);
 
   /*

@@ -35,6 +35,29 @@ const nextConfig: NextConfig = {
   // Dev-only: lets phones and tablets on the same network load the JS bundle.
   // Production is unaffected — this key is ignored outside `next dev`.
   allowedDevOrigins: localAddresses(),
+
+  /*
+   * Plausible, served from this origin instead of plausible.io.
+   *
+   * An adblocker that recognises the third-party domain drops the request
+   * before it's sent; a first-party path under this domain is indistinguishable
+   * from the rest of the app's own traffic. The rewrite is unconditional —
+   * whether anything ever hits it depends on whether the script tag is
+   * rendered at all, which is gated on `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` in the
+   * layout, not here.
+   */
+  async rewrites() {
+    return [
+      {
+        source: '/js/script.tagged-events.outbound-links.js',
+        destination: 'https://plausible.io/js/script.tagged-events.outbound-links.js',
+      },
+      {
+        source: '/api/event',
+        destination: 'https://plausible.io/api/event',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

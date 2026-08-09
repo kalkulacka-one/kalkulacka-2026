@@ -4,6 +4,7 @@ import { getMessages } from '@vk/i18n';
 import { Button, StickyBar } from '@vk/ui';
 import { useEffect } from 'react';
 import { Screen } from '../components/screen';
+import { reportError } from '../lib/monitoring';
 
 const messages = getMessages();
 
@@ -24,9 +25,11 @@ export default function ErrorScreen({
   reset: () => void;
 }) {
   // Client-side error boundaries are the one place left that never reaches a
-  // server log on their own — this is what puts the failure somewhere visible.
+  // server log on their own — `reportError` is what puts the failure
+  // somewhere visible, on the console always and in AppSignal wherever a
+  // frontend key is configured.
   useEffect(() => {
-    console.error(error);
+    reportError(error, { digest: error.digest });
   }, [error]);
 
   return (
