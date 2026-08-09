@@ -121,6 +121,15 @@ export type Calculator = {
   candidates: Candidate[];
   /** Keyed by candidate id. A candidate that never answered has no entry. */
   candidateAnswers: Record<string, CandidateAnswer[]>;
+  /**
+   * Where this calculator's own images live — every `avatarUrl`/`logoUrl` on
+   * it starts with this string. Only the platform format sets it; the archive
+   * resolves its own images against a fixed, unrelated host instead (see
+   * `ARCHIVE_ASSET_BASE`). It exists so a caller can recognise "this image is
+   * one of this calculator's own" without hard-coding a CDN host — the share
+   * card's export proxy rewrite is the one consumer today.
+   */
+  assetBase?: string;
 };
 
 /** An election, as listed on the picker. */

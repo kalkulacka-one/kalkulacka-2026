@@ -73,3 +73,15 @@ export class InternalServerError extends HttpError {
     super(message, 500, 'errors/internal');
   }
 }
+
+export class BadGatewayError extends HttpError {
+  constructor(message = 'Bad Gateway') {
+    super(message, 502, 'errors/bad-gateway');
+  }
+}
+
+export class GatewayTimeoutError extends HttpError {
+  constructor(message = 'Gateway Timeout') {
+    super(message, 504, 'errors/gateway-timeout');
+  }
+}

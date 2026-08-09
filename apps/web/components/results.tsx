@@ -19,6 +19,7 @@ import { buildAiPrompt } from '../lib/ai-prompt';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
 import { canSync, useResultsSync } from '../lib/session-sync';
+import { toProxiedAssetUrl } from '../lib/share-asset-url';
 import { AppShell } from './app-shell';
 import { BackLink } from './back-link';
 import { ComparisonPane } from './comparison-pane';
@@ -180,7 +181,10 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
         // The short name, not the full one: "SPOLU" fits a story where
         // "SPOLU (ODS, KDU-ČSL, TOP 09)" would be trimmed to an ellipsis.
         name: candidate.shortName || candidate.name,
-        avatarUrl: candidate.avatarUrl,
+        // Routed through the same-origin proxy here only: the canvas export
+        // needs readable pixels (the CDN sends no CORS header), everywhere
+        // else on this screen keeps loading the CDN directly.
+        avatarUrl: toProxiedAssetUrl(candidate.avatarUrl, calculator.assetBase),
         ...(match.matchPercentage === undefined
           ? { noAnswerLabel: messages.results.noAnswer }
           : {
