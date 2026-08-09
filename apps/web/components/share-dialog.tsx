@@ -104,11 +104,19 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
         return;
       }
 
+      // The sheet's own caption, where the platform offers one — the card's
+      // headline and which calculator it came from, joined here rather than
+      // held on `content` (which keeps them apart so the lockup can weight
+      // them separately).
+      const caption = [content.title, content.electionName, content.calculatorName]
+        .filter(Boolean)
+        .join(' · ');
+
       const result = await shareImage({
         blob,
         fileName: exportName,
         title: content.title,
-        ...(content.subtitle ? { text: content.subtitle } : {}),
+        text: caption,
         url,
       });
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { toBlob } from 'html-to-image';
+import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { CARD_SIZES, type CardFormat } from './card-format';
 import { type ShareCardContent, ShareCardLayout } from './share-card-layout';
@@ -50,27 +51,48 @@ export async function renderShareCard({
   const root = createRoot(host);
 
   try {
-    await new Promise<void>((resolve) => {
+    /*
+     * Nothing in here waits on an animation frame, and that is deliberate: a
+     * browser stops servicing `requestAnimationFrame` in a tab that isn't
+     * visible, and backgrounding this tab mid-export is the *normal* case on a
+     * phone — the OS share sheet is another app. An earlier version waited two
+     * frames here and simply never finished once that happened.
+     *
+     * So: commit synchronously, then yield twice through the task queue (which
+     * keeps running when hidden, merely throttled) to let React flush the
+     * passive effect that draws the wash into its `<canvas>`.
+     */
+    flushSync(() => {
       root.render(
         <ShareCardLayout content={content} colors={colors} theme={theme} format={format} />,
       );
-      // Two frames, not one: the first commits React's own DOM, the second
-      // is what guarantees the wash's `useEffect` — which draws into a
-      // `<canvas>` React itself never touches — has actually run.
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const node = host.firstElementChild as HTMLElement | null;
     if (!node) return null;
 
     if (document.fonts?.ready) await document.fonts.ready.catch(() => undefined);
-    // The winner row's bar grows in, and every row rises into place — capturing
-    // mid-animation would freeze the export on a half-drawn frame.
-    await Promise.all(
-      node
-        .getAnimations({ subtree: true })
-        .map((animation) => animation.finished.catch(() => undefined)),
-    );
+
+    /*
+     * The winner's bar grows in and every row rises into place, so a capture
+     * taken now would freeze the export on a half-drawn frame.
+     *
+     * Seek each one to its end rather than awaiting `animation.finished`:
+     * a browser does not advance animations in a tab that isn't visible, so
+     * awaiting them means an export started and then backgrounded — switching
+     * apps to pick a share target is the *normal* case on a phone — never
+     * resolves at all. `finish()` is synchronous and doesn't care.
+     */
+    for (const animation of node.getAnimations({ subtree: true })) {
+      // Throws on an infinite animation, which has no end to seek to; such an
+      // animation also has no "settled" frame to wait for, so skipping it is
+      // the only option either way.
+      try {
+        animation.finish();
+      } catch {}
+    }
 
     return await toBlob(node, { width, height, pixelRatio: 1 });
   } catch {

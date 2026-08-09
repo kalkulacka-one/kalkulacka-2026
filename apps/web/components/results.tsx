@@ -177,7 +177,8 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
   const shareContent = useMemo<ShareCardContent>(
     () => ({
       brand: messages.app.title,
-      subtitle: [calculator.electionName, calculator.name].filter(Boolean).join(' · '),
+      ...(calculator.electionName ? { electionName: calculator.electionName } : {}),
+      ...(calculator.name ? { calculatorName: calculator.name } : {}),
       title: messages.results.title,
       winnerLabel: messages.results.winner,
       entries: results.slice(0, 5).map(({ candidate, match, rank }, index) => ({

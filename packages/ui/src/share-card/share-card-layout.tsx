@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { AppHeader } from '../app-header/app-header';
 import { createShaderRenderer } from '../backdrop/shader-renderer';
-import { Logo } from '../logo/logo';
 import { MatchRow } from '../match-row/match-row';
 import { CARD_SIZES, type CardFormat } from './card-format';
 import styles from './share-card-layout.module.css';
@@ -21,11 +21,20 @@ export type ShareCardEntry = {
   noAnswerLabel?: string;
 };
 
+/*
+ * The lockup's three parts, kept separate rather than pre-joined into one
+ * string: `AppHeader` splits the election's year off its type and sets the
+ * type, the district and the year in different weights. Handing it a joined
+ * "Komunální volby 2022 · Pardubice" would render one flat line with a
+ * separator the app's own header has never had.
+ */
 export type ShareCardContent = {
-  /** The product name — "Volební kalkulačka" — set next to the mark, same as `AppHeader`. */
+  /** The product name — "Volební kalkulačka" — set next to the mark. */
   brand: string;
-  /** Election and district, already joined by the caller — sits under `brand`. */
-  subtitle?: string;
+  /** e.g. "Komunální volby 2022". */
+  electionName?: string;
+  /** The district, e.g. "Pardubice". */
+  calculatorName?: string;
   /** The card's own headline, e.g. "Moje shoda". */
   title: string;
   /** The top row's caption — e.g. "Největší shoda". */
@@ -130,38 +139,40 @@ export function ShareCardLayout({ content, colors, theme, format }: ShareCardLay
 
       <div className={styles.content}>
         {/*
-          The app's own lockup — mark, product name, election/district — the
-          same three things `AppHeader` shows on every screen, just given the
-          room a share image can afford instead of a thin top bar.
+          Literally the app's own header, not a copy of it — so the mark, the
+          weights, and the un-separated "Komunální volby Pardubice 2022" line
+          are the ones every screen already shows. It is sized by `zoom` on the
+          wrapper rather than by props, because `AppHeader` pins its own mark
+          to 12px and its type to a viewport-fluid token: neither is a knob,
+          and both need to grow together anyway.
         */}
-        <div className={styles.brand}>
-          <Logo size={format === 'story' ? 30 : 34} className={styles.brandLogo} />
-          <div className={styles.brandNames}>
-            <p className={styles.brandTitle}>{content.brand}</p>
-            {content.subtitle ? <p className={styles.brandSubtitle}>{content.subtitle}</p> : null}
+        <div className={styles.head}>
+          <div className={styles.brand}>
+            <AppHeader
+              title={content.brand}
+              {...(content.electionName ? { electionName: content.electionName } : {})}
+              {...(content.calculatorName ? { calculatorName: content.calculatorName } : {})}
+            />
           </div>
+          <h2 className={styles.title}>{content.title}</h2>
         </div>
-
-        <h2 className={styles.title}>{content.title}</h2>
 
         {/* pointer-events: none in CSS — this is a picture of the list, not the list. */}
-        <div className={styles.rowsWrap}>
-          <ul className={styles.rows}>
-            {content.entries.map((entry) => (
-              <StaticMatchRow
-                key={`${entry.rank}-${entry.name}`}
-                rank={entry.rank}
-                name={entry.name}
-                avatarUrl={entry.avatarUrl}
-                matchPercentage={entry.matchPercentage}
-                percentLabel={entry.percentLabel}
-                noAnswerLabel={entry.noAnswerLabel ?? ''}
-                winner={entry.rank === 1}
-                winnerLabel={entry.rank === 1 ? content.winnerLabel : undefined}
-              />
-            ))}
-          </ul>
-        </div>
+        <ul className={styles.rows}>
+          {content.entries.map((entry) => (
+            <StaticMatchRow
+              key={`${entry.rank}-${entry.name}`}
+              rank={entry.rank}
+              name={entry.name}
+              avatarUrl={entry.avatarUrl}
+              matchPercentage={entry.matchPercentage}
+              percentLabel={entry.percentLabel}
+              noAnswerLabel={entry.noAnswerLabel ?? ''}
+              winner={entry.rank === 1}
+              winnerLabel={entry.rank === 1 ? content.winnerLabel : undefined}
+            />
+          ))}
+        </ul>
 
         {content.url ? <p className={styles.url}>{content.url}</p> : null}
       </div>

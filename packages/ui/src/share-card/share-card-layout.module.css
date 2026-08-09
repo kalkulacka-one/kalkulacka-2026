@@ -32,42 +32,35 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--card-pad, 4.5rem);
+  padding: var(--card-pad, 4rem);
   box-sizing: border-box;
 }
 
-/* --- The app's own lockup: mark, product name, election/district. -------- */
+/*
+ * Everything below is sized with `zoom` rather than by overriding each
+ * component's own font sizes and paddings.
+ *
+ * Those components are built for a phone viewport, and a share image is a
+ * ~3× wider canvas that has to *read* at the same scale someone sees in the
+ * app — so the whole lockup and the whole ranking are magnified bodily,
+ * exactly as a screenshot of the app would be. Restyling them piecemeal would
+ * mean re-deciding every size the design system has already decided, and
+ * re-deciding them again the next time the app's own sizes move.
+ *
+ * `zoom` and not `transform: scale`: a transformed box keeps its *pre*-scale
+ * footprint in flow, so the layout would have to be told each block's real
+ * height by hand. `zoom` reflows for real, and ordinary flexbox does the rest.
+ */
+/* The lockup and the headline travel together — they are one block of type,
+   and both layouts place them as one. */
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-head-gap, 2.5rem);
+}
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: var(--card-brand-gap, 1rem);
-  font-family: var(--vk-typeface-display);
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-}
-
-.brandLogo {
-  flex: none;
-  color: var(--vk-color-text);
-}
-
-.brandNames {
-  min-width: 0;
-}
-
-.brandTitle {
-  margin: 0;
-  font-size: var(--card-brand-size, 1.375rem);
-  font-weight: 700;
-  color: var(--vk-color-text);
-}
-
-.brandSubtitle {
-  margin: 0;
-  font-size: var(--card-brand-size, 1.375rem);
-  font-weight: 400;
-  color: var(--vk-color-text-muted);
+  zoom: var(--card-brand-zoom, 3);
 }
 
 /*
@@ -79,32 +72,16 @@
  * instead of following the viewport it's captured from.
  */
 .title {
-  margin: var(--card-title-margin, 2rem 0 0);
+  margin: 0;
   font-family: var(--vk-typeface-display);
-  font-size: var(--card-title-size, 3.25rem);
+  font-size: var(--card-title-size, 5.5rem);
   font-weight: 700;
   letter-spacing: var(--vk-tracking-tight);
   line-height: var(--vk-leading-tight);
   color: var(--vk-color-text);
 }
 
-/*
- * The ranking, blown up past `MatchRow`'s own (screen-scale) sizing —
- * `zoom` rather than `transform: scale`, because a transformed box keeps its
- * *pre*-scale footprint in flow and would need the footer manually shoved
- * down to compensate; `zoom` reflows for real, so the wrapper below it just
- * needs `flex: 1` and everything else falls out of ordinary layout.
- */
-.rowsWrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  min-height: 0;
-  margin: var(--card-rows-margin, 2.5rem 0);
-}
-
 .rows {
-  width: 100%;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -112,75 +89,88 @@
   flex-direction: column;
   gap: var(--card-row-gap, 1rem);
   pointer-events: none;
-  zoom: var(--card-rows-zoom, 1.5);
+  zoom: var(--card-rows-zoom, 2.5);
 }
 
 .url {
   margin: 0;
   font-family: var(--vk-typeface-sans);
-  font-size: var(--card-foot-size, 1.125rem);
+  font-size: var(--card-foot-size, 1.75rem);
   font-weight: 500;
   color: var(--vk-color-text);
 }
 
-/* --- Story: one column, filling the card top to bottom. ------------------ */
+/* --- Story ---------------------------------------------------------------
+ * The head belongs *with* the ranking, not stranded at the top edge above a
+ * field of empty wash: two `margin-top: auto` split the slack evenly, which
+ * drops the head-and-list group into the middle of the card and leaves the
+ * url alone on the bottom line.
+ */
 .card[data-format="story"] {
   --card-blur: 60px;
-  --card-pad: 4rem;
-  --card-brand-gap: 0.875rem;
-  --card-brand-size: 1.375rem;
-  --card-title-size: 3.25rem;
-  --card-title-margin: 2rem 0 0;
-  --card-rows-margin: 2.5rem 0;
-  --card-rows-zoom: 1.55;
-  --card-row-gap: 1.25rem;
-  --card-foot-size: 1.125rem;
+  --card-pad: 3.5rem;
+  --card-head-gap: 2.5rem;
+  --card-brand-zoom: 3.4;
+  --card-title-size: 6.25rem;
+  --card-rows-zoom: 2.8;
+  --card-row-gap: 0.75rem;
+  --card-foot-size: 2rem;
 }
 
-/* --- Landscape: header as a left column, ranking as a right one — the same
-   two-pane shape the results screen itself uses above its own 64rem
-   breakpoint. */
+.card[data-format="story"] .head {
+  margin: auto 0 2.5rem;
+}
+
+.card[data-format="story"] .url {
+  margin-top: auto;
+}
+
+/* --- Landscape -----------------------------------------------------------
+ * Header as a left column, ranking as a right one — the same two-pane shape
+ * the results screen itself uses above its own 64rem breakpoint. Height is
+ * the binding constraint at 16:9, so the ranking zooms less here than in the
+ * story: five rows have 936px to live in rather than most of 1792.
+ */
 .card[data-format="landscape"] {
   --card-blur: 76px;
-  --card-pad: 4.5rem;
-  --card-brand-gap: 1rem;
-  --card-brand-size: 1.5rem;
-  --card-title-size: 3.75rem;
-  --card-title-margin: 1.5rem 0 0;
-  --card-rows-zoom: 1.28;
-  --card-row-gap: 0.875rem;
-  --card-foot-size: 1.25rem;
+  --card-pad: 4rem;
+  --card-head-gap: 1.75rem;
+  /*
+   * Lower than the story's, and not a taste call: `AppHeader`'s subtitle is
+   * `white-space: nowrap` with an ellipsis, sized for a full-width bar. Zoomed
+   * inside a column this narrow it runs out of room and clips to "Komunální
+   * volby Pardubic…", so the zoom is capped at what the longest of those lines
+   * actually fits in.
+   */
+  --card-brand-zoom: 2.5;
+  --card-title-size: 5.5rem;
+  --card-rows-zoom: 1.95;
+  --card-row-gap: 0.625rem;
+  --card-foot-size: 2rem;
 }
 
 .card[data-format="landscape"] .content {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  /* Left column: brand at the top, title pinned to the bottom of the flexible
-     middle row (the gap between them), url last. Right column ignores all
-     three and just spans the full height. */
-  grid-template-rows: auto 1fr auto;
-  column-gap: 4rem;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  /* Left column: the head centred in the tall row, url on the line below.
+     Right column ignores both and spans the full height. */
+  grid-template-rows: 1fr auto;
+  column-gap: 3.5rem;
 }
 
-.card[data-format="landscape"] .brand {
+.card[data-format="landscape"] .head {
   grid-column: 1;
   grid-row: 1;
+  align-self: center;
 }
 
-.card[data-format="landscape"] .title {
-  grid-column: 1;
-  grid-row: 2;
-  align-self: end;
-  margin: 0;
-}
-
-.card[data-format="landscape"] .rowsWrap {
+.card[data-format="landscape"] .rows {
   grid-column: 2;
-  grid-row: 1 / span 3;
-  margin: 0;
+  grid-row: 1 / span 2;
+  align-self: center;
 }
 
 .card[data-format="landscape"] .url {
   grid-column: 1;
-  grid-row: 3;
+  grid-row: 2;
 }

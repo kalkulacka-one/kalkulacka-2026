@@ -5,7 +5,8 @@ import { CARD_THEMES } from './theme-colors';
 
 const content = {
   brand: 'Volební kalkulačka',
-  subtitle: 'Komunální volby 2022 · Pardubice',
+  electionName: 'Komunální volby 2022',
+  calculatorName: 'Pardubice',
   title: 'Moje shoda',
   winnerLabel: 'Největší shoda',
   entries: [
