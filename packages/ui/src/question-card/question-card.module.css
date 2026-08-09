@@ -102,6 +102,20 @@
   overflow-y: auto;
 }
 
+/*
+ * Room for the drag compass, which is an overlay — it cannot push text out of
+ * its own way, so the card that carries it holds its own text clear instead.
+ *
+ * Vertical, not horizontal. The pills ring the band's top corners (the two
+ * diagonals) and its bottom edge (left, down, right): two horizontal rows,
+ * with nothing at all at mid-height where this used to reserve a gutter. That
+ * gutter cost the text an extra wrapped line *and* left it colliding with the
+ * row underneath — reserving the wrong axis is worse than reserving nothing.
+ */
+.guided .body {
+  padding-block: 2.75rem;
+}
+
 .statement {
   margin: 0;
   font-family: var(--vk-typeface-question);
@@ -120,6 +134,19 @@
   line-height: 1.62;
   color: var(--vk-color-text-muted);
   text-wrap: pretty;
+}
+
+/*
+ * The only text on the card, which is the tutorial's practice card and nothing
+ * else. It loses the gap that separates it from a statement, and it centres:
+ * as a footnote under a question it is left-aligned prose, but alone in the
+ * middle of a card ringed by direction pills it is a caption for them, and a
+ * ragged block hugging one edge reads as text that lost its heading.
+ */
+.detailAlone {
+  margin: 0;
+  text-align: center;
+  text-wrap: balance;
 }
 
 /* --- Action row -------------------------------------------------------- */

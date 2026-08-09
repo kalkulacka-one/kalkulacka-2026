@@ -1,5 +1,8 @@
+'use client';
+
 import { getMessages } from '@vk/i18n';
 import { TutorialStep } from '@vk/ui';
+import { usePointerKind } from '../lib/use-pointer-kind';
 import styles from './guide-steps.module.css';
 
 const messages = getMessages();
@@ -7,57 +10,64 @@ const messages = getMessages();
 /** The gestures the practice card can tick off. Rekapitulace is a screen. */
 export type PractisedGesture = 'agree' | 'disagree' | 'important' | 'skip';
 
-export type GuideStepsProps = {
-  /**
-   * Which gestures have been tried on the practice card, when there is one.
-   * The help overlay renders the same list with no card above it and so passes
-   * nothing — an unticked checklist there would imply homework.
-   */
-  practised?: ReadonlySet<PractisedGesture>;
-};
-
 /**
  * What the flow's controls mean.
  *
  * Lives on its own because it is needed in two places that must never drift
- * apart: the `/navod` screen before the first card, and the help overlay the
- * shell menu opens from anywhere. Same list, same order, one definition.
+ * apart: the "Podrobný návod" overlay on `/navod`, and the same overlay opened
+ * from the shell menu anywhere in the flow. Same list, same order, one
+ * definition.
+ *
+ * It says nothing about what the reader has already tried. It used to tick off
+ * the gestures practised on the card behind it, which turned reference prose
+ * into a scoreboard — and a scoreboard is precisely wrong for the surface
+ * someone opens *because they are stuck*, where a row marked "Vyzkoušeno" is
+ * the row they came to re-read. Discovery is shown where it is happening, on
+ * the card's own arrows.
+ *
+ * The wording follows the pointer: a finger is told to drag and tap, a mouse is
+ * told about the keys and to click.
  */
-export function GuideSteps({ practised }: GuideStepsProps) {
-  const done = (gesture: PractisedGesture) => (practised ? practised.has(gesture) : undefined);
+export function GuideSteps() {
+  const pointer = usePointerKind();
+  const touch = pointer === 'touch';
 
   return (
     <ul className={styles.steps}>
       <TutorialStep
         icon="arrowLeft"
         title={messages.guide.agreeTitle}
-        description={messages.guide.agreeDescription}
-        done={done('agree')}
-        doneLabel={messages.guide.stepDone}
+        description={
+          touch ? messages.guide.agreeDescriptionTouch : messages.guide.agreeDescriptionPointer
+        }
       />
       <TutorialStep
         icon="arrowRight"
         title={messages.guide.disagreeTitle}
-        description={messages.guide.disagreeDescription}
-        done={done('disagree')}
-        doneLabel={messages.guide.stepDone}
+        description={
+          touch
+            ? messages.guide.disagreeDescriptionTouch
+            : messages.guide.disagreeDescriptionPointer
+        }
       />
       <TutorialStep
         icon="starThin"
         title={messages.guide.importantTitle}
-        description={messages.guide.importantDescription}
-        done={done('important')}
-        doneLabel={messages.guide.stepDone}
+        description={
+          touch
+            ? messages.guide.importantDescriptionTouch
+            : messages.guide.importantDescriptionPointer
+        }
       />
       <TutorialStep
         icon="arrowDown"
         title={messages.guide.skipTitle}
-        description={messages.guide.skipDescription}
-        done={done('skip')}
-        doneLabel={messages.guide.stepDone}
+        description={
+          touch ? messages.guide.skipDescriptionTouch : messages.guide.skipDescriptionPointer
+        }
       />
       <TutorialStep
-        icon="list"
+        icon="results"
         title={messages.guide.recapTitle}
         description={messages.guide.recapDescription}
       />

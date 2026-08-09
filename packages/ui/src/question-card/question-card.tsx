@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
+import type { ReactNode, PointerEvent as ReactPointerEvent, Ref } from 'react';
 import { Chip } from '../chip/chip';
 import { Icon } from '../icon/icon';
 import styles from './question-card.module.css';
@@ -6,10 +6,21 @@ import styles from './question-card.module.css';
 /** Everything the card needs to render one question. */
 export type QuestionCardContent = {
   id: string;
-  /** The statement being agreed or disagreed with. */
-  statement: string;
-  /** Short label for the outlined chip. */
-  title: string;
+  /**
+   * The statement being agreed or disagreed with.
+   *
+   * Optional because the tutorial's practice card has nothing to agree with:
+   * it is a surface to put your hands on, and the only text it carries is the
+   * instruction for doing so, which belongs in `detail`. Every card in the
+   * flow itself has one.
+   */
+  statement?: string;
+  /**
+   * Short label for the outlined chip. Optional along with `topic` — the
+   * practice card has neither, so the chips row it would have started can be
+   * skipped instead of rendered empty.
+   */
+  title?: string;
   /** Optional explainer paragraph. */
   detail?: string;
   /** Topic, shown as the filled chip. */
@@ -45,6 +56,14 @@ export type QuestionCardProps = {
    * answering, not by being closed.
    */
   close?: { label: string; onClose: () => void };
+  /**
+   * Decoration drawn over the card's own content — the tutorial's drag
+   * compass, and nothing else so far. Inside the card rather than layered on
+   * the deck above it, so it travels with the card under a drag: an arrow that
+   * stayed behind while the card moved would be pointing at where the card used
+   * to be.
+   */
+  guides?: ReactNode;
   /** Non-interactive cards are hidden from assistive tech and the tab order. */
   inert?: boolean;
   elevation?: 'active' | 'next' | 'back' | 'lifted';
@@ -75,6 +94,7 @@ export function QuestionCard({
   onToggleImportant,
   onPointerDown,
   close,
+  guides,
   inert = false,
   elevation = 'active',
   ref,
@@ -95,6 +115,7 @@ export function QuestionCard({
         styles.card,
         interactive ? styles.interactive : undefined,
         close ? styles.closable : undefined,
+        guides ? styles.guided : undefined,
         className,
       ]
         .filter(Boolean)
@@ -120,14 +141,22 @@ export function QuestionCard({
         </button>
       ) : null}
 
-      <div className={styles.chips}>
-        {content.topic ? <Chip variant="filled">{content.topic}</Chip> : null}
-        <Chip variant="outline">{content.title}</Chip>
-      </div>
+      {guides}
+
+      {content.topic || content.title ? (
+        <div className={styles.chips}>
+          {content.topic ? <Chip variant="filled">{content.topic}</Chip> : null}
+          {content.title ? <Chip variant="outline">{content.title}</Chip> : null}
+        </div>
+      ) : null}
 
       <div className={styles.body}>
-        <p className={styles.statement}>{content.statement}</p>
-        {content.detail ? <p className={styles.detail}>{content.detail}</p> : null}
+        {content.statement ? <p className={styles.statement}>{content.statement}</p> : null}
+        {content.detail ? (
+          <p className={`${styles.detail} ${content.statement ? '' : styles.detailAlone}`}>
+            {content.detail}
+          </p>
+        ) : null}
       </div>
 
       <div className={styles.actions}>

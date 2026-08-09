@@ -39,6 +39,10 @@
   .screen {
     display: block;
     overflow-y: auto;
+    /* The desktop frame is pinned, so `html` can't absorb a card flying off the
+       side of the practice deck — this box is the scroller here, and without
+       this it grows a horizontal scrollbar the moment one does. */
+    overflow-x: clip;
     overscroll-behavior: contain;
   }
 

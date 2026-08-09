@@ -2,17 +2,11 @@
 
 import { getMessages } from '@vk/i18n';
 import { Dialog } from '@vk/ui';
-import { GuideSteps, type PractisedGesture } from './guide-steps';
+import { GuideSteps } from './guide-steps';
 
 export type HelpDialogProps = {
   open: boolean;
   onClose: () => void;
-  /**
-   * Passed only from the tutorial, where a practice card sits behind this
-   * dialog and its ticks are worth carrying through. From the shell menu, mid
-   * flow, there is nothing to have practised.
-   */
-  practised?: ReadonlySet<PractisedGesture>;
 };
 
 const messages = getMessages();
@@ -24,7 +18,7 @@ const messages = getMessages();
  * is now just the practice card, this is the *only* place the prose lives, and
  * two copies of it would be two things to keep in step.
  */
-export function HelpDialog({ open, onClose, practised }: HelpDialogProps) {
+export function HelpDialog({ open, onClose }: HelpDialogProps) {
   return (
     <Dialog
       open={open}
@@ -33,7 +27,7 @@ export function HelpDialog({ open, onClose, practised }: HelpDialogProps) {
       closeLabel={messages.menu.close}
       size="wide"
     >
-      <GuideSteps practised={practised} />
+      <GuideSteps />
     </Dialog>
   );
 }

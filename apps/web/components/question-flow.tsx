@@ -77,9 +77,22 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
     setIndex(index + 1);
   }, [district, electionKey, index, questions.length, router]);
 
+  /**
+   * Back one card — and, from the first one, back to the tutorial.
+   *
+   * Question 1 used to carry a dead "Předchozí": the one place in the flow
+   * where the control is visible but does nothing, shown to exactly the people
+   * least sure of what they are doing. The screen behind question 1 is the
+   * návod, so that is where the back control goes, named for the place it
+   * returns to like every other back link in the app.
+   */
   const goToPrevious = useCallback(() => {
+    if (index === 0) {
+      router.push(stepPath({ electionKey, district }, 'guide'));
+      return;
+    }
     setIndex((i) => Math.max(i - 1, 0));
-  }, []);
+  }, [district, electionKey, index, router]);
 
   /**
    * Lifts the card away without writing to the answer store — used both by
@@ -195,8 +208,6 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
               labels={{
                 agree: messages.flow.agree,
                 disagree: messages.flow.disagree,
-                agreeShort: messages.flow.agreeShort,
-                disagreeShort: messages.flow.disagreeShort,
                 important: messages.flow.important,
                 importantSuffix: messages.flow.importantSuffix,
                 skip: messages.flow.skip,
@@ -210,10 +221,10 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
           <FlowNav
             position={index + 1}
             total={questions.length}
-            canGoBack={index > 0}
+            canGoBack
             onPrevious={goToPrevious}
             onForward={isAnswered ? advanceAnimated : handleSkip}
-            previousLabel={messages.flow.previous}
+            previousLabel={index === 0 ? messages.flow.guide : messages.flow.previous}
             forwardLabel={isAnswered ? messages.flow.next : messages.flow.skip}
             isSkipped={isSkipped}
             attention={justCleared}

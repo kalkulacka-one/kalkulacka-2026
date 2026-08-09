@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { type DragDirection, DragGuides } from '../drag-guides/drag-guides';
 import {
   type CardSelection,
   QuestionCard,
@@ -29,9 +30,6 @@ export type QuestionDeckLabels = {
   agree: string;
   disagree: string;
   important: string;
-  /** Compact forms for the drag hint on narrow cards, e.g. "Ano" / "Ne". */
-  agreeShort: string;
-  disagreeShort: string;
   skip: string;
   /** Appended to the hint when the swipe also marks the question important. */
   importantSuffix: string;
@@ -50,6 +48,12 @@ export type QuestionDeckProps = {
   onAnswer: (agree: boolean, important: boolean) => void;
   onSkip: () => void;
   onToggleImportant: () => void;
+  /**
+   * Draw the direction compass over the card. The tutorial's practice deck
+   * passes it; the flow does not, where the arrows would be permanent furniture
+   * over every one of forty questions.
+   */
+  dragGuides?: { practised?: ReadonlySet<DragDirection>; split?: boolean };
   ref?: Ref<QuestionDeckHandle>;
 };
 
@@ -88,6 +92,7 @@ export function QuestionDeck({
   onAnswer,
   onSkip,
   onToggleImportant,
+  dragGuides,
   ref,
 }: QuestionDeckProps) {
   const [ghost, setGhost] = useState<Ghost | null>(null);
@@ -311,6 +316,16 @@ export function QuestionDeck({
         onAgree={handleAgree}
         onDisagree={handleDisagree}
         onToggleImportant={onToggleImportant}
+        guides={
+          dragGuides ? (
+            <DragGuides
+              labels={labels}
+              split={dragGuides.split}
+              practised={dragGuides.practised}
+              active={showHint ? directionForIntent(hint) : null}
+            />
+          ) : undefined
+        }
       />
 
       {ghost ? (
@@ -337,23 +352,38 @@ export function QuestionDeck({
   );
 }
 
+/**
+ * Which arrow the drag is currently pointing at.
+ *
+ * Read from the same intent the hint toast uses, so the compass and the toast
+ * can never disagree about what releasing right now would do.
+ */
+function directionForIntent(intent: SwipeIntent | null): DragDirection | null {
+  if (!intent) return null;
+  if (intent.zone === 'skip') return 's';
+  if (intent.zone === 'agree') return intent.important ? 'nw' : 'w';
+  return intent.important ? 'ne' : 'e';
+}
+
+/**
+ * What releasing right now would record.
+ *
+ * Always the full "Souhlasím" / "Nesouhlasím", never the compact "Ano" / "Ne"
+ * it used to shrink to on a narrow deck. The toast is the only place in the
+ * flow those two answers went by a different name — the card's own buttons,
+ * the keyboard hints, the recap and the results all say the long form — and a
+ * control that renames itself at the moment of committing is teaching the
+ * reader a synonym they never asked for.
+ */
 function HintLabel({ intent, labels }: { intent: SwipeIntent; labels: QuestionDeckLabels }) {
   if (intent.zone === 'skip') return <span>{labels.skip}</span>;
 
-  const long = intent.zone === 'agree' ? labels.agree : labels.disagree;
-  const short = intent.zone === 'agree' ? labels.agreeShort : labels.disagreeShort;
-  const suffix = intent.important ? labels.importantSuffix : '';
+  const answer = intent.zone === 'agree' ? labels.agree : labels.disagree;
 
   return (
-    <>
-      <span className={styles.short}>
-        {short}
-        {suffix}
-      </span>
-      <span className={styles.long}>
-        {long}
-        {suffix}
-      </span>
-    </>
+    <span>
+      {answer}
+      {intent.important ? labels.importantSuffix : ''}
+    </span>
   );
 }

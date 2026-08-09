@@ -39,8 +39,6 @@ const QUESTIONS: QuestionCardContent[] = [
 const labels = {
   agree: 'Souhlasím',
   disagree: 'Nesouhlasím',
-  agreeShort: 'Ano',
-  disagreeShort: 'Ne',
   important: 'Pro mě důležité',
   importantSuffix: ' · Pro mě důležité',
   skip: 'Přeskočit',
@@ -50,7 +48,7 @@ const labels = {
  * Fully interactive: drag the card left to agree, right to disagree, down to
  * skip, and up-and-across to also mark it important. Arrow keys do the same.
  */
-function DeckHarness() {
+function DeckHarness({ guides = false }: { guides?: boolean }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<
     Record<string, { agree: boolean; disagree: boolean; important: boolean }>
@@ -76,6 +74,7 @@ function DeckHarness() {
           }));
           advance();
         }}
+        dragGuides={guides ? { practised: new Set(['w'] as const) } : undefined}
         onSkip={advance}
         onToggleImportant={() =>
           setAnswers((prev) => ({
@@ -107,4 +106,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
   render: () => <DeckHarness />,
+};
+
+/**
+ * The tutorial's practice deck: arrows around the statement for every direction
+ * the card can leave in, lighting up as a drag reaches them. "Souhlasím" starts
+ * faded here, as it does once it has been tried.
+ */
+export const WithDragGuides: Story = {
+  render: () => <DeckHarness guides />,
 };

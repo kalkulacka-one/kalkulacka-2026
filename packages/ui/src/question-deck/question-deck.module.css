@@ -50,10 +50,12 @@
 /* --- Drag hint --------------------------------------------------------- */
 
 /*
- * Fixed to the viewport rather than absolute within the deck: the deck's own
- * box is only as tall as the card (it does not span the full page), so an
- * absolutely positioned toast sat partway up the screen, overlapping the
- * action row instead of reading as a bottom-of-screen status message.
+ * `fixed`, but resolved against the deck, not the viewport: `.deck` sets
+ * `container-type`, which makes it the containing block for its
+ * fixed-position descendants. That is deliberate — it parks the toast over
+ * the bottom of the card, right where the eye already is mid-drag, instead of
+ * at the foot of the screen under the sticky bar. Anything that removes
+ * containment from `.deck` will silently move this to the viewport edge.
  */
 .toast {
   position: fixed;
@@ -65,12 +67,42 @@
   border-radius: var(--vk-radius-pill);
   background: var(--vk-color-neutral);
   color: var(--vk-color-neutral-on);
+  /*
+   * The deck's heaviest elevation, on the smallest thing that uses it. The
+   * toast lands directly over the sticky action bar and the card's own answer
+   * buttons — solid fill alone left it reading as another button in that
+   * stack rather than as something floating above it, and the one thing that
+   * separates a layer from the layer below is the shadow it casts on it.
+   */
+  box-shadow: var(--vk-shadow-card-lifted);
 
   font-family: var(--vk-typeface-sans);
   font-size: var(--vk-text-lead);
   font-weight: 600;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  /*
+   * Wraps rather than overflows. It used to be `nowrap`, which was safe only
+   * because the longest string it could hold was the compact "Ne · Pro mě
+   * důležité"; now that it always spells the answer out, "Nesouhlasím · Pro
+   * mě důležité" clears a 375px screen but not a 320px one, and a clipped
+   * toast is a worse answer than a two-line one.
+   *
+   * Capped against the viewport rather than with a `%`, which would resolve
+   * against the deck — the container that captures this element's
+   * positioning, and on a phone narrower than the room the toast really has.
+   * No `text-wrap: balance` either: balancing a pill that is one line in the
+   * common case only ever fires when it wraps, and there it traded two full
+   * lines for four short ones.
+   *
+   * `width: max-content` is what makes the cap the thing that decides. Left
+   * to shrink-to-fit, an absolutely-placed box offset by `left: 50%` gets
+   * only the half of its containing block to the right of that offset — so
+   * the toast wrapped against half a card's width and never reached the cap
+   * at all. `nowrap` used to hide that by overflowing straight through it.
+   */
+  width: max-content;
+  max-width: min(100vw - 2rem, 22rem);
+  text-align: center;
 
   pointer-events: none;
   opacity: 0;
@@ -83,20 +115,4 @@
 .toastVisible {
   opacity: 1;
   transform: translateX(-50%) translateY(0) scale(1);
-}
-
-/* The hint says "Ano" when there is no room for "Souhlasím". */
-.long {
-  display: none;
-}
-
-/* Matches the answer-label breakpoint in question-card.module.css. */
-@container deck (min-width: 37.5rem) {
-  .short {
-    display: none;
-  }
-
-  .long {
-    display: inline;
-  }
 }

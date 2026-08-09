@@ -17,6 +17,11 @@ const messages = getMessages();
  * The screen itself stays a server component; only the practice card below it
  * is interactive, so the header, the back link and the sticky CTA still cost no
  * client JavaScript.
+ *
+ * It teaches operation and nothing else — which way to drag, which key to
+ * press. What answering *means* (a star doubles the weight, a skip counts for
+ * nothing, the recap can undo any of it) belongs to `/uvod` and is said there,
+ * so this screen can be the card and the hands on it.
  */
 export function Guide({ calculator }: GuideProps) {
   const { name: calculatorName, electionKey, district } = calculator;
