@@ -35,18 +35,6 @@
   column-gap: var(--vk-space-4);
 }
 
-.grid > .card {
-  /* Columns break anywhere by default, including through the middle of a card. */
-  break-inside: avoid;
-  margin-bottom: var(--vk-space-4);
-}
-
-@container (min-width: 34rem) {
-  .grid {
-    columns: 2;
-  }
-}
-
 /*
  * Outlined and flat, where a result row is solid and lifted.
  *
@@ -64,6 +52,18 @@
   border-radius: var(--vk-radius-control);
   background: oklch(from var(--vk-color-surface) l c h / 0.45);
   box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+}
+
+.grid > .card {
+  /* Columns break anywhere by default, including through the middle of a card. */
+  break-inside: avoid;
+  margin-bottom: var(--vk-space-4);
+}
+
+@container (min-width: 34rem) {
+  .grid {
+    columns: 2;
+  }
 }
 
 .cardTitle {

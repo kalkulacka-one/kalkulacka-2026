@@ -412,11 +412,11 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
             >
               {selected && comparison ? (
                 <>
-                  {/* Phone only (hidden by the CSS above the two-pane breakpoint):
-                      drag it down to put the sheet away. */}
-                  {/* biome-ignore lint/a11y/noStaticElementInteractions: the
-                      close button beside it is the keyboard and assistive-tech
-                      route; this is a pointer affordance layered on top. */}
+                  {/*
+                    Phone only (hidden by the CSS above the two-pane breakpoint): drag it down to
+                    put the sheet away. The close button beside it is the keyboard and
+                    assistive-tech route; this is a pointer affordance layered on top.
+                  */}
                   <div className={styles.grip} {...handleProps} aria-hidden="true" />
                   <div className={styles.detailHead}>
                     <div className={styles.detailHeading}>

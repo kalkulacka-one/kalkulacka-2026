@@ -183,10 +183,6 @@
   transform: none;
 }
 
-.row:disabled .noAnswer {
-  color: var(--vk-color-text-subtle);
-}
-
 /* --- Contents ------------------------------------------------------------ */
 
 .rank {
@@ -228,6 +224,10 @@
   font-family: var(--vk-typeface-sans);
   font-size: var(--vk-text-xs);
   color: var(--vk-color-text-muted);
+}
+
+.row:disabled .noAnswer {
+  color: var(--vk-color-text-subtle);
 }
 
 .percent {
