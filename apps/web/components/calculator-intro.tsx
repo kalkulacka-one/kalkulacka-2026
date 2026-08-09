@@ -6,6 +6,7 @@ import { Button, StickyBar } from '@vk/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { trackEvent } from '../lib/analytics';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorShellInfo, electionPath, questionPath, stepPath } from '../lib/paths';
 import styles from './calculator-intro.module.css';
@@ -97,7 +98,15 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
               </Button>
             </>
           ) : (
-            <Button as={Link} href={stepPath({ electionKey, district }, 'guide')} size="large">
+            <Button
+              as={Link}
+              href={stepPath({ electionKey, district }, 'guide')}
+              size="large"
+              // Fired on click, not on arrival at `/navod` — a tap here is the
+              // decision to start; the tutorial after it is still onboarding,
+              // not a second start worth counting separately.
+              onClick={() => trackEvent('Calculator started', { calculator: calculatorId })}
+            >
               {messages.intro.start}
             </Button>
           )}
