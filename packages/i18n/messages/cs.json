@@ -186,7 +186,6 @@
       "working": "Připravujeme…",
       "saved": "Obrázek uložen",
       "failed": "Obrázek se nepodařilo vytvořit. Zkuste to prosím znovu.",
-      "note": "Zodpovězeno {answered} z {total} otázek",
       "fileName": "moje-shoda"
     },
     "emptyTitle": "Zatím není co počítat",

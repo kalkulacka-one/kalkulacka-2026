@@ -14,9 +14,16 @@ export type ShaderColors = {
   light: [number, number, number];
 };
 
+export type ShaderStrength = {
+  /** How strongly the two accents mix into the base. Defaults to `DEFAULT_INTENSITY`. */
+  intensity?: number;
+  /** How far the light blob pulls the page toward the surface colour. Defaults to `DEFAULT_LIGHT_STRENGTH`. */
+  lightStrength?: number;
+};
+
 export type ShaderRenderer = {
   /** Paint one frame. `time` is the shader clock in seconds, not a timestamp. */
-  draw: (time: number, colors: ShaderColors) => void;
+  draw: (time: number, colors: ShaderColors, strength?: ShaderStrength) => void;
   /** Size the drawing buffer, in device pixels. */
   resize: (width: number, height: number) => void;
 };
@@ -85,15 +92,15 @@ export function createShaderRenderer(canvas: HTMLCanvasElement): ShaderRenderer 
       canvas.height = Math.max(1, Math.round(height));
       gl.viewport(0, 0, canvas.width, canvas.height);
     },
-    draw(time, colors) {
+    draw(time, colors, strength) {
       gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform1f(uTime, time);
-      gl.uniform1f(uIntensity, DEFAULT_INTENSITY);
+      gl.uniform1f(uIntensity, strength?.intensity ?? DEFAULT_INTENSITY);
       gl.uniform3f(uBase, ...colors.base);
       gl.uniform3f(uAccentA, ...colors.accentA);
       gl.uniform3f(uAccentB, ...colors.accentB);
       gl.uniform3f(uLight, ...colors.light);
-      gl.uniform1f(uLightStrength, DEFAULT_LIGHT_STRENGTH);
+      gl.uniform1f(uLightStrength, strength?.lightStrength ?? DEFAULT_LIGHT_STRENGTH);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
   };

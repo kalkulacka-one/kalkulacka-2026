@@ -22,14 +22,15 @@ export type ShareCardEntry = {
 };
 
 export type ShareCardContent = {
-  title: string;
-  /** Election and district, already joined by the caller. */
+  /** The product name — "Volební kalkulačka" — set next to the mark, same as `AppHeader`. */
+  brand: string;
+  /** Election and district, already joined by the caller — sits under `brand`. */
   subtitle?: string;
+  /** The card's own headline, e.g. "Moje shoda". */
+  title: string;
   /** The top row's caption — e.g. "Největší shoda". */
   winnerLabel?: string;
   entries: readonly ShareCardEntry[];
-  /** A line under the ranking — how many questions were answered. */
-  note?: string;
   /** The site to type in. */
   url?: string;
 };
@@ -50,6 +51,11 @@ function StaticMatchRow(props: Omit<Parameters<typeof MatchRow>[0], 'selected' |
  * visible blur-scale mismatch here. The blur radius and 1.08× overscan below
  * are the same trick `backdrop.module.css` uses, just applied to a canvas at
  * its true size instead of a pre-shrunk one.
+ *
+ * Also stronger than the live backdrop: on screen the wash sits *behind* a
+ * page of opaque cards and has to stay quiet so it never competes with them.
+ * Here it more or less *is* the picture — the only thing behind the ranking —
+ * so it is allowed to read as deliberately colourful rather than a hint of one.
  */
 function Wash({ colors, width, height }: { colors: CardColorSet; width: number; height: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,7 +69,7 @@ function Wash({ colors, width, height }: { colors: CardColorSet; width: number; 
     // Not zero: at t=0 every blob sits at its base position and the wash is
     // near-symmetric. A few seconds in it has drifted into something with a
     // direction to it. Fixed rather than animated — this is a still image.
-    renderer.draw(6.5, washColors(colors));
+    renderer.draw(6.5, washColors(colors), { intensity: 0.62, lightStrength: 0.7 });
   }, [colors, width, height]);
 
   return (
@@ -78,9 +84,9 @@ function Wash({ colors, width, height }: { colors: CardColorSet; width: number; 
         aria-hidden="true"
         style={{
           background: [
-            `radial-gradient(60% 50% at 50% 45%, ${css(colors.surface, 0.55)}, transparent 70%)`,
-            `radial-gradient(circle at 20% 25%, ${css(colors.agree, 0.16)}, transparent 50%)`,
-            `radial-gradient(circle at 80% 75%, ${css(colors.disagree, 0.14)}, transparent 50%)`,
+            `radial-gradient(60% 50% at 50% 45%, ${css(colors.surface, 0.6)}, transparent 70%)`,
+            `radial-gradient(circle at 20% 25%, ${css(colors.agree, 0.28)}, transparent 55%)`,
+            `radial-gradient(circle at 80% 75%, ${css(colors.disagree, 0.24)}, transparent 55%)`,
             css(colors.page),
           ].join(', '),
         }}
@@ -123,35 +129,41 @@ export function ShareCardLayout({ content, colors, theme, format }: ShareCardLay
       <Wash colors={colors} width={width} height={height} />
 
       <div className={styles.content}>
-        <div className={styles.head}>
-          <Logo size={format === 'story' ? 26 : 30} className={styles.logo} />
-          <h2 className={styles.title}>{content.title}</h2>
-          {content.subtitle ? <p className={styles.subtitle}>{content.subtitle}</p> : null}
+        {/*
+          The app's own lockup — mark, product name, election/district — the
+          same three things `AppHeader` shows on every screen, just given the
+          room a share image can afford instead of a thin top bar.
+        */}
+        <div className={styles.brand}>
+          <Logo size={format === 'story' ? 30 : 34} className={styles.brandLogo} />
+          <div className={styles.brandNames}>
+            <p className={styles.brandTitle}>{content.brand}</p>
+            {content.subtitle ? <p className={styles.brandSubtitle}>{content.subtitle}</p> : null}
+          </div>
         </div>
 
-        {/* pointer-events: none in CSS — this is a picture of the list, not the list. */}
-        <ul className={styles.rows}>
-          {content.entries.map((entry) => (
-            <StaticMatchRow
-              key={`${entry.rank}-${entry.name}`}
-              rank={entry.rank}
-              name={entry.name}
-              avatarUrl={entry.avatarUrl}
-              matchPercentage={entry.matchPercentage}
-              percentLabel={entry.percentLabel}
-              noAnswerLabel={entry.noAnswerLabel ?? ''}
-              winner={entry.rank === 1}
-              winnerLabel={entry.rank === 1 ? content.winnerLabel : undefined}
-            />
-          ))}
-        </ul>
+        <h2 className={styles.title}>{content.title}</h2>
 
-        {content.note || content.url ? (
-          <div className={styles.foot}>
-            {content.note ? <p className={styles.note}>{content.note}</p> : null}
-            {content.url ? <p className={styles.url}>{content.url}</p> : null}
-          </div>
-        ) : null}
+        {/* pointer-events: none in CSS — this is a picture of the list, not the list. */}
+        <div className={styles.rowsWrap}>
+          <ul className={styles.rows}>
+            {content.entries.map((entry) => (
+              <StaticMatchRow
+                key={`${entry.rank}-${entry.name}`}
+                rank={entry.rank}
+                name={entry.name}
+                avatarUrl={entry.avatarUrl}
+                matchPercentage={entry.matchPercentage}
+                percentLabel={entry.percentLabel}
+                noAnswerLabel={entry.noAnswerLabel ?? ''}
+                winner={entry.rank === 1}
+                winnerLabel={entry.rank === 1 ? content.winnerLabel : undefined}
+              />
+            ))}
+          </ul>
+        </div>
+
+        {content.url ? <p className={styles.url}>{content.url}</p> : null}
       </div>
     </div>
   );

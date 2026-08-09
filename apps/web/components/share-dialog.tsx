@@ -1,6 +1,6 @@
 'use client';
 
-import { format as formatMessage, getMessages } from '@vk/i18n';
+import { getMessages } from '@vk/i18n';
 import {
   Button,
   type CardFormat,
@@ -222,9 +222,4 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
       </div>
     </Dialog>
   );
-}
-
-/** The note printed on the card: how much of the calculator was answered. */
-export function shareNote(answered: number, total: number): string {
-  return formatMessage(share.note, { answered, total });
 }

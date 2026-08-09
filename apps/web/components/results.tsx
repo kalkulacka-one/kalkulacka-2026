@@ -36,7 +36,7 @@ import { BackLink } from './back-link';
 import styles from './results.module.css';
 import { ResultsDashboard } from './results-dashboard';
 import { Screen } from './screen';
-import { ShareDialog, shareNote } from './share-dialog';
+import { ShareDialog } from './share-dialog';
 
 export type ResultsProps = {
   calculator: Calculator;
@@ -176,8 +176,9 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
   /** What gets painted onto the shared image — the top five, and where they came from. */
   const shareContent = useMemo<ShareCardContent>(
     () => ({
-      title: messages.results.title,
+      brand: messages.app.title,
       subtitle: [calculator.electionName, calculator.name].filter(Boolean).join(' · '),
+      title: messages.results.title,
       winnerLabel: messages.results.winner,
       entries: results.slice(0, 5).map(({ candidate, match, rank }, index) => ({
         // Ties share a rank, so it is not always the position — but it is
@@ -195,10 +196,9 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
               matchPercentage: match.matchPercentage,
             }),
       })),
-      note: shareNote(answered, calculator.questions.length),
       url: location.host,
     }),
-    [calculator, results, answered, location.host],
+    [calculator, results, location.host],
   );
 
   /** The comparison rendered in the pane — kept alive through `closingId` so it has something to animate out with. */

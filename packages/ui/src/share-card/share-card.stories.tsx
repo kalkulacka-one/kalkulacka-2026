@@ -4,8 +4,9 @@ import { ShareCard } from './share-card';
 import { CARD_THEMES } from './theme-colors';
 
 const content = {
-  title: 'Vaše shoda',
+  brand: 'Volební kalkulačka',
   subtitle: 'Komunální volby 2022 · Pardubice',
+  title: 'Moje shoda',
   winnerLabel: 'Největší shoda',
   entries: [
     { rank: 1, name: 'SPOLU', percentLabel: '87 %', matchPercentage: 87 },
@@ -14,7 +15,6 @@ const content = {
     { rank: 4, name: 'Společně pro Pardubice', percentLabel: '52 %', matchPercentage: 52 },
     { rank: 5, name: 'SPD', noAnswerLabel: 'Neodpověděli' },
   ],
-  note: 'Zodpovězeno 38 z 40 otázek',
   url: 'volebnikalkulacka.cz',
 };
 
