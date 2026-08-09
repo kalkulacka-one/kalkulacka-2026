@@ -107,17 +107,6 @@
   }
 }
 
-.shareHint {
-  margin: 0;
-  max-width: 18rem;
-  font-family: var(--vk-typeface-sans);
-  font-size: var(--vk-text-xs);
-  line-height: var(--vk-leading-normal);
-  color: var(--vk-color-text-muted);
-  text-align: right;
-  text-wrap: pretty;
-}
-
 .panes {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

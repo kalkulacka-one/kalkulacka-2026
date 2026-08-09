@@ -1,0 +1,144 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+}
+
+/*
+ * A fixed box for the preview, so switching between portrait and landscape
+ * changes the picture without the dialog jumping a hundred pixels taller and
+ * shoving the controls under the reader's thumb.
+ */
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 19rem;
+  padding: var(--vk-space-3);
+  border-radius: var(--vk-radius-card);
+  background: var(--vk-color-surface-sunken);
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0 0 var(--vk-space-2);
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text-muted);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--vk-space-2);
+}
+
+.formats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vk-space-2);
+}
+
+.swatch,
+.format {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-2);
+
+  min-height: 2.75rem;
+  padding: var(--vk-space-2);
+
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text);
+
+  background: var(--vk-color-surface);
+  border: 1px solid var(--vk-color-border);
+  border-radius: var(--vk-radius-chip);
+  cursor: pointer;
+  transition:
+    border-color var(--vk-duration-fast) var(--vk-easing-exit),
+    background-color var(--vk-duration-fast) var(--vk-easing-exit);
+}
+
+.swatch {
+  flex-direction: column;
+  gap: var(--vk-space-1);
+  font-size: var(--vk-text-xs);
+}
+
+.swatch:hover,
+.format:hover {
+  border-color: var(--vk-color-border-strong);
+  background: var(--vk-color-surface-hover);
+}
+
+/*
+ * The selected state is a ring rather than a fill: the swatch's own job is to
+ * show a colour, and filling it with the accent would be one colour standing in
+ * front of another.
+ */
+.swatch[aria-pressed="true"],
+.format[aria-pressed="true"] {
+  border-color: var(--vk-color-focus);
+  box-shadow: inset 0 0 0 1px var(--vk-color-focus);
+}
+
+/*
+ * The fill is set inline, from the card painter's own palettes — see
+ * `cardSwatches`. Writing these gradients here instead would mean two of them
+ * (light and dark) resolving against the page's mode rather than the card's,
+ * and a "Světlý" chip would come out black on a dark page.
+ */
+.swatchChip {
+  width: 100%;
+  height: 1.5rem;
+  border-radius: calc(var(--vk-radius-chip) / 1.5);
+  border: 1px solid var(--vk-color-border);
+}
+
+/* A page shape at chip scale — the fastest read of what portrait vs landscape means. */
+.formatShape {
+  border-radius: 3px;
+  background: var(--vk-color-text-subtle);
+}
+
+.formatShape[data-shape="story"] {
+  width: 0.75rem;
+  height: 1.25rem;
+}
+
+.formatShape[data-shape="landscape"] {
+  width: 1.5rem;
+  height: 0.875rem;
+}
+
+/*
+ * Always in the DOM so assistive tech is already watching it, and holding its
+ * line of space so the actions below do not jump when a message arrives.
+ */
+.status {
+  margin: 0;
+  min-height: 1.25rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  line-height: 1.25rem;
+  color: var(--vk-color-text-muted);
+}
+
+.status[data-failed] {
+  color: var(--vk-color-disagree);
+}
+
+@media (max-width: 30rem) {
+  .swatches {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,11 @@
+.card {
+  display: block;
+  border-radius: var(--vk-radius-card);
+  /* The card has no border of its own — this hairline is what separates a light
+     card from the light dialog behind it, and it has to survive on a dark one
+     too, hence the token rather than a fixed grey. */
+  box-shadow:
+    0 0 0 1px var(--vk-color-border),
+    var(--vk-shadow-surface);
+  max-width: 100%;
+}
