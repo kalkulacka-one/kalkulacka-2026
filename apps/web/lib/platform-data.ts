@@ -52,6 +52,7 @@ export const loadPlatformCalculator = cache(
         electionName: election.name,
         name: entry.name,
         districtCode: entry.key,
+        assetBase: base,
       };
     } catch (error) {
       console.error(`Failed to load calculator ${election.key}/${entry.key}:`, error);

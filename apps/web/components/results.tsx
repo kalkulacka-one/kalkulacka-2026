@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  type AnswerMap,
   buildAnswerDistribution,
   buildQuestionConsensus,
   buildResults,
@@ -17,6 +18,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
+import { canSync, useResultsSync } from '../lib/session-sync';
+import { toProxiedAssetUrl } from '../lib/share-asset-url';
 import { AppShell } from './app-shell';
 import { BackLink } from './back-link';
 import { ComparisonPane } from './comparison-pane';
@@ -25,8 +28,21 @@ import { ResultsDashboard } from './results-dashboard';
 import { Screen } from './screen';
 import { ShareDialog } from './share-dialog';
 
+/**
+ * Somebody else's result, loaded server-side from a public link.
+ *
+ * Its presence is the whole read-only switch: the answers come from here
+ * instead of from the store, nothing is saved back, and the screen says whose
+ * result this is rather than offering the ways out of your own.
+ */
+export type SharedView = {
+  /** Recomputed from, not displayed as, the ranking stored with the session. */
+  answers: AnswerMap;
+};
+
 export type ResultsProps = {
   calculator: Calculator;
+  shared?: SharedView;
 } & CalculatorRef;
 
 const messages = getMessages();
@@ -46,8 +62,14 @@ const CALCULATING_MS = 1700;
 /** Seconds between two rows arriving. Nine rows land inside half a second. */
 const ROW_STAGGER = 0.06;
 
-export function Results({ calculator, electionKey, district }: ResultsProps) {
-  const answers = useCalculatorAnswers(calculator.id);
+export function Results({ calculator, electionKey, district, shared }: ResultsProps) {
+  /*
+   * Read unconditionally — hooks are — but ignored on a shared result. That is
+   * the only contact this screen then has with the viewer's own store: a
+   * subscription, no write, and no sync target built from it.
+   */
+  const ownAnswers = useCalculatorAnswers(calculator.id);
+  const answers = shared?.answers ?? ownAnswers;
   const ref = { electionKey, district };
   const shellInfo = shellInfoOf(calculator, ref);
 
@@ -61,11 +83,20 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
    * for a beat after this has already forgotten about it.
    */
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-  const [waited, setWaited] = useState(false);
+  /*
+   * The beat is skipped outright on a shared result: it exists to let someone
+   * register that a ranking came out of the answers they just gave, and the
+   * visitor of a public link gave none. Waiting there would be theatre.
+   */
+  const [waited, setWaited] = useState(shared !== undefined);
   const [shareOpen, setShareOpen] = useState(false);
-  const ready = useAnswersReady();
+  const localReady = useAnswersReady();
+  /* Server-supplied answers are ready in the first render — nothing to hydrate. */
+  const ready = shared !== undefined || localReady;
 
   useEffect(() => {
+    if (shared) return;
+
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setWaited(true);
       return;
@@ -73,7 +104,25 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
 
     const timer = window.setTimeout(() => setWaited(true), CALCULATING_MS);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [shared]);
+
+  /*
+   * The one save the flow makes deliberately: a ranking is what marks the
+   * session finished server-side and what a shared result is drawn from.
+   * Withheld until the persisted answers have landed and there is at least one
+   * of them — a ranking computed from an empty map is not a result — and
+   * withheld entirely on a shared result, where the ranking on screen is not
+   * the viewer's to save over.
+   */
+  useResultsSync(
+    {
+      calculatorId: calculator.id,
+      calculatorGroup: electionKey,
+      calculatorKey: district,
+      calculatorVersion: calculator.version,
+    },
+    !shared && ready && answered > 0 ? results : undefined,
+  );
 
   const closeComparison = useCallback(() => setSelectedId(undefined), []);
 
@@ -132,7 +181,10 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
         // The short name, not the full one: "SPOLU" fits a story where
         // "SPOLU (ODS, KDU-ČSL, TOP 09)" would be trimmed to an ellipsis.
         name: candidate.shortName || candidate.name,
-        avatarUrl: candidate.avatarUrl,
+        // Routed through the same-origin proxy here only: the canvas export
+        // needs readable pixels (the CDN sends no CORS header), everywhere
+        // else on this screen keeps loading the CDN directly.
+        avatarUrl: toProxiedAssetUrl(candidate.avatarUrl, calculator),
         ...(match.matchPercentage === undefined
           ? { noAnswerLabel: messages.results.noAnswer }
           : {
@@ -189,13 +241,24 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       /* The ranking is read, not acted on: scrolling the document is what lets
          it carry on under Safari's glass rather than stop in a line above it. */
       scroll="document"
+      readOnly={shared !== undefined}
     >
       <main className={styles.screen}>
         <div className={styles.inner}>
           <header className={styles.head}>
-            <div className={styles.headBack}>
-              <BackLink href={stepPath(ref, 'review')} label={messages.results.backToRecap} />
-            </div>
+            {shared ? (
+              /*
+                Said before the ranking, not after it: someone arriving from a
+                link needs to know whose numbers these are before they read
+                them, and needs to know their own answers are safe before they
+                touch anything.
+              */
+              <p className={styles.sharedNote}>{messages.results.shared.note}</p>
+            ) : (
+              <div className={styles.headBack}>
+                <BackLink href={stepPath(ref, 'review')} label={messages.results.backToRecap} />
+              </div>
+            )}
 
             {/*
               No standing caveat under the title. That the match rests only on
@@ -203,22 +266,32 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
               the dashboard's donut counts "Bez odpovědi" explicitly, and a
               candidate who answered nothing says so on their own row.
             */}
-            <h1 className={styles.title}>{messages.results.title}</h1>
+            <h1 className={styles.title}>
+              {shared ? messages.results.shared.title : messages.results.title}
+            </h1>
 
-            {/*
-              Opens the picture, rather than copying the link on the spot. The
-              link is still one press away — it is the dialog's second action —
-              but a ranking is a thing people post, and a URL is not.
-            */}
             <div className={styles.shareBox}>
-              <Button
-                variant="plate"
-                size="small"
-                onClick={() => setShareOpen(true)}
-                iconStart="share"
-              >
-                {messages.results.share}
-              </Button>
+              {shared ? (
+                /* The only thing this page asks of its visitor. */
+                <Button as={Link} href={stepPath(ref, 'intro')} size="small" iconEnd="arrowRight">
+                  {messages.results.shared.cta}
+                </Button>
+              ) : (
+                /*
+                  Opens the picture, rather than copying the link on the spot.
+                  The link is still one press away — it is the dialog's second
+                  action — but a ranking is a thing people post, and a URL is
+                  not.
+                */
+                <Button
+                  variant="plate"
+                  size="small"
+                  onClick={() => setShareOpen(true)}
+                  iconStart="share"
+                >
+                  {messages.results.share}
+                </Button>
+              )}
             </div>
           </header>
 
@@ -259,13 +332,30 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
         </div>
       </main>
 
-      <ShareDialog
-        open={shareOpen}
-        onClose={() => setShareOpen(false)}
-        content={shareContent}
-        fileName={`shoda-${calculator.id}`}
-        url={location.href}
-      />
+      {/*
+        Not rendered at all on a shared result: the image would be a copy of
+        somebody else's card, and the link path below mints from *your* session
+        for this calculator, which a visitor here has no reason to have.
+      */}
+      {shared ? null : (
+        <ShareDialog
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          content={shareContent}
+          fileName={`shoda-${calculator.id}`}
+          url={location.href}
+          /* Absent without a backend, which is what keeps the dialog image-only
+             on a fork that configured none. */
+          link={
+            canSync(calculator.id)
+              ? {
+                  calculatorId: calculator.id,
+                  resultPath: (publicId: string) => stepPath(ref, 'result', publicId),
+                }
+              : undefined
+          }
+        />
+      )}
     </AppShell>
   );
 }

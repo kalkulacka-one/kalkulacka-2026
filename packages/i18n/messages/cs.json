@@ -198,7 +198,20 @@
       "saveImage": "Uložit obrázek",
       "working": "Připravujeme…",
       "saved": "Obrázek uložen",
-      "failed": "Obrázek se nepodařilo vytvořit. Zkuste to prosím znovu."
+      "failed": "Obrázek se nepodařilo vytvořit. Zkuste to prosím znovu.",
+      "copyLink": "Kopírovat odkaz",
+      "copyingLink": "Vytváříme odkaz…",
+      "linkCopied": "Odkaz zkopírován",
+      "linkFailed": "Odkaz se nepodařilo vytvořit. Zkuste to prosím znovu."
+    },
+    "shared": {
+      "title": "Sdílená shoda",
+      "note": "Tenhle výsledek s vámi někdo sdílel. Vaše vlastní odpovědi zůstávají nedotčené.",
+      "cta": "Vyplnit vlastní kalkulačku",
+      "metaTitle": "Sdílená shoda — {election}",
+      "metaDescription": "Takhle vyšla {calculator} někomu jinému. Vyplňte si ji taky.",
+      "ogTitle": "Takhle mi vyšla Volební kalkulačka",
+      "ogCta": "Vyplňte si ji taky"
     },
     "emptyTitle": "Zatím není co počítat",
     "emptyDescription": "Odpovězte alespoň na jednu otázku a shoda se objeví tady.",
@@ -241,7 +254,8 @@
   },
   "notFound": {
     "title": "Stránka nenalezena",
-    "description": "Tato kalkulačka zatím neexistuje."
+    "description": "Tato kalkulačka zatím neexistuje.",
+    "homeLabel": "Zpět na úvod"
   },
   "comingSoon": {
     "title": "Připravujeme",

@@ -31,6 +31,13 @@ export type AppShellProps = {
    * all — see `globals.css` for what each mode does and why.
    */
   scroll?: ScrollModeValue;
+  /**
+   * A screen that only *shows* a calculator rather than being inside one — the
+   * public shared result. The header still names it, but the menu drops
+   * "Začít znovu" and "Opustit kalkulačku": both act on the viewer's own
+   * answers and progress, and this page is somebody else's result.
+   */
+  readOnly?: boolean;
   children: ReactNode;
 };
 
@@ -46,7 +53,13 @@ const messages = getMessages();
  * here — it sits in the root layout, which the router keeps alive across
  * navigations, so the wash never restarts mid-flow.
  */
-export function AppShell({ electionName, calculator, scroll = 'pinned', children }: AppShellProps) {
+export function AppShell({
+  electionName,
+  calculator,
+  scroll = 'pinned',
+  readOnly = false,
+  children,
+}: AppShellProps) {
   return (
     <div className={styles.shell}>
       <ScrollMode mode={scroll} />
@@ -57,7 +70,7 @@ export function AppShell({ electionName, calculator, scroll = 'pinned', children
             title={messages.app.title}
             electionName={calculator?.electionName ?? electionName}
             calculatorName={calculator?.name}
-            actions={<AppMenu calculator={calculator} />}
+            actions={<AppMenu calculator={readOnly ? undefined : calculator} />}
           />
         </div>
 

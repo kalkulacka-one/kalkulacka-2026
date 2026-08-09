@@ -30,7 +30,7 @@ function localAddresses(): string[] {
 const nextConfig: NextConfig = {
   // Workspace packages ship TypeScript source rather than a build artifact, so
   // there is no build step between editing a component and seeing it here.
-  transpilePackages: ['@vk/core', '@vk/i18n', '@vk/tokens', '@vk/ui'],
+  transpilePackages: ['@vk/core', '@vk/database', '@vk/i18n', '@vk/tokens', '@vk/ui'],
 
   // Dev-only: lets phones and tablets on the same network load the JS bundle.
   // Production is unaffected — this key is ignored outside `next dev`.

@@ -5,6 +5,10 @@
  * canvas with `Path2D`. Two copies of a logo is exactly the kind of thing that
  * silently diverges, so there is one — the SVG below and the exported PNG are
  * literally the same shapes.
+ *
+ * Reachable as `@vk/ui/logo-paths` as well as through the package barrel: the
+ * OG image route draws this mark from a Next route handler, where importing
+ * the barrel would pull every client component and its CSS modules along.
  */
 export const LOGO_VIEWBOX = { x: 0, y: 0, width: 58, height: 12 } as const;
 

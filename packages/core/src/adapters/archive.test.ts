@@ -20,6 +20,10 @@ describe('adaptArchiveCalculator (Pardubice)', () => {
     expect(calculator.candidates).toHaveLength(9);
   });
 
+  it('has no version — the archive publishes none, and inventing one would pin sessions to a lie', () => {
+    expect(calculator.version).toBeUndefined();
+  });
+
   it('maps the archive title to the statement and the name to the chip label', () => {
     const question = calculator.questions[0];
 

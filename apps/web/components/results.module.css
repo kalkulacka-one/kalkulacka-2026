@@ -71,6 +71,25 @@
   min-width: 0;
 }
 
+/*
+ * Takes the back link's place on a shared result — the same slot, because it
+ * answers the same question the back link does on your own results: where you
+ * are and what this screen is. Set at label scale rather than body scale so it
+ * reads as a caption on the title beneath it, not as the page's first sentence.
+ */
+.sharedNote {
+  grid-area: back;
+  justify-self: start;
+  margin: 0;
+  max-width: 44rem;
+  min-width: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
 /* The recap's title, to the letter — this screen follows it directly, and two
    consecutive steps of one task reading as two products is exactly what the
    type scale exists to prevent. */

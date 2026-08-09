@@ -15,7 +15,22 @@ import {
   VisuallyHidden,
 } from '@vk/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { copyText } from '../lib/clipboard';
+import { requestShareLink } from '../lib/session-sync';
 import styles from './share-dialog.module.css';
+
+/**
+ * What it takes to turn this result into a link somebody else can open.
+ *
+ * Absent when there is no backend to mint one — a fork that configured none
+ * gets exactly the dialog it had before public links existed, image and all,
+ * with no dead button explaining what it cannot do.
+ */
+export type ShareLinkTarget = {
+  calculatorId: string;
+  /** The public result's path, once the server has said what its id is. */
+  resultPath: (publicId: string) => string;
+};
 
 export type ShareDialogProps = {
   open: boolean;
@@ -26,6 +41,7 @@ export type ShareDialogProps = {
   fileName: string;
   /** Offered to the OS share sheet as the shared link, alongside the image. */
   url: string;
+  link?: ShareLinkTarget;
 };
 
 const messages = getMessages();
@@ -46,6 +62,15 @@ const FORMATS: readonly { id: CardFormat; label: string }[] = [
 type Status = 'idle' | 'working' | 'saved' | 'failed';
 
 /**
+ * The link's own progress, kept apart from the image's.
+ *
+ * Two actions that can each be mid-flight, and each fail for its own reason —
+ * one state for both would let a failed mint clear a successful save's
+ * message, or disable the button that had nothing to do with it.
+ */
+type LinkStatus = 'idle' | 'working' | 'copied' | 'failed';
+
+/**
  * Turn the result into a picture someone can post.
  *
  * The whole thing runs in the tab. The card is rendered off-screen at export
@@ -58,10 +83,11 @@ type Status = 'idle' | 'working' | 'saved' | 'failed';
  * `http://` origin — does the button fall back to a download, and it says so
  * rather than pretending.
  */
-export function ShareDialog({ open, onClose, content, fileName, url }: ShareDialogProps) {
+export function ShareDialog({ open, onClose, content, fileName, url, link }: ShareDialogProps) {
   const [theme, setTheme] = useState<CardTheme>('light');
   const [cardFormat, setCardFormat] = useState<CardFormat>('story');
   const [status, setStatus] = useState<Status>('idle');
+  const [linkStatus, setLinkStatus] = useState<LinkStatus>('idle');
   /*
    * Resolved on the client, after mount: `navigator.canShare` is absent during
    * the server render, and deciding the button's label from that would ship
@@ -81,7 +107,10 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
   // Clearing on close as well as on a timer: reopening the dialog should not
   // still be showing the outcome of the last visit.
   useEffect(() => {
-    if (!open) setStatus('idle');
+    if (!open) {
+      setStatus('idle');
+      setLinkStatus('idle');
+    }
   }, [open]);
 
   useEffect(() => {
@@ -89,6 +118,15 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
     const timer = window.setTimeout(() => setStatus('idle'), status === 'failed' ? 6000 : 2400);
     return () => window.clearTimeout(timer);
   }, [status]);
+
+  useEffect(() => {
+    if (linkStatus === 'idle' || linkStatus === 'working') return;
+    const timer = window.setTimeout(
+      () => setLinkStatus('idle'),
+      linkStatus === 'failed' ? 6000 : 2400,
+    );
+    return () => window.clearTimeout(timer);
+  }, [linkStatus]);
 
   const exportName = useMemo(
     () => `${fileName}-${cardFormat}-${theme}.png`,
@@ -129,7 +167,48 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
     }
   }, [content, theme, cardFormat, exportName, url]);
 
-  const statusText = status === 'saved' ? share.saved : status === 'failed' ? share.failed : '';
+  /**
+   * Turn the result into an address, and put it on the clipboard.
+   *
+   * Two steps that can each fail, reported as one outcome because the reader
+   * asked for one thing: minting the public id server-side, then copying —
+   * through `copyText`, which is the path that still works on a phone without
+   * a secure context, where `navigator.clipboard` does not exist at all.
+   */
+  const onCopyLink = useCallback(async () => {
+    if (!link) return;
+    setLinkStatus('working');
+
+    const publicId = await requestShareLink(link.calculatorId);
+    if (!publicId) {
+      setLinkStatus('failed');
+      return;
+    }
+
+    // The origin comes from the page, not from configuration: this has to be
+    // the address the reader is actually on — staging, a preview deployment,
+    // an embed's host — and not whatever a build-time base URL said.
+    const publicUrl = new URL(link.resultPath(publicId), window.location.origin).toString();
+    setLinkStatus((await copyText(publicUrl)) ? 'copied' : 'failed');
+  }, [link]);
+
+  /*
+   * One line for both actions. They cannot be mid-flight and finished at the
+   * same time in any way worth reporting twice, and the link's outcome wins
+   * because it is the more recent press whenever both have one.
+   */
+  const statusText =
+    linkStatus === 'copied'
+      ? share.linkCopied
+      : linkStatus === 'failed'
+        ? share.linkFailed
+        : status === 'saved'
+          ? share.saved
+          : status === 'failed'
+            ? share.failed
+            : '';
+
+  const failed = status === 'failed' || linkStatus === 'failed';
 
   return (
     <Dialog
@@ -139,18 +218,36 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
       closeLabel={share.close}
       size="wide"
       actions={
-        <Button
-          onClick={onShare}
-          iconStart={canShare === false ? 'download' : 'share'}
-          disabled={status === 'working'}
-          fullWidth
-        >
-          {status === 'working'
-            ? share.working
-            : canShare === false
-              ? share.saveImage
-              : share.shareImage}
-        </Button>
+        <>
+          {/*
+            Second, and quieter: the picture is what this dialog is for. The
+            link is the thing you reach for when you want somebody to see the
+            whole result rather than the top five.
+          */}
+          {link ? (
+            <Button
+              variant="outline"
+              onClick={onCopyLink}
+              iconStart="link"
+              disabled={linkStatus === 'working'}
+            >
+              {linkStatus === 'working' ? share.copyingLink : share.copyLink}
+            </Button>
+          ) : null}
+
+          <Button
+            onClick={onShare}
+            iconStart={canShare === false ? 'download' : 'share'}
+            disabled={status === 'working'}
+            fullWidth={!link}
+          >
+            {status === 'working'
+              ? share.working
+              : canShare === false
+                ? share.saveImage
+                : share.shareImage}
+          </Button>
+        </>
       }
     >
       <div className={styles.body}>
@@ -220,11 +317,7 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
           holding its line of space so the button above doesn't jump when a
           message arrives.
         */}
-        <p
-          className={styles.status}
-          role="status"
-          data-failed={status === 'failed' ? '' : undefined}
-        >
+        <p className={styles.status} role="status" data-failed={failed ? '' : undefined}>
           {statusText}
         </p>
       </div>
