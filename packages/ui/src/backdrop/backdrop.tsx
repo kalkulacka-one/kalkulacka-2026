@@ -71,7 +71,12 @@ export function Backdrop({ forceEnabled }: BackdropProps) {
   // Tokens are read from the DOM rather than passed as props so the backdrop
   // reacts to a `data-theme` switch (e.g. Storybook's theme toolbar) or a
   // `data-mode` light/dark toggle without every call site having to plumb
-  // the theme through.
+  // the theme through. The `MutationObserver` alone misses one case: as long
+  // as nobody has picked an explicit mode, there is no `data-mode` attribute
+  // to mutate, and light/dark instead tracks the OS via `color-scheme: light
+  // dark` — so an OS-level switch changes the resolved token colours without
+  // touching the DOM at all. The `matchMedia` listener below is what catches
+  // that case.
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -84,7 +89,14 @@ export function Backdrop({ forceEnabled }: BackdropProps) {
       attributes: true,
       attributeFilter: ['data-theme', 'data-mode'],
     });
-    return () => observer.disconnect();
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener('change', update);
+
+    return () => {
+      observer.disconnect();
+      media.removeEventListener('change', update);
+    };
   }, []);
 
   const enabled = forceEnabled ?? state?.enabled ?? false;
