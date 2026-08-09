@@ -1,11 +1,13 @@
-import { buildRoute, type FlowStep, questionPath } from '@vk/core';
+import { buildRoute, questionPath as coreQuestionPath, type FlowStep } from '@vk/core';
+import { routeSlugs } from '@vk/i18n';
 
 /**
  * Every link in the flow, built from one place.
  *
  * The route grammar lives in `@vk/core`; this is only the app-side convenience
  * of not re-typing `{ kind: 'calculator', electionKey, district }` at every call
- * site. Nothing here knows what a slug looks like — that stays in the parser.
+ * site, and of supplying the active locale's slugs so nothing downstream has
+ * to know the app is Czech-only today.
  */
 export type CalculatorRef = { electionKey: string; district: string };
 
@@ -36,11 +38,16 @@ export function shellInfoOf(
 }
 
 export function stepPath(ref: CalculatorRef, step: FlowStep, param?: string): string {
-  return buildRoute({ kind: 'calculator', ...ref, step, ...(param ? { param } : {}) });
+  return buildRoute(
+    { kind: 'calculator', ...ref, step, ...(param ? { param } : {}) },
+    routeSlugs(),
+  );
 }
 
 export function electionPath(electionKey: string): string {
-  return buildRoute({ kind: 'election', electionKey });
+  return buildRoute({ kind: 'election', electionKey }, routeSlugs());
 }
 
-export { questionPath };
+export function questionPath(ref: CalculatorRef, questionNumber: number): string {
+  return coreQuestionPath(ref, questionNumber, routeSlugs());
+}

@@ -1,3 +1,5 @@
+import type { FlowStep, RouteSlugs } from '@vk/i18n';
+
 /**
  * The URL grammar, as pure functions.
  *
@@ -7,7 +9,7 @@
  * without booting a framework.
  */
 
-export type FlowStep = 'intro' | 'guide' | 'question' | 'review' | 'result' | 'comparison';
+export type { FlowStep, RouteSlugs };
 
 /**
  * URL-friendly district slug, e.g. "Praha hl. m." -> "praha-hl-m".
@@ -32,28 +34,6 @@ export function slugifyDistrict(name: string): string {
       .replace(/^-+|-+$/g, '')
   );
 }
-
-/** Localised path segments. One of these per locale. */
-export type RouteSlugs = {
-  /** Prefix before the election key, e.g. "volby". */
-  elections: string;
-  steps: Record<FlowStep, string>;
-  /** Prefix for embedded views. */
-  embed: string;
-};
-
-export const CS_SLUGS: RouteSlugs = {
-  elections: 'volby',
-  embed: 'embed',
-  steps: {
-    intro: 'uvod',
-    guide: 'navod',
-    question: 'otazka',
-    review: 'rekapitulace',
-    result: 'vysledek',
-    comparison: 'porovnani',
-  },
-};
 
 export type CalculatorRoute = {
   /** Embed partner name, when rendered inside a third-party page. */
@@ -89,7 +69,7 @@ function stepFromSlug(slug: string, slugs: RouteSlugs): FlowStep | undefined {
  * Returns `null` for anything unrecognised so the caller can render a 404
  * rather than guessing.
  */
-export function parseRoute(segments: string[], slugs: RouteSlugs = CS_SLUGS): ParsedRoute | null {
+export function parseRoute(segments: string[], slugs: RouteSlugs): ParsedRoute | null {
   let rest = [...segments].filter(Boolean);
   let embed: string | undefined;
 
@@ -129,7 +109,7 @@ export function parseRoute(segments: string[], slugs: RouteSlugs = CS_SLUGS): Pa
 }
 
 /** Build a path. The inverse of `parseRoute`. */
-export function buildRoute(route: ParsedRoute, slugs: RouteSlugs = CS_SLUGS): string {
+export function buildRoute(route: ParsedRoute, slugs: RouteSlugs): string {
   const segments: string[] = [];
 
   if (route.embed) segments.push(slugs.embed, route.embed);
@@ -151,7 +131,7 @@ export function buildRoute(route: ParsedRoute, slugs: RouteSlugs = CS_SLUGS): st
 export function questionPath(
   route: Omit<CalculatorRoute, 'step' | 'param'>,
   questionNumber: number,
-  slugs: RouteSlugs = CS_SLUGS,
+  slugs: RouteSlugs,
 ): string {
   return buildRoute(
     { kind: 'calculator', ...route, step: 'question', param: String(questionNumber) },

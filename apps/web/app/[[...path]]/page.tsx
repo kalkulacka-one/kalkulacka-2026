@@ -1,5 +1,5 @@
 import { parseRoute } from '@vk/core';
-import { getMessages } from '@vk/i18n';
+import { getMessages, routeSlugs } from '@vk/i18n';
 import { notFound } from 'next/navigation';
 import { AppShell } from '../../components/app-shell';
 import { CalculatorIntro } from '../../components/calculator-intro';
@@ -27,7 +27,7 @@ import styles from './page.module.css';
  */
 export default async function CatchAllPage({ params }: { params: Promise<{ path?: string[] }> }) {
   const { path } = await params;
-  const route = parseRoute(path ?? []);
+  const route = parseRoute(path ?? [], routeSlugs());
   const messages = getMessages();
 
   if (!route) notFound();

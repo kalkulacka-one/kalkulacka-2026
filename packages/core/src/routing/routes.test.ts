@@ -1,15 +1,17 @@
+import { routeSlugs } from '@vk/i18n';
 import { describe, expect, it } from 'vitest';
 import { buildRoute, type ParsedRoute, parseRoute, questionPath, slugifyDistrict } from './routes';
 
 const segs = (path: string) => path.split('/').filter(Boolean);
+const slugs = routeSlugs('cs');
 
 describe('parseRoute', () => {
   it('reads the homepage', () => {
-    expect(parseRoute([])).toEqual({ kind: 'home' });
+    expect(parseRoute([], slugs)).toEqual({ kind: 'home' });
   });
 
   it('reads an election as the district picker', () => {
-    expect(parseRoute(segs('/volby/komunalni-2022'))).toEqual({
+    expect(parseRoute(segs('/volby/komunalni-2022'), slugs)).toEqual({
       kind: 'election',
       electionKey: 'komunalni-2022',
       embed: undefined,
@@ -17,7 +19,7 @@ describe('parseRoute', () => {
   });
 
   it('defaults a bare calculator to the intro', () => {
-    expect(parseRoute(segs('/volby/komunalni-2022/pardubice'))).toMatchObject({
+    expect(parseRoute(segs('/volby/komunalni-2022/pardubice'), slugs)).toMatchObject({
       kind: 'calculator',
       electionKey: 'komunalni-2022',
       district: 'pardubice',
@@ -34,19 +36,23 @@ describe('parseRoute', () => {
     };
 
     for (const [slug, step] of Object.entries(cases)) {
-      expect(parseRoute(segs(`/volby/komunalni-2022/pardubice/${slug}`))).toMatchObject({ step });
+      expect(parseRoute(segs(`/volby/komunalni-2022/pardubice/${slug}`), slugs)).toMatchObject({
+        step,
+      });
     }
   });
 
   it('reads a question number', () => {
-    expect(parseRoute(segs('/volby/komunalni-2022/pardubice/otazka/3'))).toMatchObject({
+    expect(parseRoute(segs('/volby/komunalni-2022/pardubice/otazka/3'), slugs)).toMatchObject({
       step: 'question',
       param: '3',
     });
   });
 
   it('treats embed as a prefix on the same grammar', () => {
-    expect(parseRoute(segs('/embed/alarm/volby/komunalni-2022/pardubice/otazka/3'))).toMatchObject({
+    expect(
+      parseRoute(segs('/embed/alarm/volby/komunalni-2022/pardubice/otazka/3'), slugs),
+    ).toMatchObject({
       kind: 'calculator',
       embed: 'alarm',
       electionKey: 'komunalni-2022',
@@ -57,9 +63,9 @@ describe('parseRoute', () => {
   });
 
   it('returns null for paths it does not recognise', () => {
-    expect(parseRoute(segs('/nonsense'))).toBeNull();
-    expect(parseRoute(segs('/volby/komunalni-2022/pardubice/neznamy-krok'))).toBeNull();
-    expect(parseRoute(segs('/embed'))).toBeNull();
+    expect(parseRoute(segs('/nonsense'), slugs)).toBeNull();
+    expect(parseRoute(segs('/volby/komunalni-2022/pardubice/neznamy-krok'), slugs)).toBeNull();
+    expect(parseRoute(segs('/embed'), slugs)).toBeNull();
   });
 });
 
@@ -76,21 +82,21 @@ describe('buildRoute', () => {
     ];
 
     for (const path of paths) {
-      const parsed = parseRoute(segs(path)) as ParsedRoute;
+      const parsed = parseRoute(segs(path), slugs) as ParsedRoute;
       expect(parsed, path).not.toBeNull();
-      expect(buildRoute(parsed), path).toBe(path);
+      expect(buildRoute(parsed, slugs), path).toBe(path);
     }
   });
 
   it('builds the homepage', () => {
-    expect(buildRoute({ kind: 'home' })).toBe('/');
-    expect(buildRoute({ kind: 'home', embed: 'alarm' })).toBe('/embed/alarm');
+    expect(buildRoute({ kind: 'home' }, slugs)).toBe('/');
+    expect(buildRoute({ kind: 'home', embed: 'alarm' }, slugs)).toBe('/embed/alarm');
   });
 });
 
 describe('questionPath', () => {
   it('links to a numbered question', () => {
-    expect(questionPath({ electionKey: 'komunalni-2022', district: 'pardubice' }, 5)).toBe(
+    expect(questionPath({ electionKey: 'komunalni-2022', district: 'pardubice' }, 5, slugs)).toBe(
       '/volby/komunalni-2022/pardubice/otazka/5',
     );
   });
