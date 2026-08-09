@@ -6,6 +6,8 @@
  * the app should not be able to accidentally change how a swipe behaves.
  */
 
+import { prefersReducedMotion } from '../prefers-reduced-motion';
+
 export type SwipeZone = 'agree' | 'disagree' | 'skip';
 
 /** Where the stacked cards sit when the top card is at rest. */
@@ -77,6 +79,40 @@ export const SPEEDS: Record<CommitSpeed, { fly: number; fade: number }> = {
 };
 
 export const SPRING_BACK_DURATION = 0.36;
+
+/**
+ * What every duration here collapses to under `prefers-reduced-motion`.
+ *
+ * Near-zero rather than zero, matching what `base.css` does to the duration
+ * tokens: a transition of `0s` is not a transition at all and fires no
+ * `transitionend`, and the deck's own timers are sized against these numbers.
+ */
+export const REDUCED_DURATION = 0.001;
+
+/*
+ * The two readers below are what the deck animates through, and they exist
+ * because these durations are written straight into inline `transition`
+ * strings — there is no `--vk-duration-*` token in the path for `base.css`'s
+ * reduced-motion rule to collapse, so the query has to be read in JS.
+ *
+ * What is *not* reduced is the drag itself. A card following a finger is
+ * direct manipulation rather than animation: it moves because the hand moves,
+ * it stops when the hand stops, and freezing it would take the gesture away
+ * instead of calming it. Only the parts that play on their own once the hand
+ * is off — the fly-out, the stack rising to the front behind it, and the
+ * spring back from a drag that did not commit — are what this switches off.
+ */
+
+/** How long a committed card takes to leave, and to fade while it does. */
+export function speedFor(speed: CommitSpeed): { fly: number; fade: number } {
+  if (prefersReducedMotion()) return { fly: REDUCED_DURATION, fade: REDUCED_DURATION };
+  return SPEEDS[speed];
+}
+
+/** How long an abandoned drag takes to settle back to centre. */
+export function springBackDuration(): number {
+  return prefersReducedMotion() ? REDUCED_DURATION : SPRING_BACK_DURATION;
+}
 
 export function transform(x: number, y: number, rotation: number) {
   return `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
