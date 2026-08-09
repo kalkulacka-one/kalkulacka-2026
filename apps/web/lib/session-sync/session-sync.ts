@@ -329,6 +329,44 @@ export async function saveResults(
   await save(target, matches);
 }
 
+/**
+ * Mint — or recover — the public id this session is shareable under.
+ *
+ * The odd one out in this module: every other call here is fire-and-forget
+ * because it happens *while* someone answers questions, and a failed save is
+ * not their problem. This one is a button press whose whole point is a URL, so
+ * it reports failure (`null`) instead of swallowing it, and the dialog says so.
+ *
+ * The server is idempotent — a session that already has a public id gets the
+ * same one back — so pressing twice cannot mint two links to one result.
+ */
+export async function requestShareLink(calculatorId: string): Promise<string | null> {
+  if (!canSync(calculatorId)) return null;
+
+  /*
+   * The calculator screens open the session on mount; awaiting that here is
+   * what stops a fast press from racing the POST that creates the very row
+   * this endpoint looks up. No entry at all means sync never started for this
+   * calculator, and there is nothing to wait for.
+   */
+  const state = states.get(calculatorId);
+  if (state && !(await state.ready)) return null;
+
+  try {
+    const response = await fetch(`/api/calculators/${calculatorId}/sessions:share`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
+    if (!response.ok) return null;
+
+    const body: unknown = await response.json();
+    const publicId = (body as { publicId?: unknown } | null)?.publicId;
+    return typeof publicId === 'string' ? publicId : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Test seam: the per-document guards above outlive any single test. */
 export function resetSyncStateForTests(): void {
   for (const state of states.values()) {

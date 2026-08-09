@@ -56,9 +56,16 @@ export async function POST(
       },
     });
 
-    // The OG image route (/api/images/sessions/[public-id]/opengraph) doesn't
-    // exist yet — task C3 adds it. The old app fire-and-forgets a warmup
-    // fetch here once it does.
+    /*
+     * Warm the OG image while the link is still being copied.
+     *
+     * Rendering it takes a font fetch, the calculator data and a rasterise;
+     * the first request for it is normally a social crawler, which does not
+     * wait long and does not come back. Deliberately not awaited and
+     * deliberately silent — this is a nicety, and a failed warmup must not
+     * cost the caller the public id it actually asked for.
+     */
+    void fetch(new URL(`/api/images/sessions/${publicId}/opengraph`, request.url)).catch(() => {});
 
     return Response.json({
       publicId,

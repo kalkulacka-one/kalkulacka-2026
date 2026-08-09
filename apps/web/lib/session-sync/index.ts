@@ -3,6 +3,7 @@ export {
   type CalculatorSyncTarget,
   canSync,
   isSyncConfigured,
+  requestShareLink,
   saveResults,
   startCalculatorSync,
 } from './session-sync';

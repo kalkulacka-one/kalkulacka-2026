@@ -1,5 +1,12 @@
-import { type Calculator, type CalculatorRoute, parseRoute } from '@vk/core';
-import { getMessages } from '@vk/i18n';
+import {
+  type Calculator,
+  type CalculatorRoute,
+  countAnswered,
+  type ParsedRoute,
+  parseRoute,
+} from '@vk/core';
+import { format, getMessages } from '@vk/i18n';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { AppShell } from '../../components/app-shell';
@@ -17,6 +24,7 @@ import {
   loadElection,
 } from '../../lib/calculators';
 import { type CalculatorRef, shellInfoOf, stepPath } from '../../lib/paths';
+import { loadSharedResult } from '../../lib/shared-result';
 import styles from './page.module.css';
 
 /**
@@ -68,6 +76,28 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     if (!calculator) notFound();
 
     const ref = { electionKey: route.electionKey, district: route.district ?? '' };
+
+    /*
+     * A public link to somebody's finished result — the one calculator URL
+     * that is not the reader's own calculator. It is deliberately outside the
+     * fragment below: `<CalculatorSession>` would open an anonymous session
+     * for a visitor who has answered nothing, and the results screen's own
+     * save hook would then overwrite it with a ranking read off the page.
+     * Visiting this address must leave the viewer's own state exactly as it
+     * was, so nothing that writes any of it is mounted at all.
+     */
+    if (route.step === 'result' && route.param) {
+      const shared = await loadSharedResult(route.param, calculator.id);
+      // Unknown id, malformed id, no backend, or a session belonging to a
+      // different calculator than the URL names — all of them mean this
+      // address does not identify a result.
+      if (!shared) notFound();
+      // A session with no answers is not a result: it would render an empty
+      // ranking under a headline claiming somebody's shoda.
+      if (countAnswered(calculator.questions, shared.answers) === 0) notFound();
+
+      return <Results {...ref} calculator={calculator} shared={{ answers: shared.answers }} />;
+    }
 
     return (
       <>
@@ -155,6 +185,66 @@ function calculatorScreen(
     case 'comparison':
       return <Results {...ref} calculator={calculator} />;
   }
+}
+
+/**
+ * Only the public shared result has metadata of its own.
+ *
+ * Every other screen keeps the root layout's title, which is what it had
+ * before this route learned to render somebody else's result; a metadata
+ * scheme for the flow as a whole is its own task. This one is here because a
+ * link that is *made to be posted* has to arrive somewhere with a picture and
+ * a sentence, and unfurling is the only thing that reads them.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ path?: string[] }>;
+}): Promise<Metadata> {
+  const { path } = await params;
+  const route: ParsedRoute | null = parseRoute(path ?? []);
+
+  if (route?.kind !== 'calculator' || route.embed) return {};
+  if (route.step !== 'result' || !route.param) return {};
+
+  const calculator = await loadCalculator(route.electionKey, route.district ?? '');
+  if (!calculator) return {};
+
+  // The same load the page makes, deduplicated by `cache()` — a 404 must not
+  // become a page with a stranger's title.
+  const shared = await loadSharedResult(route.param, calculator.id);
+  if (!shared) return {};
+
+  const messages = getMessages();
+  const title = format(messages.results.shared.metaTitle, {
+    election: calculator.electionName,
+  });
+  const description = format(messages.results.shared.metaDescription, {
+    calculator: calculator.name,
+  });
+
+  /*
+   * There is no request object in `generateMetadata`, so the absolute URL
+   * `og:image` requires cannot be derived from where this is being served —
+   * it has to be configured. Left unset, Next resolves relative metadata URLs
+   * against its own default (localhost in dev, and it warns in production),
+   * which is exactly the behaviour a fork without this variable had before.
+   */
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const image = `/api/images/sessions/${shared.publicId}/opengraph`;
+
+  return {
+    ...(baseUrl ? { metadataBase: new URL(baseUrl) } : {}),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      images: [{ url: image, width: 1200, height: 630 }],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: [image] },
+  };
 }
 
 /** Prerender the first question of every available calculator. */
