@@ -166,6 +166,30 @@ test('completes a calculator from the picker through to ranked results, and shar
     await expect(page.getByText(messages.results.winner).first()).toBeVisible();
   });
 
+  await test.step('a comparison takes focus, and Escape hands it back to the row', async () => {
+    const ranking = page.getByRole('list').filter({ hasText: messages.results.winner });
+    const topRow = ranking.getByRole('listitem').first().getByRole('button');
+    await topRow.click();
+
+    /*
+     * The pane names itself after whoever's comparison it is holding, which
+     * makes it the one `region` on this screen — the dashboard's own cards are
+     * `<section>`s with no accessible name, so they are not landmarks. Focus
+     * goes to that name: it is the single thing a reader has to be told before
+     * the forty-two rows underneath it.
+     */
+    const comparison = page.getByRole('region');
+    await expect(comparison).toBeVisible();
+    await expect(comparison.getByRole('heading', { level: 2 })).toBeFocused();
+
+    // Escape is the third way out, beside the close button and the phone's
+    // drag handle — and it puts the reader back where they were, rather than
+    // unmounting the focused control and dropping them at the top of the page.
+    await page.keyboard.press('Escape');
+    await expect(comparison).toHaveCount(0);
+    await expect(topRow).toBeFocused();
+  });
+
   await test.step('share dialog opens image-only — no backend is configured', async () => {
     await page.getByRole('button', { name: messages.results.share, exact: true }).click();
 
