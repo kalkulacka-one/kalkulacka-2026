@@ -254,7 +254,8 @@
   },
   "notFound": {
     "title": "Stránka nenalezena",
-    "description": "Tato kalkulačka zatím neexistuje."
+    "description": "Tato kalkulačka zatím neexistuje.",
+    "homeLabel": "Zpět na úvod"
   },
   "comingSoon": {
     "title": "Připravujeme",
