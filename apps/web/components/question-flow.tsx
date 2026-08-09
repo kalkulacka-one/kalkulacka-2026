@@ -1,6 +1,6 @@
 'use client';
 
-import { type Question, questionPath, toSegments } from '@vk/core';
+import { type Question, toSegments } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
 import {
   FlowNav,
@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
-import { type CalculatorShellInfo, stepPath } from '../lib/paths';
+import { type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { toCardContent } from '../lib/question-content';
 import { AppShell } from './app-shell';
 import styles from './question-flow.module.css';

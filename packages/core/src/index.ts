@@ -97,7 +97,6 @@ export {
 export {
   buildRoute,
   type CalculatorRoute,
-  CS_SLUGS,
   type ElectionRoute,
   type FlowStep,
   type ParsedRoute,

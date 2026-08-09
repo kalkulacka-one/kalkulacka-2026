@@ -1,22 +1,116 @@
 import cs from '../messages/cs.json' with { type: 'json' };
 
 /**
- * Locales and message catalogs.
+ * Registered locales, and everything each one decides — message catalog, URL
+ * slugs, plural rule, number formatting.
  *
- * Phase 3 replaces this accessor with next-intl. Components already read every
- * string from the catalog, so that swap does not touch them — which is the
- * whole point of putting this in place before there is a second locale.
+ * Phase 3 replaces the catalog access with next-intl. Components already read
+ * every string from `getMessages()`, so that swap does not touch them — which
+ * is the whole point of putting this in place before there is a second
+ * locale.
  */
-export const DEFAULT_LOCALE = 'cs' as const;
 export const LOCALES = ['cs'] as const;
 export type Locale = (typeof LOCALES)[number];
+export const DEFAULT_LOCALE: Locale = 'cs';
 
+/**
+ * The canonical message shape. Every registered locale's catalog is checked
+ * against it via `LocaleEntry.messages`, so a translation missing a key `cs`
+ * has is a build error at the registry entry, not an `undefined` string at
+ * render time.
+ */
 export type Messages = typeof cs;
 
-const catalogs: Record<Locale, Messages> = { cs };
+/** The steps a calculator flow can be on. */
+export type FlowStep = 'intro' | 'guide' | 'question' | 'review' | 'result' | 'comparison';
 
-export function getMessages(locale: Locale = DEFAULT_LOCALE): Messages {
-  return catalogs[locale];
+/** Localised path segments. One of these per locale. */
+export type RouteSlugs = {
+  /** Prefix before the election key, e.g. "volby". */
+  elections: string;
+  steps: Record<FlowStep, string>;
+  /** Prefix for embedded views. */
+  embed: string;
+};
+
+/** Everything one registered locale supplies. */
+type LocaleEntry = {
+  messages: Messages;
+  slugs: RouteSlugs;
+  pluralCategory: (count: number) => 'one' | 'few' | 'many';
+  percent: (value: number) => string;
+};
+
+const locales: Record<Locale, LocaleEntry> = {
+  cs: {
+    messages: cs,
+    slugs: {
+      elections: 'volby',
+      embed: 'embed',
+      steps: {
+        intro: 'uvod',
+        guide: 'navod',
+        question: 'otazka',
+        review: 'rekapitulace',
+        result: 'vysledek',
+        comparison: 'porovnani',
+      },
+    },
+    /**
+     * Czech's three cardinal forms: 1 · 2–4 · 0 and 5+.
+     *
+     * Hand-written because the placeholder accessor below has no ICU. The
+     * rule itself is real and is what next-intl's plural rules will apply
+     * when it lands — so call sites written against `plural()` need no
+     * change, only this implementation does. Non-integers ("1,5 otázky")
+     * take the *few* form, matching CLDR.
+     */
+    pluralCategory(count) {
+      if (!Number.isInteger(count)) return 'few';
+      if (count === 1) return 'one';
+      if (count >= 2 && count <= 4) return 'few';
+      return 'many';
+    },
+    /**
+     * Czech puts a *non-breaking* space before the sign, so "63 %" stays one
+     * unbreakable unit instead of leaving "63" at the end of a line and "%"
+     * at the start of the next. The character below is an explicit `\u00a0` escape
+     * rather than a typed space: three call sites had each written
+     * this template inline, every one of them with a plain U+0020, under a
+     * comment asserting the opposite. Written as an escape the rule is
+     * visible in the source and cannot be silently undone by a reformat.
+     */
+    percent(value) {
+      return `${Math.round(value)}\u00a0%`;
+    },
+  },
+};
+
+/**
+ * The locale this build serves.
+ *
+ * Read from `process.env.NEXT_PUBLIC_LOCALE` on every call rather than cached
+ * at module scope — it's cheap, and it's what lets tests flip locales with
+ * `vi.stubEnv` instead of re-importing the module. Unset resolves to
+ * `DEFAULT_LOCALE`; a value that names no registered locale is a
+ * misconfiguration and throws rather than silently falling back.
+ */
+export function activeLocale(): Locale {
+  const raw = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_LOCALE : undefined;
+  if (!raw) return DEFAULT_LOCALE;
+  if ((LOCALES as readonly string[]).includes(raw)) return raw as Locale;
+  throw new Error(
+    `Unknown locale "${raw}" in NEXT_PUBLIC_LOCALE — known locales: ${LOCALES.join(', ')}`,
+  );
+}
+
+export function getMessages(locale: Locale = activeLocale()): Messages {
+  return locales[locale].messages;
+}
+
+/** The URL slugs this build's active locale renders and parses. */
+export function routeSlugs(locale: Locale = activeLocale()): RouteSlugs {
+  return locales[locale].slugs;
 }
 
 /**
@@ -72,7 +166,7 @@ export const FALLBACK_DISTRICT_KIND: DistrictKind = 'municipality';
 /** The picker's copy for one district kind. */
 export function districtVocabulary(
   kind: DistrictKind,
-  locale: Locale = DEFAULT_LOCALE,
+  locale: Locale = activeLocale(),
 ): DistrictVocabulary {
   const { picker } = getMessages(locale);
   const section: DistrictVocabulary | undefined = picker[kind];
@@ -91,36 +185,13 @@ export function format(template: string, values: Record<string, string | number>
   );
 }
 
-/**
- * A percentage, written the way the locale writes it.
- *
- * Czech puts a *non-breaking* space before the sign, so "63 %" stays one
- * unbreakable unit instead of leaving "63" at the end of a line and "%" at the
- * start of the next. The character below is an explicit `\u00a0` escape rather
- * than a typed space: three call sites had each written this template inline,
- * every one of them with a plain U+0020, under a comment asserting the opposite.
- * Written as an escape the rule is visible in the source and cannot be silently
- * undone by a reformat.
- *
- * It lives here because it is a locale decision, not an app one — English closes
- * the gap entirely ("63%"), and next-intl's number formatting will supply that
- * per-locale when a second locale lands.
- */
+/** A percentage, written the way the active locale writes it. */
 export function percent(value: number): string {
-  return `${Math.round(value)}\u00a0%`;
+  return locales[activeLocale()].percent(value);
 }
 
-/**
- * Czech's three cardinal forms: 1 · 2–4 · 0 and 5+.
- *
- * Hand-written because the placeholder accessor above has no ICU. The rule
- * itself is real and is what next-intl's `plural` will apply when it lands — so
- * call sites written against this need no change, only the implementation does.
- * Non-integers ("1,5 otázky") take the *few* form, matching CLDR.
- */
+/** `count` matched against the active locale's cardinal forms. */
 export function plural(count: number, forms: { one: string; few: string; many: string }): string {
-  if (!Number.isInteger(count)) return format(forms.few, { count });
-  if (count === 1) return format(forms.one, { count });
-  if (count >= 2 && count <= 4) return format(forms.few, { count });
-  return format(forms.many, { count });
+  const category = locales[activeLocale()].pluralCategory(count);
+  return format(forms[category], { count });
 }
