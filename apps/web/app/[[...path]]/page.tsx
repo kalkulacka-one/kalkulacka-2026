@@ -38,17 +38,19 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
   if (route.embed) notFound();
 
   if (route.kind === 'election') {
-    const election = loadElection(route.electionKey);
+    const election = await loadElection(route.electionKey);
     if (!election) notFound();
 
-    const districts: PickerDistrict[] = listDistricts(route.electionKey).map((district) => ({
-      code: district.code,
-      name: district.name,
-      slug: district.slug,
-      showCode: district.showCode,
-      available: district.available,
-      href: stepPath({ electionKey: route.electionKey, district: district.slug }, 'intro'),
-    }));
+    const districts: PickerDistrict[] = (await listDistricts(route.electionKey)).map(
+      (district) => ({
+        code: district.code,
+        name: district.name,
+        slug: district.slug,
+        showCode: district.showCode,
+        available: district.available,
+        href: stepPath({ electionKey: route.electionKey, district: district.slug }, 'intro'),
+      }),
+    );
 
     return (
       <DistrictPicker
@@ -60,7 +62,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
   }
 
   if (route.kind === 'calculator') {
-    const calculator = loadCalculator(route.electionKey, route.district ?? '');
+    const calculator = await loadCalculator(route.electionKey, route.district ?? '');
     if (!calculator) notFound();
 
     const ref = { electionKey: route.electionKey, district: route.district ?? '' };
@@ -124,8 +126,8 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
 }
 
 /** Prerender the first question of every available calculator. */
-export function generateStaticParams() {
-  return listAvailableCalculators().map(({ electionKey, district }) => ({
+export async function generateStaticParams() {
+  return (await listAvailableCalculators()).map(({ electionKey, district }) => ({
     path: ['volby', electionKey, district, 'otazka', '1'],
   }));
 }
