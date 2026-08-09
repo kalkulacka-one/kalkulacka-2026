@@ -110,6 +110,11 @@ describe('adaptArchiveIndex', () => {
     expect(senatni).toHaveLength(27);
   });
 
+  it('derives a URL slug from each district name', () => {
+    expect(index.districts.find((d) => d.code === '555134')?.slug).toBe('pardubice');
+    expect(index.districts.find((d) => d.name === 'Ústí nad Labem')?.slug).toBe('usti-nad-labem');
+  });
+
   it('flags senate districts as code-labelled and municipalities as not', () => {
     const pardubice = index.districts.find((d) => d.code === '555134');
     expect(pardubice?.name).toBe('Pardubice');

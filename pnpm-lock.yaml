@@ -117,6 +117,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@vk/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       zod:
         specifier: 4.4.3
         version: 4.4.3

@@ -4,6 +4,7 @@ import {
   type Election,
   getFixtureIndex,
   getPardubiceCalculator,
+  slugifyDistrict,
 } from '@vk/core';
 import { getSiteDataConfig } from '../config/site';
 import { loadPlatformCalculator } from './platform-data';
@@ -19,21 +20,6 @@ import { loadPlatformCalculator } from './platform-data';
  * Everything is async so the page above stays indifferent to the source; the
  * fixture branch resolves synchronously underneath.
  */
-
-/** URL-friendly district slug, e.g. "Praha hl. m." -> "praha-hl-m". */
-export function slugifyDistrict(name: string): string {
-  return (
-    name
-      .normalize('NFD')
-      // Combining diacritical marks (U+0300–U+036F), written as an escape rather
-      // than typed literally — a typed range is invisible in review and a
-      // reformat can eat it.
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  );
-}
 
 /** Districts are addressable by slug or by their official code. */
 export async function loadCalculator(
@@ -92,7 +78,7 @@ export async function loadElection(electionKey: string): Promise<Election | null
   return getFixtureIndex().elections.find((e) => e.key === electionKey) ?? null;
 }
 
-export type DistrictListing = District & { slug: string; available: boolean };
+export type DistrictListing = District & { available: boolean };
 
 /**
  * Every district in an election, each flagged with whether we hold its data.
@@ -120,9 +106,8 @@ export async function listDistricts(electionKey: string): Promise<DistrictListin
 
   const results: DistrictListing[] = [];
   for (const district of getFixtureIndex().districts.filter((d) => d.electionId === electionKey)) {
-    const slug = slugifyDistrict(district.name);
-    const available = (await loadCalculator(electionKey, slug)) !== null;
-    results.push({ ...district, slug, available });
+    const available = (await loadCalculator(electionKey, district.slug)) !== null;
+    results.push({ ...district, available });
   }
   return results;
 }

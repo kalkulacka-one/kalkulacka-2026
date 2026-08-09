@@ -6,6 +6,7 @@ import type {
   CandidateAnswer,
   Question,
 } from '../domain/types';
+import { slugifyDistrict } from '../routing/routes';
 import {
   type ArchiveCalculator,
   type ArchiveIndex,
@@ -124,6 +125,12 @@ export function adaptArchiveIndex(raw: unknown): CalculatorIndex {
    * one level up. `some` rather than `every`: an election is senate-shaped if
    * any of its districts is numbered, which keeps a single row with a missing
    * flag from silently reclassifying the whole election.
+   *
+   * Inference is right *here* and nowhere else: the archive is a closed Czech
+   * corpus of municipal and senate elections that will never gain another kind.
+   * The platform path has no such quirk to read and no such guarantee — it
+   * takes the kind from site config (`apps/web/config/site.ts`), which is also
+   * how a country with a kind this heuristic has never heard of gets one.
    */
   const numbered = new Set(
     parsed.calculators.filter((c) => c.show_district_code).map((c) => c.election_id),
@@ -143,6 +150,10 @@ export function adaptArchiveIndex(raw: unknown): CalculatorIndex {
       electionId: c.election_id,
       code: c.district_code,
       name: c.name,
+      // The archive addresses calculators by district code and carries no slug,
+      // so the readable half of the URL has always been derived from the name —
+      // now once, here, instead of at every call site that needed a link.
+      slug: slugifyDistrict(c.name),
       description: text(c.description),
       showCode: c.show_district_code ?? false,
     })),

@@ -10,7 +10,11 @@ import type { DistrictKind } from '@vk/core';
  */
 
 export type SiteCalculatorEntry = {
-  /** Key under the group on the CDN, e.g. "kalkulacka" — also the URL slug. */
+  /**
+   * Key under the group on the CDN, e.g. "kalkulacka" — and the URL slug, taken
+   * as-is rather than slugified from `name`: it is already the identifier the
+   * data is published under, and it is ASCII where a display name may not be.
+   */
   key: string;
   /** Display name; the CDN data has no title field for this. */
   name: string;
@@ -22,9 +26,10 @@ export type SiteElectionEntry = {
   name: string;
   description?: string;
   /**
-   * TODO(A3): snemovní calculators are *variants* of one nationwide election,
-   * not districts of it — the closed municipality/senate union cannot say so
-   * yet. Until A3 generalizes the axis, variants ride in the district slot.
+   * What the picker is a picker *of* — and so which vocabulary it speaks. The
+   * kinds are the `picker.*` sections of the message catalog; a country whose
+   * elections divide up some way Czech has no word for adds a section there and
+   * names it here.
    */
   districtKind: DistrictKind;
   calculators: SiteCalculatorEntry[];
@@ -43,7 +48,9 @@ const ELECTIONS: SiteElectionEntry[] = [
   {
     key: 'snemovni-2025',
     name: 'Sněmovní volby 2025',
-    districtKind: 'municipality',
+    // One nationwide election, seven calculators — the choice is which
+    // calculator, not where you vote.
+    districtKind: 'variant',
     calculators: [
       { key: 'kalkulacka', name: 'Volební kalkulačka' },
       { key: 'expresni', name: 'Expresní kalkulačka' },

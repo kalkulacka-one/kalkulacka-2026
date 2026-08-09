@@ -303,7 +303,11 @@ export function adaptPlatformCalculator(
     electionName: fields.electionKey ?? '',
     // The domain has one `districtCode` string; the platform can distinguish
     // variant/district/round independently. This falls back through them in
-    // specificity order — see the report for why that's a stopgap for A3.
+    // specificity order, which A3 kept: the field means "what identifies this
+    // calculator within its election", and for a nationwide election that is
+    // the variant. Which of the three an election divides by is not guessed
+    // here — it is `districtKind` in site config, and it drives only the
+    // picker's wording.
     districtCode:
       fields.districtCode ??
       fields.districtKey ??

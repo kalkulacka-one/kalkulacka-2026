@@ -81,6 +81,19 @@
         "few": "{count} obvody",
         "many": "{count} obvodů"
       }
+    },
+    "variant": {
+      "title": "Vyberte kalkulačku",
+      "description": "Pro tyhle volby máme několik kalkulaček. Liší se délkou i tím, na co se ptají — vyberte si tu, která vám sedne.",
+      "searchLabel": "Hledat kalkulačku",
+      "searchPlaceholder": "Začněte psát název kalkulačky",
+      "empty": "Žádná kalkulačka neodpovídá hledání „{query}“.",
+      "groupUnavailableHint": "Tyhle kalkulačky teprve chystáme.",
+      "resultCount": {
+        "one": "{count} kalkulačka",
+        "few": "{count} kalkulačky",
+        "many": "{count} kalkulaček"
+      }
     }
   },
   "intro": {

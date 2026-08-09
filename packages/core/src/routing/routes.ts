@@ -9,6 +9,30 @@
 
 export type FlowStep = 'intro' | 'guide' | 'question' | 'review' | 'result' | 'comparison';
 
+/**
+ * URL-friendly district slug, e.g. "Praha hl. m." -> "praha-hl-m".
+ *
+ * Only for sources that have no slug of their own — in practice the Czech
+ * archive, whose district names are all Latin. It keeps exactly the characters
+ * NFD decomposition leaves behind, so a name in a script that does not
+ * decompose to ASCII (Cyrillic, Greek) slugifies to the empty string; a source
+ * with names like that has to carry real slugs. Lives here, next to the rest of
+ * the URL grammar, rather than in the app: what it produces is a path segment.
+ */
+export function slugifyDistrict(name: string): string {
+  return (
+    name
+      .normalize('NFD')
+      // Combining diacritical marks (U+0300–U+036F), written as an escape rather
+      // than typed literally — a typed range is invisible in review and a
+      // reformat can eat it.
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  );
+}
+
 /** Localised path segments. One of these per locale. */
 export type RouteSlugs = {
   /** Prefix before the election key, e.g. "volby". */

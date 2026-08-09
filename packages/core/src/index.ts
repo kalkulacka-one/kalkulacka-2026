@@ -104,4 +104,5 @@ export {
   parseRoute,
   questionPath,
   type RouteSlugs,
+  slugifyDistrict,
 } from './routing/routes';

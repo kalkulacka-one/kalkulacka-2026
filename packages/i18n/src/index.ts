@@ -20,6 +20,66 @@ export function getMessages(locale: Locale = DEFAULT_LOCALE): Messages {
 }
 
 /**
+ * Everything the district picker says about one kind of thing being picked.
+ *
+ * Every sentence on that screen names the thing — "Vyberte město", "Hledat
+ * obvod", "{count} kalkulačky" — and in Czech each one declines it differently,
+ * so a kind cannot be papered over with one neutral noun plus a label. A kind
+ * *is* this set of strings.
+ */
+export type DistrictVocabulary = {
+  title: string;
+  description: string;
+  searchLabel: string;
+  searchPlaceholder: string;
+  /** Takes `{query}`. */
+  empty: string;
+  groupUnavailableHint: string;
+  resultCount: { one: string; few: string; many: string };
+};
+
+/**
+ * The kinds of thing an election can be divided into — municipalities, senate
+ * obvody, calculator variants, and whatever a future country needs.
+ *
+ * Derived from the catalog rather than declared as a hand-written union: since
+ * a kind is exactly "which vocabulary the picker speaks", the catalog is its
+ * registry, and adding one costs a `picker.<kind>` section here plus the value
+ * in site config — no edit to this file, to the domain types, or to the picker
+ * component. The derivation keeps the compile-time check the repo relies on
+ * everywhere else: `districtKind: 'variantt'` in a config still fails to
+ * build, and a section that does not carry the full `DistrictVocabulary` shape
+ * is not admitted to the union at all (so using it fails to build too, at the
+ * config site rather than at render time).
+ *
+ * The trade is that `cs` is the shape authority — a locale-specific kind must
+ * exist in `cs.json` too. That is already true of every other message, since
+ * `Messages` is `typeof cs`.
+ */
+export type DistrictKind = {
+  [K in keyof Messages['picker']]: Messages['picker'][K] extends DistrictVocabulary ? K : never;
+}[keyof Messages['picker']];
+
+/**
+ * The kind assumed when data supplies one the catalog does not know.
+ *
+ * Only reachable by lying to the type system — untyped JSON config, say — which
+ * is exactly when a picker that renders the wrong noun beats one that throws on
+ * `undefined.title`.
+ */
+export const FALLBACK_DISTRICT_KIND: DistrictKind = 'municipality';
+
+/** The picker's copy for one district kind. */
+export function districtVocabulary(
+  kind: DistrictKind,
+  locale: Locale = DEFAULT_LOCALE,
+): DistrictVocabulary {
+  const { picker } = getMessages(locale);
+  const section: DistrictVocabulary | undefined = picker[kind];
+  return section ?? picker[FALLBACK_DISTRICT_KIND];
+}
+
+/**
  * Fill `{name}` placeholders.
  *
  * Deliberately minimal — next-intl brings real ICU handling, including the
