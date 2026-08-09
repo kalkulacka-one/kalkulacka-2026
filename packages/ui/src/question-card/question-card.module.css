@@ -182,11 +182,16 @@
  * than a native `title`, so it matches the app's own vocabulary for a
  * transient label and appears the instant the button is hovered or focused
  * instead of after the browser's built-in tooltip delay.
+ *
+ * Anchored to the button's left edge rather than centered: the star sits
+ * right next to the card's left padding, and the card clips overflow for its
+ * rounded corners, so a centered pill would get cut off on that side once the
+ * label is wider than the button itself.
  */
 .tooltip {
   position: absolute;
   bottom: calc(100% + var(--vk-space-2));
-  left: 50%;
+  left: 0;
   z-index: 1;
 
   padding: 0.5rem 0.875rem;
@@ -202,7 +207,8 @@
 
   pointer-events: none;
   opacity: 0;
-  transform: translateX(-50%) translateY(4px) scale(0.92);
+  transform-origin: left bottom;
+  transform: translateY(4px) scale(0.92);
   transition:
     opacity 0.12s ease,
     transform 0.12s var(--vk-easing-spring);
@@ -211,7 +217,7 @@
 .important:hover .tooltip,
 .important:focus-visible .tooltip {
   opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
+  transform: translateY(0) scale(1);
 }
 
 .answer {
