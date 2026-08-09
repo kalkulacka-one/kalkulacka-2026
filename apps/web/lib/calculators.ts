@@ -10,12 +10,17 @@ import { type Calculator, type Election, getFixtureIndex, getPardubiceCalculator
 
 /** URL-friendly district slug, e.g. "Praha hl. m." -> "praha-hl-m". */
 export function slugifyDistrict(name: string): string {
-  return name
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return (
+    name
+      .normalize('NFD')
+      // Combining diacritical marks (U+0300–U+036F), written as an escape rather
+      // than typed literally — a typed range is invisible in review and a
+      // reformat can eat it.
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  );
 }
 
 /** Districts are addressable by slug or by their official code. */

@@ -48,8 +48,6 @@
     "keyPeriod": "Tečka"
   },
   "questions": {
-    "done": "Hotovo",
-    "doneDescription": "Odpověděli jste na všechny otázky.",
     "restart": "Začít znovu",
     "showResults": "Zobrazit výsledky"
   },
@@ -86,7 +84,6 @@
     }
   },
   "intro": {
-    "eyebrow": "Volební kalkulačka",
     "description": "Odpovíte na {questions} a uvidíte, ke komu máte nejblíž. Nikam se nic neposílá — odpovědi zůstávají ve vašem prohlížeči.",
     "candidates": "Porovnáváme {candidates}.",
     "start": "Pokračovat",
@@ -117,7 +114,6 @@
     "feedbackImportant": "Pro mě důležité — taková otázka má ve výsledku dvojnásobnou váhu.",
     "feedbackSkip": "Přeskočeno — do výsledku se nezapočítá.",
     "practiceDone": "Máte to v ruce. Můžeme začít doopravdy.",
-    "dragImportant": "+ důležité",
     "agreeTitle": "Souhlasím",
     "agreeDescriptionTouch": "Táhněte kartu doleva, nebo tapněte na Souhlasím.",
     "agreeDescriptionPointer": "Táhněte kartu doleva, stiskněte šipku vlevo, nebo klikněte na Souhlasím.",
@@ -158,7 +154,6 @@
     "description": "Shoda vychází jen z otázek, na které jste odpověděli.",
     "noAnswer": "Neodpověděli",
     "winner": "Největší shoda",
-    "compare": "Porovnat odpovědi",
     "closeComparison": "Zavřít porovnání",
     "filterLabel": "Filtrovat odpovědi",
     "filterAll": "Vše",
@@ -175,7 +170,6 @@
     "restart": "Vyplnit znovu",
     "share": "Sdílet",
     "shareDialog": {
-      "open": "Sdílet výsledek",
       "title": "Sdílet výsledek",
       "close": "Zavřít",
       "preview": "Náhled sdíleného obrázku",
@@ -191,8 +185,7 @@
       "saveImage": "Uložit obrázek",
       "working": "Připravujeme…",
       "saved": "Obrázek uložen",
-      "failed": "Obrázek se nepodařilo vytvořit. Zkuste to prosím znovu.",
-      "fileName": "moje-shoda"
+      "failed": "Obrázek se nepodařilo vytvořit. Zkuste to prosím znovu."
     },
     "emptyTitle": "Zatím není co počítat",
     "emptyDescription": "Odpovězte alespoň na jednu otázku a shoda se objeví tady.",
