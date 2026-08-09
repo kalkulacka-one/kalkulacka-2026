@@ -22,6 +22,19 @@ export type CalculatorShellInfo = {
   electionName: string;
 } & CalculatorRef;
 
+/** Builds `CalculatorShellInfo` from a loaded calculator and its route ref — the one shape every call site was hand-assembling. */
+export function shellInfoOf(
+  calculator: { id: string; name: string; electionName: string },
+  ref: CalculatorRef,
+): CalculatorShellInfo {
+  return {
+    id: calculator.id,
+    name: calculator.name,
+    electionName: calculator.electionName,
+    ...ref,
+  };
+}
+
 export function stepPath(ref: CalculatorRef, step: FlowStep, param?: string): string {
   return buildRoute({ kind: 'calculator', ...ref, step, ...(param ? { param } : {}) });
 }

@@ -29,7 +29,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
 import { answerLabelOf } from '../lib/answer-labels';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
-import { type CalculatorRef, type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
+import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
 import { useDragDismiss } from '../lib/use-drag-dismiss';
 import { AppShell } from './app-shell';
 import { BackLink } from './back-link';
@@ -67,12 +67,7 @@ type ComparisonFilter = 'all' | 'match' | 'mismatch' | 'important';
 export function Results({ calculator, electionKey, district }: ResultsProps) {
   const answers = useCalculatorAnswers(calculator.id);
   const ref = { electionKey, district };
-  const shellInfo: CalculatorShellInfo = {
-    id: calculator.id,
-    name: calculator.name,
-    electionName: calculator.electionName,
-    ...ref,
-  };
+  const shellInfo = shellInfoOf(calculator, ref);
 
   const answered = countAnswered(calculator.questions, answers);
   const results = useMemo(() => buildResults(calculator, answers), [calculator, answers]);
@@ -153,7 +148,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       prompt: buildAiPrompt({
         electionName: calculator.electionName,
         districtName: calculator.name,
-        answered: countAnswered(calculator.questions, answers),
+        answered,
         total: calculator.questions.length,
         results,
         topics,
@@ -161,7 +156,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
         againstTheGrain,
       }),
     };
-  }, [calculator, answers, results]);
+  }, [calculator, answers, results, answered]);
 
   /*
    * The page's own address, read after mount rather than during render: there

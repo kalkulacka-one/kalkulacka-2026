@@ -181,7 +181,16 @@ export function cardCssVars(colors: CardColorSet, mode: 'light' | 'dark'): CSSPr
   };
 }
 
-/** The tokens read off the DOM, and what to fall back to if one is missing. */
+/**
+ * The tokens read off the DOM, and what to fall back to if one is missing.
+ *
+ * These hexes are hand-copied from the default theme's light palette
+ * (`packages/tokens/src/themes/default.theme.ts`) — this package deliberately
+ * has no dependency on `@vk/tokens` internals, so nothing enforces the two
+ * staying in sync. Only hit when there is no DOM to probe (server/tests), so
+ * drift here is cosmetic rather than a rendering bug, but worth re-checking
+ * by hand if the default theme's palette changes.
+ */
 const TOKENS = {
   page: ['--vk-color-page', '#f8fafc'],
   surface: ['--vk-color-surface', '#ffffff'],

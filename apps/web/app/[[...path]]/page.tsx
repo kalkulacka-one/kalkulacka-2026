@@ -14,7 +14,7 @@ import {
   loadCalculator,
   loadElection,
 } from '../../lib/calculators';
-import { stepPath } from '../../lib/paths';
+import { shellInfoOf, stepPath } from '../../lib/paths';
 import styles from './page.module.css';
 
 /**
@@ -31,6 +31,11 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
   const messages = getMessages();
 
   if (!route) notFound();
+
+  // Embed mode is parsed by @vk/core but not yet rendered — Phase 7 builds it.
+  // Until then, an embed URL 404s rather than silently serving the full app
+  // shell to a partner expecting a stripped-down embed.
+  if (route.embed) notFound();
 
   if (route.kind === 'election') {
     const election = loadElection(route.electionKey);
@@ -59,12 +64,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     if (!calculator) notFound();
 
     const ref = { electionKey: route.electionKey, district: route.district ?? '' };
-    const shellInfo = {
-      id: calculator.id,
-      name: calculator.name,
-      electionName: calculator.electionName,
-      ...ref,
-    };
+    const shellInfo = shellInfoOf(calculator, ref);
 
     switch (route.step) {
       case 'intro':
