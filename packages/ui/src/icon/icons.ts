@@ -192,6 +192,99 @@ export const icons = {
     paths: ['M21 12.79 A9 9 0 1 1 11.21 3 A7 7 0 0 0 21 12.79 Z'],
     strokeLinejoin: 'round',
   },
+
+  /*
+   * Topics.
+   *
+   * One per subject the questions are tagged with, so a topic list reads as a
+   * list of *subjects* rather than eleven identical rows of type. They are all
+   * from the thin set — same pen as the rest — and each is a single obvious
+   * object rather than a scene: at 20px a bus with passengers is a smudge, a
+   * bus is a bus. `topicOther` is the fallback for a tag this set has no
+   * drawing for, which is every tag once the real backend supplies its own.
+   */
+  /** Doprava — a tram/bus body over two wheels. */
+  topicTransport: {
+    ...THIN,
+    paths: ['M5 4 L19 4 L19 17 L5 17 Z', 'M5 10 L19 10', 'M8 13.5 L16 13.5'],
+    dots: [
+      [8, 19.5, 1.4],
+      [16, 19.5, 1.4],
+    ],
+  },
+  /** Bydlení — a house, gable on the 45°. */
+  topicHousing: {
+    ...THIN,
+    paths: [
+      'M3 12 L12 3 L21 12',
+      'M5.5 9.5 L5.5 20 L18.5 20 L18.5 9.5',
+      'M10 20 L10 14 L14 14 L14 20',
+    ],
+  },
+  /** Energetika — the bolt, every edge on a 45° or a vertical. */
+  topicEnergy: {
+    ...THIN,
+    paths: ['M13.5 2.5 L5 13 L11 13 L10.5 21.5 L19 11 L13 11 Z'],
+  },
+  /** Školství — a mortarboard over its book block. */
+  topicEducation: {
+    ...THIN,
+    paths: [
+      'M2 9 L12 4 L22 9 L12 14 Z',
+      'M6.5 11.25 L6.5 17 L17.5 17 L17.5 11.25',
+      'M20 10 L20 15',
+    ],
+  },
+  /** Sociální politika — care, drawn as a heart on the family's diagonals. */
+  topicSocial: {
+    ...THIN,
+    paths: ['M12 20.5 L4 12.5 A4.5 4.5 0 0 1 12 7.5 A4.5 4.5 0 0 1 20 12.5 Z'],
+  },
+  /** Životní prostředí — a tree, canopy as a triangle. */
+  topicEnvironment: {
+    ...THIN,
+    paths: ['M12 3 L4.5 13 L19.5 13 Z', 'M12 8.5 L6.5 16 L17.5 16 Z', 'M12 16 L12 21'],
+  },
+  /** Kultura a sport — a note; the stem's head is one of the family's dots. */
+  topicCulture: {
+    ...THIN,
+    paths: ['M9 16 L9 5.5 L19 3 L19 13.5'],
+    dots: [
+      [6.6, 16.4, 2.4],
+      [16.6, 13.9, 2.4],
+    ],
+  },
+  /** Veřejný pořádek — a shield, cut off the diagonals rather than curved. */
+  topicSafety: {
+    ...THIN,
+    paths: ['M12 2.5 L20 5.5 L20 12 L12 21.5 L4 12 L4 5.5 Z'],
+  },
+  /** Rozpočet — a note of money, with the family's dot for its face. */
+  topicBudget: {
+    ...THIN,
+    paths: ['M2.5 6 L21.5 6 L21.5 18 L2.5 18 Z', 'M6 9.5 L6 14.5', 'M18 9.5 L18 14.5'],
+    dots: [[12, 12, 2.4]],
+  },
+  /** Transparentnost — an eye, drawn as two 45° cuts rather than a lens. */
+  topicTransparency: {
+    ...THIN,
+    paths: ['M2 12 L7 7 L17 7 L22 12 L17 17 L7 17 Z'],
+    dots: [[12, 12, 2.2]],
+  },
+  /** Veřejné služby — the columned institution, distinct from housing's gable. */
+  topicServices: {
+    ...THIN,
+    paths: [
+      'M2.5 9 L12 4 L21.5 9',
+      'M5.5 9 L5.5 18 M10 9 L10 18 M14 9 L14 18 M18.5 9 L18.5 18',
+      'M3 18 L21 18 M2 20.5 L22 20.5',
+    ],
+  },
+  /** No drawing for this tag — a bookmark, which claims nothing about the subject. */
+  topicOther: {
+    ...THIN,
+    paths: ['M6 3 L18 3 L18 21 L12 15.5 L6 21 Z'],
+  },
 } as const satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

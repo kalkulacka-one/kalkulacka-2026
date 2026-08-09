@@ -191,6 +191,7 @@
       "grainSubtitle": "Tady s vámi souhlasilo nejmíň stran",
       "grainEmpty": "U žádné otázky jste nezůstali v menšině.",
       "agreeCount": "Souhlasí {agreeing} z {responded} stran",
+      "agreeingParties": "Strany, které s vámi souhlasí",
       "promptTitle": "Ptejte se dál",
       "promptSubtitle": "Zkopírujte si shrnutí do svého AI asistenta a ptejte se na rozdíly.",
       "promptCopy": "Kopírovat shrnutí",

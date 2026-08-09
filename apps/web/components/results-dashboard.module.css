@@ -172,10 +172,39 @@
   list-style: none;
 }
 
+/*
+ * Icon, subject, number — no bar.
+ *
+ * The bar was measuring the wrong thing. Every row's leader is somewhere in the
+ * sixties to nineties, so eleven near-identical bars stacked up read as a
+ * texture rather than as a comparison, and they took the vertical room that the
+ * one fact a topic list is actually for — *who* is closest on this subject —
+ * had to be squeezed into. The icon carries the scanning job the bar was
+ * pretending to do: you find the row you care about by its subject.
+ */
 .topicRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.375rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--vk-space-3);
+}
+
+.topicIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--vk-radius-control);
+  background: var(--vk-color-surface-sunken);
+  color: var(--vk-color-text-muted);
+}
+
+.topicBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .topicName {
@@ -198,25 +227,28 @@
 
 .topicBest {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--vk-space-2);
-  font-family: var(--vk-typeface-sans);
-  font-size: var(--vk-text-xs);
-  color: var(--vk-color-text-muted);
   min-width: 0;
 }
 
-.topicBest > :first-child {
+.topicBestName {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-xs);
+  color: var(--vk-color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* The row's one number, so it is set at the row's scale rather than as a
+   footnote to the party's name — it is what the topic list is ranked on. */
 .topicPercent {
   flex: none;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
   font-weight: 600;
-  color: var(--vk-color-text);
+  color: var(--vk-color-text-strong);
   font-variant-numeric: tabular-nums;
 }
 

@@ -8,10 +8,20 @@ import {
   type TopicMatch,
 } from '@vk/core';
 import { format, getMessages, percent } from '@vk/i18n';
-import { AnswerMark, Button, Donut, type DonutSegment, Meter } from '@vk/ui';
+import {
+  AnswerMark,
+  Avatar,
+  AvatarStack,
+  Button,
+  Donut,
+  type DonutSegment,
+  Icon,
+  Meter,
+} from '@vk/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { answerLabelOf } from '../lib/answer-labels';
 import { copyText } from '../lib/clipboard';
+import { topicIcon } from '../lib/topic-icons';
 import styles from './results-dashboard.module.css';
 
 const messages = getMessages();
@@ -25,8 +35,22 @@ export type ResultsDashboardProps = {
   prompt: string;
 };
 
-/** A question with how much company you had on it — shared by two of the cards. */
-function ConsensusRow({ entry }: { entry: QuestionConsensus }) {
+/**
+ * A question with how much company you had on it — shared by two of the cards.
+ *
+ * The two cards ask opposite things of the same row, so they draw the company
+ * differently. "Vaše důležité otázky" is about the questions you chose to
+ * weigh: there, *who* stood with you is the answer, so it shows their faces.
+ * "Kde jste proti proudu" is about being outnumbered, which is a proportion —
+ * a bar states that in one glance and a row of faces does not.
+ */
+function ConsensusRow({
+  entry,
+  show = 'share',
+}: {
+  entry: QuestionConsensus;
+  show?: 'share' | 'agreeing';
+}) {
   const { dashboard } = messages.results;
   const share = entry.respondedCount > 0 ? (entry.agreeing.length / entry.respondedCount) * 100 : 0;
 
@@ -40,7 +64,20 @@ function ConsensusRow({ entry }: { entry: QuestionConsensus }) {
 
       <div className={styles.consensusBody}>
         <p className={styles.consensusTitle}>{entry.question.title}</p>
-        <Meter value={share} tone="neutral" size="small" />
+
+        {show === 'agreeing' ? (
+          <AvatarStack
+            items={entry.agreeing.map((candidate) => ({
+              id: candidate.id,
+              name: candidate.name,
+              avatarUrl: candidate.avatarUrl,
+            }))}
+            label={dashboard.agreeingParties}
+          />
+        ) : (
+          <Meter value={share} tone="neutral" size="small" />
+        )}
+
         <p className={styles.consensusCount}>
           {format(dashboard.agreeCount, {
             agreeing: entry.agreeing.length,
@@ -142,18 +179,32 @@ export function ResultsDashboard({
               <ul className={styles.topics}>
                 {topics.map((topic) => (
                   <li key={topic.topic} className={styles.topicRow}>
-                    <span className={styles.topicName}>
-                      {topic.topic}
-                      <span className={styles.topicCount}>{topic.answeredCount}</span>
+                    {/* Decorative: the topic is named in the text beside it,
+                        and the icon is a second reading of the same word. */}
+                    <span className={styles.topicIcon}>
+                      <Icon name={topicIcon(topic.topic)} size={22} />
                     </span>
 
-                    <Meter value={topic.best.matchPercentage} />
-
-                    <span className={styles.topicBest}>
-                      {topic.best.candidate.shortName}
-                      <span className={styles.topicPercent}>
-                        {percent(topic.best.matchPercentage)}
+                    <span className={styles.topicBody}>
+                      <span className={styles.topicName}>
+                        {topic.topic}
+                        <span className={styles.topicCount}>{topic.answeredCount}</span>
                       </span>
+
+                      <span className={styles.topicBest}>
+                        <Avatar
+                          name={topic.best.candidate.name}
+                          src={topic.best.candidate.avatarUrl}
+                          size="small"
+                        />
+                        <span className={styles.topicBestName}>
+                          {topic.best.candidate.shortName}
+                        </span>
+                      </span>
+                    </span>
+
+                    <span className={styles.topicPercent}>
+                      {percent(topic.best.matchPercentage)}
                     </span>
                   </li>
                 ))}
@@ -178,7 +229,7 @@ export function ResultsDashboard({
           {important.length > 0 ? (
             <ul className={styles.consensusList}>
               {important.map((entry) => (
-                <ConsensusRow key={entry.question.id} entry={entry} />
+                <ConsensusRow key={entry.question.id} entry={entry} show="agreeing" />
               ))}
             </ul>
           ) : (

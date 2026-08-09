@@ -1,0 +1,71 @@
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 0.25rem;
+  margin: 0;
+  list-style: none;
+
+  /* Paired with the negative margin on every item below: the two cancel on the
+     first face of each line, so a stack that wraps starts both of its lines on
+     the card's own left edge. Hanging the margin off `.item + .item` instead
+     would pull every wrapped line half an avatar to the left. */
+  padding-left: calc(-1 * var(--stack-overlap));
+}
+
+.item {
+  display: inline-flex;
+  flex: none;
+  position: relative;
+  border-radius: var(--vk-radius-pill);
+}
+
+/*
+ * The overlap. Each avatar carries its own hairline ring and an opaque
+ * background, which is what keeps a dozen of these reading as separate faces
+ * rather than one smear; no extra ring is drawn here.
+ */
+.item {
+  margin-left: var(--stack-overlap);
+}
+
+.small {
+  --stack-overlap: -0.5rem;
+}
+
+.medium {
+  --stack-overlap: -0.75rem;
+}
+
+/* Faces later in the list sit on top of earlier ones — DOM order does this on
+   its own; the stacking context is only here so a hover/focus ring inside an
+   avatar isn't clipped under the next face. */
+.item:hover,
+.item:focus-within {
+  z-index: 1;
+}
+
+.overflowDisc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--vk-radius-pill);
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  font-family: var(--vk-typeface-sans);
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.small .overflowDisc {
+  width: 2rem;
+  height: 2rem;
+  font-size: var(--vk-text-2xs);
+}
+
+.medium .overflowDisc {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: var(--vk-text-xs);
+}

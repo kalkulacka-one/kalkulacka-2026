@@ -9,6 +9,11 @@
 export { AnswerMark, type AnswerMarkProps, type AnswerMarkTone } from './answer-mark/answer-mark';
 export { AppHeader, type AppHeaderProps } from './app-header/app-header';
 export { Avatar, type AvatarProps } from './avatar/avatar';
+export {
+  AvatarStack,
+  type AvatarStackItem,
+  type AvatarStackProps,
+} from './avatar-stack/avatar-stack';
 export { Backdrop, type BackdropProps } from './backdrop/backdrop';
 export { Button, type ButtonProps } from './button/button';
 export { Calculating, type CalculatingProps } from './calculating/calculating';
