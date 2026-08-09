@@ -312,6 +312,11 @@ export function QuestionDeck({
         content={current}
         selection={activeSelection}
         labels={cardLabels}
+        /* The one card on the deck that is being read, so its statement is the
+           screen's heading. The layers behind it and the ghost in front are
+           `inert` and out of the accessibility tree entirely, so this never
+           puts a second `<h1>` in front of anyone. */
+        statementAs="h1"
         onPointerDown={onPointerDown}
         onAgree={handleAgree}
         onDisagree={handleDisagree}

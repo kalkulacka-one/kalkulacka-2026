@@ -64,6 +64,18 @@ export type QuestionCardProps = {
    * to be.
    */
   guides?: ReactNode;
+  /**
+   * What element the statement is drawn as.
+   *
+   * A paragraph by default, which is what the stacked, ghosted and practice
+   * cards want — none of them is the thing a reader has arrived at. The card
+   * actually being answered passes a heading instead: on the question flow the
+   * statement *is* the screen's content, and drawn as a `<p>` it left that
+   * screen with no heading at all for a screen reader to navigate by. Styling
+   * lives entirely in `.statement`, so this changes the semantics and nothing
+   * about how the card looks.
+   */
+  statementAs?: 'p' | 'h1' | 'h2';
   /** Non-interactive cards are hidden from assistive tech and the tab order. */
   inert?: boolean;
   elevation?: 'active' | 'next' | 'back' | 'lifted';
@@ -95,6 +107,7 @@ export function QuestionCard({
   onPointerDown,
   close,
   guides,
+  statementAs: Statement = 'p',
   inert = false,
   elevation = 'active',
   ref,
@@ -151,7 +164,9 @@ export function QuestionCard({
       ) : null}
 
       <div className={styles.body}>
-        {content.statement ? <p className={styles.statement}>{content.statement}</p> : null}
+        {content.statement ? (
+          <Statement className={styles.statement}>{content.statement}</Statement>
+        ) : null}
         {content.detail ? (
           <p className={`${styles.detail} ${content.statement ? '' : styles.detailAlone}`}>
             {content.detail}

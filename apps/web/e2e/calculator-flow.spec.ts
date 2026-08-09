@@ -170,18 +170,14 @@ test('completes a calculator from the picker through to ranked results, and shar
     await page.getByRole('button', { name: messages.results.share, exact: true }).click();
 
     /*
-     * Not matched by name: every `Dialog` instance on the page (help,
-     * restart, leave, this one) labels itself via `aria-labelledby` pointing
-     * at an id built from a CSS module class name, which is identical across
-     * every instance — so the browser resolves it to whichever one happens
-     * to be first in the DOM, not this one. Only one `<dialog>` is ever
-     * `showModal`-open at a time, though, which is enough to find it.
+     * Matched by role *and* name, which is the assertion that every `Dialog`
+     * on this page (help, restart, leave, this one) labels itself rather than
+     * borrowing a sibling's heading — they used to share one `aria-labelledby`
+     * id derived from a CSS module class, so the browser resolved all four to
+     * whichever came first in the DOM.
      */
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog', { name: messages.results.shareDialog.title });
     await expect(dialog).toBeVisible();
-    await expect(
-      dialog.getByRole('heading', { name: messages.results.shareDialog.title, exact: true }),
-    ).toBeVisible();
 
     // No `NEXT_PUBLIC_SESSION_COOKIE_NAME`/`DATABASE_URL` means `canSync()` is
     // false, so `ShareDialog` never receives a `link` and never renders the

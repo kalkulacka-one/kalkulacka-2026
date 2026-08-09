@@ -30,7 +30,9 @@ export type MenuProps = {
  * than a few lines of positioning here.
  *
  * Selecting an item closes the menu *before* running the action, so an action
- * that opens a dialog does not have to fight this for focus.
+ * that opens a dialog does not have to fight this for focus — and it hands
+ * focus back to the trigger on the way, which is what gives that dialog a live
+ * element to restore to when it is dismissed.
  */
 export function Menu({ label, items, icon = 'list' }: MenuProps) {
   const [open, setOpen] = useState(false);
@@ -128,8 +130,19 @@ export function Menu({ label, items, icon = 'list' }: MenuProps) {
               type="button"
               role="menuitem"
               className={styles.item}
+              /*
+               * Focus goes back to the trigger *before* the action runs, and
+               * the order is the whole point. The item is about to be
+               * unmounted, so leaving focus on it drops the caret to `<body>`
+               * — and a `showModal()` that happens next records `<body>` as
+               * the element to restore to, which is where a keyboard user
+               * ended up after every dismissal of the help, restart or leave
+               * sheet. Restoring first gives the modal a real trigger to hand
+               * focus back to, and for an action that opens nothing (the
+               * light/dark toggle) it is simply where focus belongs.
+               */
               onClick={() => {
-                close(false);
+                close(true);
                 item.onSelect();
               }}
             >

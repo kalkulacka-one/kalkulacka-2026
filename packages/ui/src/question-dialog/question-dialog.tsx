@@ -231,6 +231,9 @@ export function QuestionDialog({
               content={snapshot.question}
               selection={snapshot.selection}
               labels={snapshot.labels}
+              /* Second level, not first: this opens over the recap, whose own
+                 `<h1>` names the screen the reader is still on. */
+              statementAs="h2"
               elevation="lifted"
               close={{ label: snapshot.labels.close, onClose }}
               onPointerDown={onPointerDown}

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useId, useRef } from 'react';
 import { IconButton } from '../icon-button/icon-button';
 import styles from './dialog.module.css';
 
@@ -38,6 +38,16 @@ export function Dialog({
   size = 'compact',
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  /*
+   * Per *instance*, not per component. This used to be derived from the CSS
+   * module's own class name, which is one string shared by every Dialog ever
+   * rendered — and this app keeps three or four of them mounted at once (the
+   * shell menu alone holds help, restart and leave; the results screen adds
+   * share). Four elements carrying the same `id` means the browser resolves
+   * `aria-labelledby` to whichever came first in the document, so an open
+   * dialog announced itself under a closed one's title.
+   */
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -67,7 +77,7 @@ export function Dialog({
     <dialog
       ref={ref}
       className={`${styles.dialog} ${styles[size]}`}
-      aria-labelledby={`${styles.title}-heading`}
+      aria-labelledby={titleId}
       /*
        * The backdrop is part of the dialog's own box, so a click landing on the
        * element itself — rather than on the panel inside it — is a click
@@ -96,7 +106,7 @@ export function Dialog({
       <div className={styles.panel}>
         <div className={styles.head}>
           <div className={styles.heading}>
-            <h2 id={`${styles.title}-heading`} className={styles.title}>
+            <h2 id={titleId} className={styles.title}>
               {title}
             </h2>
             {description ? <p className={styles.description}>{description}</p> : null}

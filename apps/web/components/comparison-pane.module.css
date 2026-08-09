@@ -127,6 +127,22 @@
   color: var(--vk-color-text-strong);
 }
 
+/*
+ * Focus lands here when a comparison opens (see `comparison-pane.tsx`), so the
+ * ring has to be spelled out both ways rather than left to the UA: silent for
+ * the mouse click that put it here — nothing on screen changes for someone who
+ * never left the pointer — and drawn for the keyboard press that did, which is
+ * the reader who needs to see where they were taken.
+ */
+.detailTitle:focus {
+  outline: none;
+}
+
+.detailTitle:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
 .detailPercent {
   margin: 0.125rem 0 0;
   font-family: var(--vk-typeface-display);
