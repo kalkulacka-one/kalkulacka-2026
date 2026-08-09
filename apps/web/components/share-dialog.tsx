@@ -12,9 +12,9 @@ import {
   ShareCard,
   type ShareCardContent,
   shareImage,
+  VisuallyHidden,
 } from '@vk/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { copyText } from '../lib/clipboard';
 import styles from './share-dialog.module.css';
 
 export type ShareDialogProps = {
@@ -24,7 +24,7 @@ export type ShareDialogProps = {
   content: ShareCardContent;
   /** Slugged into the downloaded file's name. */
   fileName: string;
-  /** Offered alongside the image, and copied by the link button. */
+  /** Offered to the OS share sheet as the shared link, alongside the image. */
   url: string;
 };
 
@@ -43,17 +43,20 @@ const FORMATS: readonly { id: CardFormat; label: string }[] = [
   { id: 'landscape', label: share.formatLandscape },
 ];
 
-type Status = 'idle' | 'working' | 'saved' | 'copied' | 'failed';
+type Status = 'idle' | 'working' | 'saved' | 'failed';
 
 /**
  * Turn the result into a picture someone can post.
  *
- * The whole thing runs in the tab. The card is painted onto a canvas at export
- * size, handed to `navigator.share` as a `File`, and dropped — so the phone's
- * own sheet decides where it goes (Stories, Messages, Photos, AirDrop) and this
- * app never has an image to store, serve, or forget to delete. Where that API
- * is missing — every desktop browser but Chrome, and any http:// origin — the
- * same blob is saved instead, and the button says so rather than pretending.
+ * The whole thing runs in the tab. The card is rendered off-screen at export
+ * size and rasterised, then handed to `navigator.share` as a `File` — so the
+ * phone's own sheet decides where it goes (Stories, Messages, Photos,
+ * AirDrop) and this app never has an image to store, serve, or forget to
+ * delete. That same sheet's own "Save Image" entry is what covers saving on a
+ * phone; there is no separate save action to offer alongside it. Only where
+ * the sheet itself is unavailable — every desktop browser but Chrome, and any
+ * `http://` origin — does the button fall back to a download, and it says so
+ * rather than pretending.
  */
 export function ShareDialog({ open, onClose, content, fileName, url }: ShareDialogProps) {
   const [theme, setTheme] = useState<CardTheme>('light');
@@ -118,44 +121,28 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
     }
   }, [content, theme, cardFormat, exportName, url]);
 
-  const onCopyLink = useCallback(async () => {
-    setStatus((await copyText(url)) ? 'copied' : 'failed');
-  }, [url]);
-
-  const statusText =
-    status === 'saved'
-      ? share.saved
-      : status === 'copied'
-        ? share.copiedLink
-        : status === 'failed'
-          ? share.failed
-          : '';
+  const statusText = status === 'saved' ? share.saved : status === 'failed' ? share.failed : '';
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       title={share.title}
-      description={share.description}
       closeLabel={share.close}
       size="wide"
       actions={
-        <>
-          <Button variant="ghost" onClick={onCopyLink} iconStart="link">
-            {status === 'copied' ? share.copiedLink : share.copyLink}
-          </Button>
-          <Button
-            onClick={onShare}
-            iconStart={canShare === false ? 'download' : 'share'}
-            disabled={status === 'working'}
-          >
-            {status === 'working'
-              ? share.working
-              : canShare === false
-                ? share.saveImage
-                : share.shareImage}
-          </Button>
-        </>
+        <Button
+          onClick={onShare}
+          iconStart={canShare === false ? 'download' : 'share'}
+          disabled={status === 'working'}
+          fullWidth
+        >
+          {status === 'working'
+            ? share.working
+            : canShare === false
+              ? share.saveImage
+              : share.shareImage}
+        </Button>
       }
     >
       <div className={styles.body}>
@@ -164,55 +151,66 @@ export function ShareDialog({ open, onClose, content, fileName, url }: ShareDial
             content={content}
             theme={theme}
             format={cardFormat}
-            size={280}
+            size={cardFormat === 'story' ? 172 : 260}
             label={share.preview}
           />
         </div>
 
-        <fieldset className={styles.group}>
-          <legend className={styles.legend}>{share.themeLabel}</legend>
-          <div className={styles.swatches}>
-            {THEMES.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                className={styles.swatch}
-                aria-pressed={theme === option.id}
-                onClick={() => setTheme(option.id)}
-              >
-                <span
-                  className={styles.swatchChip}
+        {/*
+          One row: four theme circles, then the two format toggles — labels
+          live in `aria-label`/a hidden legend instead of on-screen text, which
+          is what keeps this compact enough to leave the share button above the
+          fold on a phone.
+        */}
+        <div className={styles.controls}>
+          <fieldset className={styles.group}>
+            <legend>
+              <VisuallyHidden>{share.themeLabel}</VisuallyHidden>
+            </legend>
+            <div className={styles.swatches}>
+              {THEMES.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={styles.swatch}
+                  aria-pressed={theme === option.id}
+                  aria-label={option.label}
+                  title={option.label}
+                  onClick={() => setTheme(option.id)}
                   style={swatches ? { background: swatches[option.id] } : undefined}
-                  aria-hidden="true"
                 />
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+              ))}
+            </div>
+          </fieldset>
 
-        <fieldset className={styles.group}>
-          <legend className={styles.legend}>{share.formatLabel}</legend>
-          <div className={styles.formats}>
-            {FORMATS.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                className={styles.format}
-                aria-pressed={cardFormat === option.id}
-                onClick={() => setCardFormat(option.id)}
-              >
-                <span className={styles.formatShape} data-shape={option.id} aria-hidden="true" />
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+          <div className={styles.divider} aria-hidden="true" />
+
+          <fieldset className={styles.group}>
+            <legend>
+              <VisuallyHidden>{share.formatLabel}</VisuallyHidden>
+            </legend>
+            <div className={styles.formats}>
+              {FORMATS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={styles.format}
+                  aria-pressed={cardFormat === option.id}
+                  aria-label={option.label}
+                  title={option.label}
+                  onClick={() => setCardFormat(option.id)}
+                >
+                  <span className={styles.formatShape} data-shape={option.id} aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        </div>
 
         {/*
-          One live region for every outcome, kept in the DOM whether or not it
-          has anything in it — a `role="status"` that is added at the same
-          moment as its text is not reliably announced.
+          Always in the DOM so assistive tech is already watching it, and
+          holding its line of space so the button above doesn't jump when a
+          message arrives.
         */}
         <p
           className={styles.status}

@@ -1,29 +1,85 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import {
-  CARD_SIZES,
-  type CardFormat,
-  paintShareCard,
-  type ShareCardContent,
-} from './paint-share-card';
-import { type CardTheme, cardPalette, css } from './palette';
-import { readThemeColors, readThemeFonts } from './read-theme-colors';
+import { useEffect, useState } from 'react';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden';
+import { CARD_SIZES, type CardFormat } from './card-format';
 import styles from './share-card.module.css';
+import { type ShareCardContent, ShareCardLayout } from './share-card-layout';
+import {
+  type CardColorSet,
+  type CardTheme,
+  cardColorSet,
+  css,
+  readActiveColorSets,
+} from './theme-colors';
+
+export type ShareCardProps = {
+  content: ShareCardContent;
+  theme: CardTheme;
+  format: CardFormat;
+  /** CSS width of the preview, in px — height follows the format's own aspect ratio. */
+  size?: number;
+  /** Announced in place of the preview, which is otherwise a picture of a picture. */
+  label: string;
+};
 
 /**
- * A CSS gradient sampling each theme, for the dialog's picker.
+ * The card as it will be exported, at preview size.
  *
- * Built from the palettes themselves rather than written out in CSS, because a
- * hand-written swatch is a promise about a colour the painter derives — and the
- * two neutral ones cannot be written in CSS at all: `light-dark()` resolves
- * against the root, so a "light" chip on a dark page would come out dark.
+ * A scaled-down instance of the exact same `ShareCardLayout` the export
+ * rasterises — not an approximation of it. Scaling with a CSS `transform`
+ * rather than re-rendering smaller keeps every size in `share-card-layout.
+ * module.css` meaningful as a real, fixed pixel value instead of one that has
+ * to be re-derived per preview size.
+ */
+export function ShareCard({ content, theme, format, size = 240, label }: ShareCardProps) {
+  const [colors, setColors] = useState<CardColorSet | null>(null);
+
+  // Reads the live theme off the DOM, so this can't run during the server
+  // render — there is no document, and no theme to read yet.
+  useEffect(() => {
+    setColors(cardColorSet(theme, readActiveColorSets()));
+  }, [theme]);
+
+  const { width, height } = CARD_SIZES[format];
+  const scale = size / width;
+
+  return (
+    <div className={styles.frame} style={{ width: size, height: height * scale }}>
+      {/*
+        The list inside is real, interactive `MatchRow` markup with
+        `pointer-events` switched off — hidden from assistive tech entirely
+        rather than left for a screen reader to discover as a row of buttons
+        that do nothing.
+      */}
+      <div
+        className={styles.scaled}
+        style={{ width, height, transform: `scale(${scale})` }}
+        aria-hidden="true"
+      >
+        {colors ? (
+          <ShareCardLayout content={content} colors={colors} theme={theme} format={format} />
+        ) : null}
+      </div>
+      <VisuallyHidden>{label}</VisuallyHidden>
+    </div>
+  );
+}
+
+/**
+ * A CSS gradient sampling each theme's page/surface pair, for the dialog's
+ * picker circles.
+ *
+ * Built from the same colour sets the layout itself renders from, rather than
+ * hand-tuned separately in CSS — the two neutral themes especially can't be
+ * written as static CSS at all: they read whichever mode the app is currently
+ * in, which this resolves once, in JS, the same way the card itself does.
  */
 export function cardSwatches(): Record<CardTheme, string> {
-  const forMode = { light: readThemeColors('light'), dark: readThemeColors('dark') };
+  const live = readActiveColorSets();
   const sample = (theme: CardTheme) => {
-    const palette = cardPalette(theme, theme === 'light' ? forMode.light : forMode.dark);
-    return `linear-gradient(135deg, ${css(palette.base)}, ${css(palette.light)})`;
+    const colors = cardColorSet(theme, live);
+    return `linear-gradient(135deg, ${css(colors.page)}, ${css(colors.surface)})`;
   };
 
   return {
@@ -32,81 +88,4 @@ export function cardSwatches(): Record<CardTheme, string> {
     agree: sample('agree'),
     disagree: sample('disagree'),
   };
-}
-
-export type ShareCardProps = {
-  content: ShareCardContent;
-  theme: CardTheme;
-  format: CardFormat;
-  /** Longest edge of the preview, in CSS px. */
-  size?: number;
-  /** Announced in place of the canvas, which is otherwise opaque to a reader. */
-  label: string;
-};
-
-/**
- * The card as it will be exported, drawn small.
- *
- * A `<canvas>` and not a DOM mock-up of the card: the export has to be a raster
- * anyway, and rasterising the DOM would mean either a serialiser dependency
- * (`html2canvas` and its long tail of unsupported CSS) or a second, drifting
- * implementation of the layout. Painting it once and calling the same function
- * at both sizes makes the preview a literal scale model.
- */
-export function ShareCard({ content, theme, format, size = 240, label }: ShareCardProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  /*
-   * Canvas takes a font as a string and silently falls back to a system face if
-   * that font has not loaded yet — and Geist arrives well after first paint. So
-   * the first render is deliberately deferred to `document.fonts.ready`; without
-   * it the preview draws in Helvetica and then never redraws.
-   */
-  const [fontsReady, setFontsReady] = useState(false);
-
-  useEffect(() => {
-    let live = true;
-    const done = () => {
-      if (live) setFontsReady(true);
-    };
-    if (document.fonts?.ready) document.fonts.ready.then(done, done);
-    else done();
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  const aspect = CARD_SIZES[format].width / CARD_SIZES[format].height;
-  const width = Math.round(format === 'story' ? size * aspect : size);
-  const height = Math.round(width / aspect);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `fontsReady` is the repaint trigger; the fonts themselves are read off the DOM.
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-
-    const dpr = Math.min(3, window.devicePixelRatio || 1);
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    paintShareCard(ctx, {
-      content,
-      palette: cardPalette(theme, readThemeColors(theme === 'light' ? 'light' : 'dark')),
-      format,
-      fonts: readThemeFonts(),
-      width: canvas.width,
-      height: canvas.height,
-    });
-  }, [content, theme, format, width, height, fontsReady]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className={styles.card}
-      style={{ width, height }}
-      role="img"
-      aria-label={label}
-    />
-  );
 }

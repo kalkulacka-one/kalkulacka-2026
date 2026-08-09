@@ -1,0 +1,159 @@
+/*
+ * True export pixel size, set inline by the caller. Square corners — this is
+ * the bleed of the exported PNG itself; a phone-frame rounding belongs to the
+ * dialog's *preview* wrapper, one level up, not to the picture that gets saved.
+ */
+.card {
+  position: relative;
+  overflow: hidden;
+  background: var(--vk-color-page);
+  color: var(--vk-color-text);
+}
+
+.washFallback,
+.wash {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Blurred and slightly oversized so the blur never reveals a hard edge — the
+   same trick `backdrop.module.css` uses, sized for a canvas drawn at its true
+   resolution rather than a pre-halved one. */
+.wash {
+  filter: blur(var(--card-blur, 48px));
+  transform: scale(1.06);
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--card-pad, 4.5rem);
+  box-sizing: border-box;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-head-gap, 0.75rem);
+}
+
+.logo {
+  color: var(--vk-color-text);
+}
+
+/*
+ * The results screen's own title, to the letter — `font-family`, weight,
+ * tracking, leading and colour all match `results.module.css`'s `.title`.
+ * The one deliberate departure is size: that token is a `vw`-fluid clamp, and
+ * a card exported at a fixed 1080/1920px has to look the same regardless of
+ * which device happened to render it, so this uses a fixed size per format
+ * instead of following the viewport it's captured from.
+ */
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--card-title-size, 3.25rem);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
+  color: var(--vk-color-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--card-subtitle-size, 1.375rem);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+}
+
+/*
+ * A picture of the ranking, not the ranking itself: `MatchRow` is a real
+ * button, and this switches off every affordance that implies otherwise.
+ */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-row-gap, 1rem);
+  pointer-events: none;
+}
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.note,
+.url {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--card-foot-size, 1.125rem);
+  color: var(--vk-color-text-muted);
+}
+
+.url {
+  color: var(--vk-color-text);
+  font-weight: 500;
+}
+
+/* --- Story: one column, vertically centred over the wash. --------------- */
+.card[data-format="story"] {
+  --card-blur: 54px;
+  --card-pad: 4.5rem;
+  --card-title-size: 3.25rem;
+  --card-subtitle-size: 1.375rem;
+  --card-row-gap: 1.125rem;
+  --card-foot-size: 1.125rem;
+}
+
+.card[data-format="story"] .content {
+  justify-content: center;
+  gap: 3rem;
+}
+
+/* --- Landscape: header as a left column, ranking as a right one — the same
+   two-pane shape the results screen itself uses above its own 64rem
+   breakpoint. */
+.card[data-format="landscape"] {
+  --card-blur: 72px;
+  --card-pad: 5rem;
+  --card-title-size: 3.75rem;
+  --card-subtitle-size: 1.5rem;
+  --card-row-gap: 1rem;
+  --card-foot-size: 1.25rem;
+}
+
+.card[data-format="landscape"] .content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  grid-template-rows: 1fr auto;
+  column-gap: 4rem;
+  align-items: center;
+}
+
+.card[data-format="landscape"] .head {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+}
+
+.card[data-format="landscape"] .rows {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.card[data-format="landscape"] .foot {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+}

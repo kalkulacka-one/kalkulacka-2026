@@ -67,6 +67,7 @@ export {
 } from './question-dialog/question-dialog';
 export { RecapRow, type RecapRowLabels, type RecapRowProps } from './recap-row/recap-row';
 export { SearchField, type SearchFieldProps } from './search-field/search-field';
+export { CARD_FORMATS, CARD_SIZES, type CardFormat } from './share-card/card-format';
 export {
   canShareImages,
   downloadImage,
@@ -74,15 +75,9 @@ export {
   type ShareImageResult,
   shareImage,
 } from './share-card/export-share-card';
-export {
-  CARD_FORMATS,
-  CARD_SIZES,
-  type CardFormat,
-  type ShareCardContent,
-  type ShareCardEntry,
-} from './share-card/paint-share-card';
-export { CARD_THEMES, type CardTheme } from './share-card/palette';
 export { cardSwatches, ShareCard, type ShareCardProps } from './share-card/share-card';
+export type { ShareCardContent, ShareCardEntry } from './share-card/share-card-layout';
+export { CARD_THEMES, type CardTheme } from './share-card/theme-colors';
 export { StickyBar, type StickyBarProps } from './sticky-bar/sticky-bar';
 export { Tag, type TagProps } from './tag/tag';
 export { TutorialStep, type TutorialStepProps } from './tutorial-step/tutorial-step';

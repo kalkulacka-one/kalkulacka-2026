@@ -1,11 +1,18 @@
-.card {
-  display: block;
+/*
+ * The rounding and shadow live here, on the preview's own frame — not on
+ * `ShareCardLayout`'s root, which stays square-cornered because it is also
+ * the thing that gets rasterised for the export.
+ */
+.frame {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--vk-radius-card);
-  /* The card has no border of its own — this hairline is what separates a light
-     card from the light dialog behind it, and it has to survive on a dark one
-     too, hence the token rather than a fixed grey. */
   box-shadow:
     0 0 0 1px var(--vk-color-border),
     var(--vk-shadow-surface);
   max-width: 100%;
+}
+
+.scaled {
+  transform-origin: top left;
 }

@@ -147,7 +147,7 @@
     "start": "Přejít na otázky"
   },
   "results": {
-    "title": "Vaše shoda",
+    "title": "Moje shoda",
     "calculating": "Počítáme vaši shodu",
     "description": "Shoda vychází jen z otázek, na které jste odpověděli.",
     "noAnswer": "Neodpověděli",
@@ -171,7 +171,6 @@
     "shareDialog": {
       "open": "Sdílet výsledek",
       "title": "Sdílet výsledek",
-      "description": "Obrázek se vytvoří tady v prohlížeči a nikam se neodesílá.",
       "close": "Zavřít",
       "preview": "Náhled sdíleného obrázku",
       "themeLabel": "Motiv",
@@ -185,8 +184,6 @@
       "shareImage": "Sdílet obrázek",
       "saveImage": "Uložit obrázek",
       "working": "Připravujeme…",
-      "copyLink": "Kopírovat odkaz",
-      "copiedLink": "Odkaz zkopírován",
       "saved": "Obrázek uložen",
       "failed": "Obrázek se nepodařilo vytvořit. Zkuste to prosím znovu.",
       "note": "Zodpovězeno {answered} z {total} otázek",

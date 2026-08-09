@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@vk/tokens": "workspace:*"
+    "@vk/tokens": "workspace:*",
+    "html-to-image": "^1.11.13"
   },
   "peerDependencies": {
     "react": "^19.0.0",

@@ -178,6 +178,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
     () => ({
       title: messages.results.title,
       subtitle: [calculator.electionName, calculator.name].filter(Boolean).join(' · '),
+      winnerLabel: messages.results.winner,
       entries: results.slice(0, 5).map(({ candidate, match, rank }, index) => ({
         // Ties share a rank, so it is not always the position — but it is
         // always *a* number by the time a result is ranked; the index is only
@@ -186,6 +187,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
         // The short name, not the full one: "SPOLU" fits a story where
         // "SPOLU (ODS, KDU-ČSL, TOP 09)" would be trimmed to an ellipsis.
         name: candidate.shortName || candidate.name,
+        avatarUrl: candidate.avatarUrl,
         ...(match.matchPercentage === undefined
           ? { noAnswerLabel: messages.results.noAnswer }
           : {

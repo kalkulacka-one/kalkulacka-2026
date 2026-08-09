@@ -1,16 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { CARD_FORMATS } from './paint-share-card';
-import { CARD_THEMES } from './palette';
+import { CARD_FORMATS } from './card-format';
 import { ShareCard } from './share-card';
+import { CARD_THEMES } from './theme-colors';
 
 const content = {
   title: 'Vaše shoda',
   subtitle: 'Komunální volby 2022 · Pardubice',
+  winnerLabel: 'Největší shoda',
   entries: [
-    { rank: 1, name: 'SPOLU', percentLabel: '87 %', matchPercentage: 87 },
-    { rank: 2, name: 'Piráti a Starostové', percentLabel: '74 %', matchPercentage: 74 },
-    { rank: 3, name: 'ANO 2011', percentLabel: '61 %', matchPercentage: 61 },
-    { rank: 4, name: 'Společně pro Pardubice', percentLabel: '52 %', matchPercentage: 52 },
+    { rank: 1, name: 'SPOLU', percentLabel: '87 %', matchPercentage: 87 },
+    { rank: 2, name: 'Piráti a Starostové', percentLabel: '74 %', matchPercentage: 74 },
+    { rank: 3, name: 'ANO 2011', percentLabel: '61 %', matchPercentage: 61 },
+    { rank: 4, name: 'Společně pro Pardubice', percentLabel: '52 %', matchPercentage: 52 },
     { rank: 5, name: 'SPD', noAnswerLabel: 'Neodpověděli' },
   ],
   note: 'Zodpovězeno 38 z 40 otázek',
@@ -18,9 +19,9 @@ const content = {
 };
 
 /**
- * The image someone posts. Drawn onto a canvas rather than built out of DOM,
- * because the export has to be a raster and one painter means the preview here
- * is literally a scale model of the 1080px PNG.
+ * The image someone posts. Built out of the app's own `MatchRow`/`Avatar`
+ * components rather than redrawn, so the preview here — a scaled-down instance
+ * of the same layout the export rasterises — cannot drift from either.
  */
 const meta = {
   title: 'Results/ShareCard',
