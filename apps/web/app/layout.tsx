@@ -1,3 +1,4 @@
+import { activeLocale, getMessages } from '@vk/i18n';
 import { Backdrop } from '@vk/ui';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Radio_Canada } from 'next/font/google';
@@ -27,7 +28,7 @@ const sans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: 'Volební kalkulačka',
+  title: getMessages().app.title,
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -57,7 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   // of HTML — no flash of the default theme before hydration.
   return (
     <html
-      lang="cs"
+      lang={activeLocale()}
       data-theme="default"
       className={`${display.variable} ${sans.variable}`}
       // The inline script below adds `data-mode` itself, before hydration —

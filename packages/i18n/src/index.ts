@@ -4,10 +4,10 @@ import cs from '../messages/cs.json' with { type: 'json' };
  * Registered locales, and everything each one decides — message catalog, URL
  * slugs, plural rule, number formatting.
  *
- * Phase 3 replaces the catalog access with next-intl. Components already read
- * every string from `getMessages()`, so that swap does not touch them — which
- * is the whole point of putting this in place before there is a second
- * locale.
+ * The accessor functions (`activeLocale()`, `getMessages()`) are the sole seam
+ * where a runtime-locale mechanism would be swapped in: existing call sites need
+ * no changes, only these implementations change. This centralization is why we
+ * built it before adding a second locale.
  */
 export const LOCALES = ['cs'] as const;
 export type Locale = (typeof LOCALES)[number];

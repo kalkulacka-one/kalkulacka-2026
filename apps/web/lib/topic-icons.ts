@@ -1,22 +1,24 @@
 import type { IconName } from '@vk/ui';
+import { TOPIC_ICON_RULES } from '../config/topic-icon-rules';
 
 /**
  * Which icon stands for a topic.
  *
- * The mapping lives here rather than in `@vk/ui` because it is knowledge about
- * Czech question tags, and the design system is meant to stay re-skinnable for
- * data it has never seen. It lives here rather than in `@vk/core` because
- * nothing in the domain depends on it: a wrong icon is a cosmetic miss, not a
- * wrong result.
- *
- * Matching is on keywords rather than on the exact tag, because the tags are
- * editorial text that varies between elections — "Doprava", "Doprava a
- * parkování" and "Dopravní infrastruktura" all want the same tram. Anything
+ * The matching mechanism lives here — take a topic name, normalize it, and
+ * test it against a set of keyword patterns to land on an icon. Anything
  * unrecognised gets the neutral bookmark rather than a guess: an icon that
  * claims the wrong subject is worse than one that claims none.
+ *
+ * The rules themselves — the keyword patterns and their icons — are site
+ * knowledge and live in config, not here. Adding a country would add rules to
+ * config/topic-icon-rules.ts; this file stays purely the mechanism.
  */
 
-/** Diacritics stripped so "Životní" and "zivotni" are the same key to match on. */
+/**
+ * Diacritics stripped so "Životní" and "zivotni" are the same key to match on.
+ *
+ * Uses Czech locale for normalization because it applies to Czech topic tags.
+ */
 function normalize(topic: string): string {
   return topic
     .toLocaleLowerCase('cs')
@@ -24,28 +26,7 @@ function normalize(topic: string): string {
     .replace(/\p{Diacritic}/gu, '');
 }
 
-/**
- * Keyword → icon, tried in order.
- *
- * Order matters where a tag could match twice: "veřejný pořádek" and "veřejné
- * služby" share a stem, so the more specific pair is listed before anything
- * that matches "verejn" alone.
- */
-const RULES: readonly (readonly [RegExp, IconName])[] = [
-  [/doprav|parkov|mhd|cykl/, 'topicTransport'],
-  [/bydlen|byt|nemovit|uzemn|urbanis/, 'topicHousing'],
-  [/energet|teplo|energi|odpad/, 'topicEnergy'],
-  [/skols|vzdelav|skol/, 'topicEducation'],
-  [/socialn|zdravot|senior|rodin/, 'topicSocial'],
-  [/zivotni prostred|ekolog|zelen|klima/, 'topicEnvironment'],
-  [/kultur|sport|volny cas|turis/, 'topicCulture'],
-  [/poradek|bezpecn|kriminal|policie/, 'topicSafety'],
-  [/rozpoc|financ|dane|dotac|investic/, 'topicBudget'],
-  [/transparen|korupc|otevren|radnice/, 'topicTransparency'],
-  [/sluzb|sprav|infrastruktur|verejn/, 'topicServices'],
-];
-
 export function topicIcon(topic: string): IconName {
   const key = normalize(topic);
-  return RULES.find(([pattern]) => pattern.test(key))?.[1] ?? 'topicOther';
+  return TOPIC_ICON_RULES.find(([pattern]) => pattern.test(key))?.[1] ?? 'topicOther';
 }
