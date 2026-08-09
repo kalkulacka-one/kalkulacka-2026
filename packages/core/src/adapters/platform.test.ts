@@ -70,6 +70,9 @@ describe('adaptPlatformCalculator (snemovni-2025-kalkulacka)', () => {
     expect(pirates?.avatarUrl).toBe(
       `${ASSET_BASE}/images/57104e21-1108-4731-b273-7adfa944798e/logotyp.sm.webp`,
     );
+    // The real fixture's organizations.json carries no `color` field — schema
+    // tolerance for data that predates it, not a default value standing in.
+    expect(pirates?.color).toBeUndefined();
   });
 
   it('spot-checks one candidate answer with a comment', () => {
@@ -168,5 +171,69 @@ describe('adaptPlatformCalculator (absent vs. null answers)', () => {
 
   it('omits a candidate that was never in candidatesAnswers at all', () => {
     expect(calculator.candidateAnswers[CANDIDATE_NEVER_ANSWERED]).toBeUndefined();
+  });
+});
+
+/**
+ * `color` is optional on both the organization and person schemas — data
+ * without it (the real fixture, tested above) must keep validating unchanged,
+ * and data that has it must reach `Candidate.color` through the same
+ * reference resolution `avatarUrl` already goes through.
+ */
+describe('adaptPlatformCalculator (organization/person colour)', () => {
+  const PARTY_CANDIDATE = '00000000-0000-4000-8000-0000000000d1';
+  const PERSON_CANDIDATE = '00000000-0000-4000-8000-0000000000d2';
+  const NO_COLOR_CANDIDATE = '00000000-0000-4000-8000-0000000000d3';
+  const ORG_WITH_COLOR = '00000000-0000-4000-8000-0000000000e1';
+  const ORG_NO_COLOR = '00000000-0000-4000-8000-0000000000e2';
+  const PERSON_WITH_COLOR = '00000000-0000-4000-8000-0000000000f1';
+
+  const calculator = adaptPlatformCalculator(
+    {
+      calculator: {
+        id: '00000000-0000-4000-8000-000000000001',
+        createdAt: '2025-01-01T00:00:00+00:00',
+        key: 'test-calculator',
+        shortTitle: 'Test calculator',
+      },
+      questions: [
+        { id: '00000000-0000-4000-8000-000000000002', title: 'Q1', statement: 'Statement one.' },
+      ],
+      candidates: [
+        { id: PARTY_CANDIDATE, references: [{ id: ORG_WITH_COLOR, type: 'organization' }] },
+        { id: PERSON_CANDIDATE, references: [{ id: PERSON_WITH_COLOR, type: 'person' }] },
+        { id: NO_COLOR_CANDIDATE, references: [{ id: ORG_NO_COLOR, type: 'organization' }] },
+      ],
+      candidatesAnswers: {},
+      organizations: [
+        { id: ORG_WITH_COLOR, name: 'Strana s barvou', abbreviation: 'SSB', color: '#2563eb' },
+        { id: ORG_NO_COLOR, name: 'Strana bez barvy', abbreviation: 'SBB' },
+      ],
+      persons: [
+        {
+          id: PERSON_WITH_COLOR,
+          name: 'Osoba s barvou',
+          givenName: 'Osoba',
+          familyName: 's barvou',
+          color: '#ff0',
+        },
+      ],
+    },
+    { assetBase: ASSET_BASE },
+  );
+
+  it('threads an organization’s colour to the candidate that references it', () => {
+    const candidate = calculator.candidates.find((c) => c.id === PARTY_CANDIDATE);
+    expect(candidate?.color).toBe('#2563eb');
+  });
+
+  it('threads a person’s colour (3-digit shorthand included) to the candidate that references it', () => {
+    const candidate = calculator.candidates.find((c) => c.id === PERSON_CANDIDATE);
+    expect(candidate?.color).toBe('#ff0');
+  });
+
+  it('leaves colour undefined — not a default — for a candidate whose organization has none', () => {
+    const candidate = calculator.candidates.find((c) => c.id === NO_COLOR_CANDIDATE);
+    expect(candidate?.color).toBeUndefined();
   });
 });

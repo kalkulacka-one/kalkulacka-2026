@@ -185,6 +185,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
         // needs readable pixels (the CDN sends no CORS header), everywhere
         // else on this screen keeps loading the CDN directly.
         avatarUrl: toProxiedAssetUrl(candidate.avatarUrl, calculator),
+        color: candidate.color,
         ...(match.matchPercentage === undefined
           ? { noAnswerLabel: messages.results.noAnswer }
           : {
@@ -303,6 +304,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
                   rank={rank}
                   name={candidate.name}
                   avatarUrl={candidate.avatarUrl}
+                  color={candidate.color}
                   matchPercentage={match.matchPercentage}
                   percentLabel={
                     match.matchPercentage === undefined ? undefined : percent(match.matchPercentage)

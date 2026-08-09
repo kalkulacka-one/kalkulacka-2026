@@ -13,6 +13,8 @@ export type ShareCardEntry = {
   rank: number;
   name: string;
   avatarUrl?: string;
+  /** The candidate's own accent colour — from data, or derived server-side from the logo. */
+  color?: string;
   /** Pre-formatted by the caller, so the locale's own percent shape survives ("63 %"). */
   percentLabel?: string;
   /** 0–100. Sets the bar's length; omitted for a candidate who answered nothing. */
@@ -165,6 +167,7 @@ export function ShareCardLayout({ content, colors, theme, format }: ShareCardLay
               rank={entry.rank}
               name={entry.name}
               avatarUrl={entry.avatarUrl}
+              color={entry.color}
               matchPercentage={entry.matchPercentage}
               percentLabel={entry.percentLabel}
               noAnswerLabel={entry.noAnswerLabel ?? ''}

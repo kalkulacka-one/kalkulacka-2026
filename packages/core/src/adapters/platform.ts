@@ -59,6 +59,7 @@ type ResolvedIdentity = {
   shortName: string;
   abbreviation?: string;
   avatarUrl?: string;
+  color?: string;
 };
 
 function resolveFromOrganization(org: PlatformOrganization, assetBase: string): ResolvedIdentity {
@@ -68,6 +69,7 @@ function resolveFromOrganization(org: PlatformOrganization, assetBase: string): 
     shortName: org.shortName ?? org.abbreviation ?? org.name,
     abbreviation: org.abbreviation,
     avatarUrl: image ? resolveAssetUrl(pickImageVariant(image), assetBase) : undefined,
+    color: org.color,
   };
 }
 
@@ -109,6 +111,10 @@ function resolveCandidateIdentity(
     avatarUrl: ownImage
       ? resolveAssetUrl(pickImageVariant(ownImage), assetBase)
       : resolvedFromRef?.avatarUrl,
+    // The candidate schema itself carries no colour field (only organizations
+    // and persons do) — same as the rest of identity, it comes from whichever
+    // one this candidate references.
+    color: resolvedFromRef?.color,
   };
 }
 
@@ -163,6 +169,7 @@ function resolveFromPerson(person: PlatformPerson, assetBase: string): ResolvedI
     name,
     shortName: name,
     avatarUrl: image ? resolveAssetUrl(pickImageVariant(image), assetBase) : undefined,
+    color: person.color,
   };
 }
 
@@ -269,6 +276,7 @@ export function adaptPlatformCalculator(
       type: resolveCandidateType(c),
       motto: c.motto,
       avatarUrl: identity.avatarUrl,
+      color: identity.color,
       members: resolveMembers(c, maps, options.assetBase),
       // The platform candidate/organization schemas carry no contact fields
       // (no website/socials) — nothing to map here yet.
