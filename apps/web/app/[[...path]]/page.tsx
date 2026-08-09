@@ -188,13 +188,15 @@ function calculatorScreen(
 }
 
 /**
- * Only the public shared result has metadata of its own.
+ * One title/description pair per route kind.
  *
- * Every other screen keeps the root layout's title, which is what it had
- * before this route learned to render somebody else's result; a metadata
- * scheme for the flow as a whole is its own task. This one is here because a
- * link that is *made to be posted* has to arrive somewhere with a picture and
- * a sentence, and unfurling is the only thing that reads them.
+ * The public shared result (below) is the one case with its own `og:image`
+ * and Twitter card — everything else here just sets `title` (and, for the
+ * home route, `description`) and lets the root layout's `title.template` do
+ * the composing. The flow steps of a calculator — intro, guide, question,
+ * recap, results — share one title: the step a visitor is on is UX state, not
+ * a fact worth a different `<title>`, and a per-question title would have to
+ * be fabricated since a question has no name of its own.
  */
 export async function generateMetadata({
   params,
@@ -204,46 +206,81 @@ export async function generateMetadata({
   const { path } = await params;
   const route: ParsedRoute | null = parseRoute(path ?? [], routeSlugs());
 
-  if (route?.kind !== 'calculator' || route.embed) return {};
-  if (route.step !== 'result' || !route.param) return {};
+  // Embed mode 404s in the page component above; it gets no metadata either.
+  if (!route || route.embed) return {};
+
+  const messages = getMessages();
+
+  if (route.kind === 'home') {
+    // No `title` here: the root layout's `title.template` wraps any title a
+    // descendant segment sets, so an explicit `messages.app.title` here would
+    // read "Volební kalkulačka · Volební kalkulačka". Omitting it is what
+    // lets the layout's untemplated `default` stand.
+    return { description: messages.app.description };
+  }
+
+  if (route.kind === 'election') {
+    const election = await loadElection(route.electionKey);
+    if (!election) return {};
+    return { title: election.name };
+  }
+
+  // route.kind === 'calculator' from here down.
+
+  /*
+   * A public link to somebody's finished result — the one calculator URL
+   * that is not the reader's own calculator, and the one screen with
+   * metadata made to be posted: a picture and a sentence for unfurling.
+   */
+  if (route.step === 'result' && route.param) {
+    const calculator = await loadCalculator(route.electionKey, route.district ?? '');
+    if (!calculator) return {};
+
+    // The same load the page makes, deduplicated by `cache()` — a 404 must
+    // not become a page with a stranger's title.
+    const shared = await loadSharedResult(route.param, calculator.id);
+    if (!shared) return {};
+
+    const title = format(messages.results.shared.metaTitle, {
+      election: calculator.electionName,
+    });
+    const description = format(messages.results.shared.metaDescription, {
+      calculator: calculator.name,
+    });
+
+    /*
+     * There is no request object in `generateMetadata`, so the absolute URL
+     * `og:image` requires cannot be derived from where this is being served —
+     * it has to be configured. Left unset, Next resolves relative metadata
+     * URLs against its own default (localhost in dev, and it warns in
+     * production), which is exactly the behaviour a fork without this
+     * variable had before.
+     */
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const image = `/api/images/sessions/${shared.publicId}/opengraph`;
+
+    return {
+      ...(baseUrl ? { metadataBase: new URL(baseUrl) } : {}),
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: 'website',
+        images: [{ url: image, width: 1200, height: 630 }],
+      },
+      twitter: { card: 'summary_large_image', title, description, images: [image] },
+    };
+  }
 
   const calculator = await loadCalculator(route.electionKey, route.district ?? '');
   if (!calculator) return {};
 
-  // The same load the page makes, deduplicated by `cache()` — a 404 must not
-  // become a page with a stranger's title.
-  const shared = await loadSharedResult(route.param, calculator.id);
-  if (!shared) return {};
-
-  const messages = getMessages();
-  const title = format(messages.results.shared.metaTitle, {
-    election: calculator.electionName,
-  });
-  const description = format(messages.results.shared.metaDescription, {
-    calculator: calculator.name,
-  });
-
-  /*
-   * There is no request object in `generateMetadata`, so the absolute URL
-   * `og:image` requires cannot be derived from where this is being served —
-   * it has to be configured. Left unset, Next resolves relative metadata URLs
-   * against its own default (localhost in dev, and it warns in production),
-   * which is exactly the behaviour a fork without this variable had before.
-   */
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  const image = `/api/images/sessions/${shared.publicId}/opengraph`;
-
   return {
-    ...(baseUrl ? { metadataBase: new URL(baseUrl) } : {}),
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      images: [{ url: image, width: 1200, height: 630 }],
-    },
-    twitter: { card: 'summary_large_image', title, description, images: [image] },
+    title: format(messages.app.calculatorTitle, {
+      calculator: calculator.name,
+      election: calculator.electionName,
+    }),
   };
 }
 

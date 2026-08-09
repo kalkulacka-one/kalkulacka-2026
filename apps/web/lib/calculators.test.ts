@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listDistricts, loadCalculator } from './calculators';
+import { listDistricts, listElections, loadCalculator } from './calculators';
 
 /*
  * Fixture mode — no `DATA_ENDPOINT` in the test environment, which is also the
@@ -28,5 +28,13 @@ describe('listDistricts on fixtures', () => {
 
     expect(districts.find((d) => d.name === 'Pardubice')?.slug).toBe('pardubice');
     expect(districts.filter((d) => d.available).map((d) => d.slug)).toEqual(['pardubice']);
+  });
+});
+
+describe('listElections on fixtures', () => {
+  it('lists every election the fixture index knows, not only the ones with data', async () => {
+    const keys = (await listElections()).map((e) => e.key);
+    expect(keys).toContain('komunalni-2022');
+    expect(keys.length).toBeGreaterThan(1);
   });
 });

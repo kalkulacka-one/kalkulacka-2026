@@ -1,6 +1,8 @@
 {
   "app": {
-    "title": "Volební kalkulačka"
+    "title": "Volební kalkulačka",
+    "description": "Porovnejte své názory s programy politických stran a zjistěte, které straně jste nejblíž.",
+    "calculatorTitle": "{calculator} — {election}"
   },
   "menu": {
     "label": "Nabídka",
@@ -254,11 +256,16 @@
   },
   "notFound": {
     "title": "Stránka nenalezena",
-    "description": "Tato kalkulačka zatím neexistuje.",
+    "description": "Adresa neexistuje nebo je zapsaná špatně.",
     "homeLabel": "Zpět na úvod"
   },
   "comingSoon": {
     "title": "Připravujeme",
     "description": "Tato část kalkulačky se teprve staví."
+  },
+  "errorPage": {
+    "title": "Něco se pokazilo",
+    "description": "Stránku se nepodařilo načíst. Zkuste to prosím znovu.",
+    "retry": "Zkusit znovu"
   }
 }
