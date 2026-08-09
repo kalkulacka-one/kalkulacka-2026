@@ -1,7 +1,8 @@
 import 'server-only';
-import { adaptPlatformCalculator, type Calculator } from '@vk/core';
+import { adaptPlatformCalculator, type Calculator, type Candidate } from '@vk/core';
 import { cache } from 'react';
 import type { SiteCalculatorEntry, SiteElectionEntry } from '../config/site';
+import { deriveLogoColor } from './logo-color';
 
 /**
  * Fetching for the production data format: six JSON files per calculator at
@@ -18,6 +19,23 @@ async function fetchJson(url: string, required: boolean): Promise<unknown> {
     return undefined;
   }
   return response.json();
+}
+
+/**
+ * Fills in `color` for every candidate that has a logo but no authored one —
+ * once per calculator load, inside the same `cache()` that memoises the rest
+ * of this fetch, not once per row render. A candidate with neither an
+ * `avatarUrl` nor a data colour is left untouched; `partyColor` in `@vk/ui`
+ * is what turns "no colour" into something to paint with.
+ */
+async function withDerivedColors(candidates: Candidate[]): Promise<Candidate[]> {
+  return Promise.all(
+    candidates.map(async (candidate) => {
+      if (candidate.color || !candidate.avatarUrl) return candidate;
+      const derived = await deriveLogoColor(candidate.avatarUrl);
+      return derived ? { ...candidate, color: derived } : candidate;
+    }),
+  );
 }
 
 export const loadPlatformCalculator = cache(
@@ -48,6 +66,7 @@ export const loadPlatformCalculator = cache(
       // title and no calculator title (see config/site.ts).
       return {
         ...adapted,
+        candidates: await withDerivedColors(adapted.candidates),
         electionId: election.key,
         electionName: election.name,
         name: entry.name,

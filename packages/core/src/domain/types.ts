@@ -63,6 +63,13 @@ export type Candidate = {
   description?: string;
   motto?: string;
   avatarUrl?: string;
+  /**
+   * A hex accent colour, resolved in priority order: authored in the source
+   * data, else derived server-side from the logo (`apps/web/lib/logo-color.ts`),
+   * else left `undefined` — in which case `partyColor` in `@vk/ui` falls back
+   * to its name-seeded palette.
+   */
+  color?: string;
   /** Populated for coalitions — the constituent parties. */
   members: PartyRef[];
   contacts: {

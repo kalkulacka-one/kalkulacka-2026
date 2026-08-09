@@ -14,6 +14,9 @@ import { z } from 'zod';
 export const platformTagSchema = z.string().min(1).max(25);
 export const platformTagsSchema = z.array(platformTagSchema).min(1);
 
+/** Loose on purpose — `#rgb` or `#rrggbb`, whatever the source happened to author. */
+export const platformColorSchema = z.string().regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+
 export const platformImageUrlsSchema = z
   .object({
     original: z.string(),
@@ -80,6 +83,7 @@ const platformPersonBaseSchema = z
       .array(z.object({ id: platformOrganizationIdSchema }).strict())
       .min(1)
       .optional(),
+    color: platformColorSchema.optional(),
   })
   .strict();
 
@@ -123,6 +127,7 @@ export const platformOrganizationSchema = z
       )
       .min(1)
       .optional(),
+    color: platformColorSchema.optional(),
   })
   .strict()
   .refine((org) => org.shortName || org.abbreviation, {

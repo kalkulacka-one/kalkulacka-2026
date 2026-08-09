@@ -1,7 +1,6 @@
 'use client';
 
 import { Avatar } from '../avatar/avatar';
-import { useLogoAccent } from '../avatar/logo-accent';
 import { partyColor } from '../party-color';
 import { Tag } from '../tag/tag';
 import styles from './match-row.module.css';
@@ -11,6 +10,8 @@ export type MatchRowProps = {
   rank?: number;
   name: string;
   avatarUrl?: string;
+  /** The candidate's own accent colour — from data, or derived server-side from the logo. */
+  color?: string;
   /** 0–100, or `undefined` for a candidate who never answered. */
   matchPercentage?: number;
   /** Pre-formatted, e.g. "74 %" — number formatting is locale work, so it happens above. */
@@ -48,6 +49,7 @@ export function MatchRow({
   rank,
   name,
   avatarUrl,
+  color,
   matchPercentage,
   percentLabel,
   noAnswerLabel,
@@ -59,13 +61,11 @@ export function MatchRow({
 }: MatchRowProps) {
   const comparable = matchPercentage !== undefined;
   /*
-   * The logo's own colour when there is a logo to read one from — resolved
-   * async, so this starts `undefined` and the seeded palette colour below
-   * carries the bar and the ring until it lands (or forever, for a party
-   * with no picture, which is what that palette is actually for).
+   * `color` carries the data colour or the server-derived one when the
+   * candidate has either; `partyColor` falls back to its seeded palette
+   * otherwise, which is also what covers every party with no picture at all.
    */
-  const logoAccent = useLogoAccent(avatarUrl);
-  const accent = logoAccent ?? partyColor(name);
+  const accent = partyColor(name, color);
 
   return (
     <li
