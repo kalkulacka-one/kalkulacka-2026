@@ -65,7 +65,7 @@ export const defaultTheme = defineTheme({
     dark: {
       agree: '#2c6cee',
       disagree: '#cb463f',
-      neutral: '#cbd5e1',
+      neutral: '#f2f5f9',
 
       page: '#0b1220',
       surface: '#1b2740',
