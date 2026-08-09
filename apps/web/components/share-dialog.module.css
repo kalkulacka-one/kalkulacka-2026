@@ -1,0 +1,144 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+}
+
+/*
+ * A fixed box for the preview, so switching between portrait and landscape
+ * changes the picture without the dialog jumping height and shoving the
+ * share button off a phone's screen. Sized to leave room for the controls row
+ * and the button beneath it within a typical phone viewport, rather than to
+ * show the card as large as possible — this is a preview, not the artwork.
+ */
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 11rem;
+  padding: var(--vk-space-3);
+  border-radius: var(--vk-radius-card);
+  background: var(--vk-color-surface-sunken);
+}
+
+/*
+ * Theme and format share one row — everything in it is identified by shape
+ * or `aria-label` rather than by an on-screen word, which is what keeps this
+ * one line tall instead of two stacked, labelled groups.
+ */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.divider {
+  flex: none;
+  width: 1px;
+  height: 1.5rem;
+  background: var(--vk-color-border);
+}
+
+.swatches,
+.formats {
+  display: flex;
+  gap: var(--vk-space-2);
+}
+
+/*
+ * A colour circle, not a labelled chip — the fill *is* the label. The pressed
+ * state is a ring one step out from the swatch rather than a border on it, so
+ * the full circle keeps showing colour right up to its edge.
+ */
+.swatch {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--vk-color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    box-shadow var(--vk-duration-fast) var(--vk-easing-exit),
+    border-color var(--vk-duration-fast) var(--vk-easing-exit);
+}
+
+.swatch:hover {
+  border-color: var(--vk-color-border-strong);
+}
+
+.swatch[aria-pressed="true"] {
+  border-color: var(--vk-color-focus);
+  box-shadow:
+    0 0 0 2px var(--vk-color-surface),
+    0 0 0 4px var(--vk-color-focus);
+}
+
+.format {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+
+  background: var(--vk-color-surface);
+  border: 1px solid var(--vk-color-border);
+  border-radius: var(--vk-radius-chip);
+  cursor: pointer;
+  transition:
+    border-color var(--vk-duration-fast) var(--vk-easing-exit),
+    background-color var(--vk-duration-fast) var(--vk-easing-exit);
+}
+
+.format:hover {
+  border-color: var(--vk-color-border-strong);
+  background: var(--vk-color-surface-hover);
+}
+
+.format[aria-pressed="true"] {
+  border-color: var(--vk-color-focus);
+  box-shadow: inset 0 0 0 1px var(--vk-color-focus);
+}
+
+/* A page shape at icon scale — the fastest read of what portrait vs landscape means. */
+.formatShape {
+  border-radius: 2px;
+  background: var(--vk-color-text-subtle);
+}
+
+.formatShape[data-shape="story"] {
+  width: 0.625rem;
+  height: 1.0625rem;
+}
+
+.formatShape[data-shape="landscape"] {
+  width: 1.0625rem;
+  height: 0.625rem;
+}
+
+/*
+ * Always in the DOM so assistive tech is already watching it, and holding its
+ * line of space so the share button above doesn't jump when a message arrives.
+ */
+.status {
+  margin: 0;
+  min-height: 1.25rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  line-height: 1.25rem;
+  color: var(--vk-color-text-muted);
+}
+
+.status[data-failed] {
+  color: var(--vk-color-disagree);
+}

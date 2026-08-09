@@ -21,6 +21,7 @@ import {
   FilterChips,
   IconButton,
   MatchRow,
+  type ShareCardContent,
   StickyBar,
 } from '@vk/ui';
 import Link from 'next/link';
@@ -28,7 +29,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
 import { answerLabelOf } from '../lib/answer-labels';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
-import { copyText } from '../lib/clipboard';
 import { type CalculatorRef, type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { useDragDismiss } from '../lib/use-drag-dismiss';
 import { AppShell } from './app-shell';
@@ -36,6 +36,7 @@ import { BackLink } from './back-link';
 import styles from './results.module.css';
 import { ResultsDashboard } from './results-dashboard';
 import { Screen } from './screen';
+import { ShareDialog } from './share-dialog';
 
 export type ResultsProps = {
   calculator: Calculator;
@@ -88,8 +89,7 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
   /** Which of a comparison's rows are shown — reset whenever a different candidate opens. */
   const [comparisonFilter, setComparisonFilter] = useState<ComparisonFilter>('all');
   const [waited, setWaited] = useState(false);
-  /** `idle` until the share button is pressed, then whether the copy landed. */
-  const [shareState, setShareState] = useState<'idle' | 'done' | 'failed'>('idle');
+  const [shareOpen, setShareOpen] = useState(false);
   const ready = useAnswersReady();
 
   useEffect(() => {
@@ -100,21 +100,6 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
 
     const timer = window.setTimeout(() => setWaited(true), CALCULATING_MS);
     return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (shareState === 'idle') return;
-    // The failure notice earns a longer look than the success one — it is asking
-    // the reader to go and do something rather than confirming it was done.
-    const timer = window.setTimeout(
-      () => setShareState('idle'),
-      shareState === 'failed' ? 6000 : 2400,
-    );
-    return () => window.clearTimeout(timer);
-  }, [shareState]);
-
-  const share = useCallback(async () => {
-    setShareState((await copyText(window.location.href)) ? 'done' : 'failed');
   }, []);
 
   /*
@@ -177,6 +162,45 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
       }),
     };
   }, [calculator, answers, results]);
+
+  /*
+   * The page's own address, read after mount rather than during render: there
+   * is no `window` on the server, and a share dialog that rendered a URL into
+   * the HTML would be baking one visitor's district into everyone's page.
+   */
+  const [location, setLocation] = useState({ href: '', host: '' });
+  useEffect(() => {
+    setLocation({ href: window.location.href, host: window.location.host });
+  }, []);
+
+  /** What gets painted onto the shared image — the top five, and where they came from. */
+  const shareContent = useMemo<ShareCardContent>(
+    () => ({
+      brand: messages.app.title,
+      ...(calculator.electionName ? { electionName: calculator.electionName } : {}),
+      ...(calculator.name ? { calculatorName: calculator.name } : {}),
+      title: messages.results.title,
+      winnerLabel: messages.results.winner,
+      entries: results.slice(0, 5).map(({ candidate, match, rank }, index) => ({
+        // Ties share a rank, so it is not always the position — but it is
+        // always *a* number by the time a result is ranked; the index is only
+        // here to satisfy the type.
+        rank: rank ?? index + 1,
+        // The short name, not the full one: "SPOLU" fits a story where
+        // "SPOLU (ODS, KDU-ČSL, TOP 09)" would be trimmed to an ellipsis.
+        name: candidate.shortName || candidate.name,
+        avatarUrl: candidate.avatarUrl,
+        ...(match.matchPercentage === undefined
+          ? { noAnswerLabel: messages.results.noAnswer }
+          : {
+              percentLabel: percent(match.matchPercentage),
+              matchPercentage: match.matchPercentage,
+            }),
+      })),
+      url: location.host,
+    }),
+    [calculator, results, location.host],
+  );
 
   /** The comparison rendered in the pane — kept alive through `closingId` so it has something to animate out with. */
   const shownId = selectedId ?? closingId;
@@ -333,19 +357,19 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
             <h1 className={styles.title}>{messages.results.title}</h1>
 
             {/*
-              A copy can genuinely fail — the clipboard permission is refusable,
-              and a phone opening the dev server over a plain-http address has no
-              clipboard API at all. Saying so beats a button that appears inert.
+              Opens the picture, rather than copying the link on the spot. The
+              link is still one press away — it is the dialog's second action —
+              but a ranking is a thing people post, and a URL is not.
             */}
             <div className={styles.shareBox}>
-              <Button variant="plate" size="small" onClick={share} iconStart="share">
-                {shareState === 'done' ? messages.results.shareCopied : messages.results.share}
+              <Button
+                variant="plate"
+                size="small"
+                onClick={() => setShareOpen(true)}
+                iconStart="share"
+              >
+                {messages.results.share}
               </Button>
-              {shareState === 'failed' ? (
-                <p className={styles.shareHint} role="status">
-                  {messages.results.shareFallback}
-                </p>
-              ) : null}
             </div>
           </header>
 
@@ -445,6 +469,14 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
           </div>
         </div>
       </main>
+
+      <ShareDialog
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        content={shareContent}
+        fileName={`shoda-${calculator.id}`}
+        url={location.href}
+      />
     </AppShell>
   );
 }

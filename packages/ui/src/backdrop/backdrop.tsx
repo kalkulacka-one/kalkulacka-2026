@@ -3,15 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './backdrop.module.css';
 import { toRgbFloat } from './color-uniform';
-import {
-  DEFAULT_INTENSITY,
-  DEFAULT_LIGHT_STRENGTH,
-  DEFAULT_SPEED,
-  FRAGMENT_SHADER,
-  MIN_FRAME_INTERVAL_MS,
-  RENDER_SCALE,
-  VERTEX_SHADER,
-} from './shader-source';
+import { createShaderRenderer, type ShaderColors } from './shader-renderer';
+import { DEFAULT_SPEED, MIN_FRAME_INTERVAL_MS, RENDER_SCALE } from './shader-source';
 
 export type BackdropProps = {
   /**
@@ -22,12 +15,7 @@ export type BackdropProps = {
   forceEnabled?: boolean;
 };
 
-type Colors = {
-  base: [number, number, number];
-  accentA: [number, number, number];
-  accentB: [number, number, number];
-  light: [number, number, number];
-};
+type Colors = ShaderColors;
 
 function readTokens(el: HTMLElement): { enabled: boolean; colors: Colors } {
   const cs = getComputedStyle(el);
@@ -141,85 +129,24 @@ function ShaderCanvas({ colors, onUnsupported }: { colors: Colors; onUnsupported
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = (canvas.getContext('webgl', { alpha: false, premultipliedAlpha: true }) ??
-      canvas.getContext('experimental-webgl', {
-        alpha: false,
-        premultipliedAlpha: true,
-      })) as WebGLRenderingContext | null;
-
-    if (!gl) {
+    const renderer = createShaderRenderer(canvas);
+    if (!renderer) {
       onUnsupported();
       return;
     }
-
-    const compile = (type: number, source: string) => {
-      const shader = gl.createShader(type);
-      if (!shader) return null;
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      return shader;
-    };
-
-    const program = gl.createProgram();
-    const vs = compile(gl.VERTEX_SHADER, VERTEX_SHADER);
-    const fs = compile(gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
-    if (!program || !vs || !fs) {
-      onUnsupported();
-      return;
-    }
-
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      onUnsupported();
-      return;
-    }
-    // biome-ignore lint/correctness/useHookAtTopLevel: gl.useProgram is the WebGL API, not a React hook.
-    gl.useProgram(program);
-
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    // A single triangle big enough to cover the whole clip space.
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const posLoc = gl.getAttribLocation(program, 'p');
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-    const uRes = gl.getUniformLocation(program, 'uRes');
-    const uTime = gl.getUniformLocation(program, 'uTime');
-    const uIntensity = gl.getUniformLocation(program, 'uIntensity');
-    const uBase = gl.getUniformLocation(program, 'uBase');
-    const uAccentA = gl.getUniformLocation(program, 'uAccentA');
-    const uAccentB = gl.getUniformLocation(program, 'uAccentB');
-    const uLight = gl.getUniformLocation(program, 'uLight');
-    const uLightStrength = gl.getUniformLocation(program, 'uLightStrength');
 
     const resize = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
       const rect = parent.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.round(rect.width * RENDER_SCALE));
-      canvas.height = Math.max(1, Math.round(rect.height * RENDER_SCALE));
-      gl.viewport(0, 0, canvas.width, canvas.height);
+      renderer.resize(rect.width * RENDER_SCALE, rect.height * RENDER_SCALE);
     };
     resize();
 
     const ro = new ResizeObserver(resize);
     if (canvas.parentElement) ro.observe(canvas.parentElement);
 
-    const draw = (time: number) => {
-      const c = colorsRef.current;
-      gl.uniform2f(uRes, canvas.width, canvas.height);
-      gl.uniform1f(uTime, time);
-      gl.uniform1f(uIntensity, DEFAULT_INTENSITY);
-      gl.uniform3f(uBase, ...c.base);
-      gl.uniform3f(uAccentA, ...c.accentA);
-      gl.uniform3f(uAccentB, ...c.accentB);
-      gl.uniform3f(uLight, ...c.light);
-      gl.uniform1f(uLightStrength, DEFAULT_LIGHT_STRENGTH);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-    };
+    const draw = (time: number) => renderer.draw(time, colorsRef.current);
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

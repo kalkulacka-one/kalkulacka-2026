@@ -1,0 +1,18 @@
+/*
+ * The rounding and shadow live here, on the preview's own frame — not on
+ * `ShareCardLayout`'s root, which stays square-cornered because it is also
+ * the thing that gets rasterised for the export.
+ */
+.frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--vk-radius-card);
+  box-shadow:
+    0 0 0 1px var(--vk-color-border),
+    var(--vk-shadow-surface);
+  max-width: 100%;
+}
+
+.scaled {
+  transform-origin: top left;
+}

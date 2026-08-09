@@ -8,9 +8,18 @@
  *
  * Load order: base.css, then the base theme, then any override theme.
  * `var()` resolves lazily, so these definitions do not care which theme wins.
+ *
+ * Scoped to `[data-vk-theme-scope]` as well as `:root`: a theme is normally
+ * applied once, to `<html>`, but the share card paints itself in a theme the
+ * rest of the page isn't in (its own light/dark/brand pick, independent of
+ * whatever the visitor is browsing in) — reusing the *derived* rules for that
+ * requires them to also fire on a scoped subtree, not just the document root.
+ * Nothing sets the attribute today outside that one case, so this changes
+ * nothing for the app itself.
  */
 
-:root {
+:root,
+[data-vk-theme-scope] {
   /* --- Neutral tint ------------------------------------------------------
    * The public `--vk-color-neutral` is never the theme's raw value — it's
    * that value leaning a little toward `agree`, so every neutral surface

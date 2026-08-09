@@ -147,6 +147,19 @@ export const icons = {
     ...THIN,
     paths: ['M12 3.5 L12 15 M6.5 9 L12 3.5 L17.5 9 M4.5 14 L4.5 20.5 L19.5 20.5 L19.5 14'],
   },
+  /** Save. `share`'s own tray with the arrow turned around and coming down into it. */
+  download: {
+    ...THIN,
+    paths: ['M12 3.5 L12 15 M6.5 9.5 L12 15 L17.5 9.5 M4.5 14 L4.5 20.5 L19.5 20.5 L19.5 14'],
+  },
+  /** A URL. Two hooks on the diagonal the wordmark's cut already runs along. */
+  link: {
+    ...THIN,
+    paths: [
+      'M10.5 7.5 L13.5 4.5 A4.243 4.243 0 0 1 19.5 10.5 L16.5 13.5',
+      'M13.5 16.5 L10.5 19.5 A4.243 4.243 0 0 1 4.5 13.5 L7.5 10.5',
+    ],
+  },
   /** Results — three bars, the progress row's shape at icon scale. */
   results: { ...THIN, paths: ['M4 20 L4 13 M12 20 L12 5 M20 20 L20 9'] },
   list: { ...THIN, paths: ['M4 6 L20 6 M4 12 L20 12 M4 18 L20 18'] },

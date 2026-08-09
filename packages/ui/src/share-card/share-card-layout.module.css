@@ -1,0 +1,176 @@
+/*
+ * True export pixel size, set inline by the caller. Square corners — this is
+ * the bleed of the exported PNG itself; a phone-frame rounding belongs to the
+ * dialog's *preview* wrapper, one level up, not to the picture that gets saved.
+ */
+.card {
+  position: relative;
+  overflow: hidden;
+  background: var(--vk-color-page);
+  color: var(--vk-color-text);
+}
+
+.washFallback,
+.wash {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Blurred and slightly oversized so the blur never reveals a hard edge — the
+   same trick `backdrop.module.css` uses, sized for a canvas drawn at its true
+   resolution rather than a pre-halved one. */
+.wash {
+  filter: blur(var(--card-blur, 48px));
+  transform: scale(1.06);
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--card-pad, 4rem);
+  box-sizing: border-box;
+}
+
+/*
+ * Everything below is sized with `zoom` rather than by overriding each
+ * component's own font sizes and paddings.
+ *
+ * Those components are built for a phone viewport, and a share image is a
+ * ~3× wider canvas that has to *read* at the same scale someone sees in the
+ * app — so the whole lockup and the whole ranking are magnified bodily,
+ * exactly as a screenshot of the app would be. Restyling them piecemeal would
+ * mean re-deciding every size the design system has already decided, and
+ * re-deciding them again the next time the app's own sizes move.
+ *
+ * `zoom` and not `transform: scale`: a transformed box keeps its *pre*-scale
+ * footprint in flow, so the layout would have to be told each block's real
+ * height by hand. `zoom` reflows for real, and ordinary flexbox does the rest.
+ */
+/* The lockup and the headline travel together — they are one block of type,
+   and both layouts place them as one. */
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-head-gap, 2.5rem);
+}
+
+.brand {
+  zoom: var(--card-brand-zoom, 3);
+}
+
+/*
+ * The results screen's own title, to the letter — `font-family`, weight,
+ * tracking, leading and colour all match `results.module.css`'s `.title`.
+ * The one deliberate departure is size: that token is a `vw`-fluid clamp, and
+ * a card exported at a fixed 1080/1920px has to look the same regardless of
+ * which device happened to render it, so this uses a fixed size per format
+ * instead of following the viewport it's captured from.
+ */
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--card-title-size, 5.5rem);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
+  color: var(--vk-color-text);
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-row-gap, 1rem);
+  pointer-events: none;
+  zoom: var(--card-rows-zoom, 2.5);
+}
+
+.url {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--card-foot-size, 1.75rem);
+  font-weight: 500;
+  color: var(--vk-color-text);
+}
+
+/* --- Story ---------------------------------------------------------------
+ * The head belongs *with* the ranking, not stranded at the top edge above a
+ * field of empty wash: two `margin-top: auto` split the slack evenly, which
+ * drops the head-and-list group into the middle of the card and leaves the
+ * url alone on the bottom line.
+ */
+.card[data-format="story"] {
+  --card-blur: 60px;
+  --card-pad: 3.5rem;
+  --card-head-gap: 2.5rem;
+  --card-brand-zoom: 3.4;
+  --card-title-size: 6.25rem;
+  --card-rows-zoom: 2.8;
+  --card-row-gap: 0.75rem;
+  --card-foot-size: 2rem;
+}
+
+.card[data-format="story"] .head {
+  margin: auto 0 2.5rem;
+}
+
+.card[data-format="story"] .url {
+  margin-top: auto;
+}
+
+/* --- Landscape -----------------------------------------------------------
+ * Header as a left column, ranking as a right one — the same two-pane shape
+ * the results screen itself uses above its own 64rem breakpoint. Height is
+ * the binding constraint at 16:9, so the ranking zooms less here than in the
+ * story: five rows have 936px to live in rather than most of 1792.
+ */
+.card[data-format="landscape"] {
+  --card-blur: 76px;
+  --card-pad: 4rem;
+  --card-head-gap: 1.75rem;
+  /*
+   * Lower than the story's, and not a taste call: `AppHeader`'s subtitle is
+   * `white-space: nowrap` with an ellipsis, sized for a full-width bar. Zoomed
+   * inside a column this narrow it runs out of room and clips to "Komunální
+   * volby Pardubic…", so the zoom is capped at what the longest of those lines
+   * actually fits in.
+   */
+  --card-brand-zoom: 2.5;
+  --card-title-size: 5.5rem;
+  --card-rows-zoom: 1.95;
+  --card-row-gap: 0.625rem;
+  --card-foot-size: 2rem;
+}
+
+.card[data-format="landscape"] .content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  /* Left column: the head centred in the tall row, url on the line below.
+     Right column ignores both and spans the full height. */
+  grid-template-rows: 1fr auto;
+  column-gap: 3.5rem;
+}
+
+.card[data-format="landscape"] .head {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.card[data-format="landscape"] .rows {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.card[data-format="landscape"] .url {
+  grid-column: 1;
+  grid-row: 2;
+}
