@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorShellInfo, electionPath, questionPath, stepPath } from '../lib/paths';
 import styles from './calculator-intro.module.css';
+import { IntroFacts } from './intro-facts';
 import { RestartDialog } from './restart-dialog';
 import { Screen } from './screen';
 
@@ -21,11 +22,19 @@ export type CalculatorIntroProps = {
 const messages = getMessages();
 
 /**
- * The calculator's front door.
+ * The calculator's front door: what this is, what happens to your answers, and
+ * — for anyone coming back — where you left off.
  *
- * Its one real job beyond describing the thing is resuming: answers persist in
- * localStorage, so someone returning to a half-finished calculator should land
- * on the question they stopped at rather than being sent back to question 1.
+ * Answers persist in localStorage, so someone returning to a half-finished
+ * calculator lands on the question they stopped at rather than being sent back
+ * to question 1.
+ *
+ * This screen briefly redirected first-timers straight to `/navod`, on the
+ * grounds that a name and a "Začít" button is not worth a tap. That was
+ * treating the symptom: the screen was thin, not redundant. It now carries
+ * `IntroFacts`, and the two screens divide the onboarding cleanly — this one
+ * explains what the calculator *does* with an answer, `/navod` teaches how to
+ * *give* one.
  */
 export function CalculatorIntro({ calculator, candidateCount, questions }: CalculatorIntroProps) {
   const {
@@ -41,9 +50,10 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
   const [confirmingRestart, setConfirmingRestart] = useState(false);
 
   const answered = countAnswered(questions, answers);
+  const ready = useAnswersReady();
   // Held back until the persisted answers land, so the primary action does not
   // change its mind from "Začít" to "Pokračovat" a frame after it appears.
-  const inProgress = useAnswersReady() && answered > 0;
+  const inProgress = ready && answered > 0;
 
   // -1 once every question has been visited; that's the recap's cue.
   const nextIndex = firstUnansweredIndex(questions, answers);
@@ -109,6 +119,16 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
           {format(messages.intro.progress, { answered, total: questions.length })}
         </p>
       ) : null}
+
+      {/*
+        What answering actually does, for the reader deciding whether to start.
+        The screen used to be a name and a button, which is what made merging it
+        into the tutorial tempting; the fix was to give it something to say
+        rather than to delete it. Deliberately not the gestures — those are the
+        next screen's whole job, and a reader who has to be taught to swipe
+        twice has been taught nothing the second time.
+      */}
+      <IntroFacts />
 
       <RestartDialog
         open={confirmingRestart}

@@ -1,7 +1,7 @@
 .practice {
   display: flex;
   flex-direction: column;
-  gap: var(--vk-space-5);
+  gap: var(--vk-space-3);
 }
 
 /*
@@ -16,14 +16,15 @@
 }
 
 /*
- * A phone gets a shorter card. The height above is sized for a real question —
- * a topic, a title and often a detail paragraph — where this one carries a
- * single short line, so on a narrow screen the extra 5rem is empty card
- * spending viewport that the status line and the primary action need more.
+ * A phone gets a shorter card — but not by as much as it once did. That 16rem
+ * was sized for a card carrying one short headline; this one now carries a
+ * two-line instruction with a row of compass pills above and below it, and
+ * squeezing all three into 16rem put the text through the pills rather than
+ * between them.
  */
 @media (width < 34rem) {
   .stage {
-    height: 16rem;
+    height: 18rem;
   }
 }
 
@@ -56,7 +57,6 @@
 .under {
   display: flex;
   justify-content: center;
-  margin-top: calc(var(--vk-space-5) * -1 + var(--vk-space-3));
 }
 
 /*
@@ -67,23 +67,31 @@
 .status {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--vk-space-1);
-  min-height: 3.75rem;
+  min-height: 3.5rem;
   text-align: center;
 }
 
+/*
+ * Plain weight by default — this line changes on every gesture, and bold
+ * text that rewrites itself that often reads as a headline, not a caption.
+ * Weight (and colour) is reserved for the one moment there is something to
+ * actually announce: practice is done.
+ */
 .line {
   margin: 0;
   font-family: var(--vk-typeface-sans);
   font-size: var(--vk-text-lead);
-  font-weight: 600;
+  font-weight: 400;
   line-height: var(--vk-leading-snug);
-  color: var(--vk-color-text-strong);
+  color: var(--vk-color-text-muted);
   text-wrap: balance;
 }
 
 .lineDone {
-  color: var(--vk-color-agree);
+  font-weight: 600;
+  color: var(--vk-color-text-strong);
 }
 
 .count {
@@ -92,10 +100,4 @@
   font-size: var(--vk-text-md);
   color: var(--vk-color-text-muted);
   font-variant-numeric: tabular-nums;
-}
-
-.details {
-  display: flex;
-  justify-content: center;
-  margin-top: calc(var(--vk-space-5) * -1 + var(--vk-space-2));
 }

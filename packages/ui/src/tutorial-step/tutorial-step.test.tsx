@@ -9,34 +9,16 @@ const base = {
 } as const;
 
 describe('TutorialStep', () => {
-  it('says nothing about completion when there is nothing to practise on', () => {
-    render(
+  it('shows what it teaches, and says nothing about progress', () => {
+    const { container } = render(
       <ul>
         <TutorialStep {...base} />
       </ul>,
     );
 
-    expect(screen.queryByText('Vyzkoušeno')).not.toBeInTheDocument();
-  });
-
-  it('announces the tick, which is otherwise purely visual', () => {
-    render(
-      <ul>
-        <TutorialStep {...base} done doneLabel="Vyzkoušeno" />
-      </ul>,
-    );
-
-    expect(screen.getByText('Vyzkoušeno')).toBeInTheDocument();
-  });
-
-  it('keeps its own icon once done, so completed steps stay distinguishable', () => {
-    const { container } = render(
-      <ul>
-        <TutorialStep {...base} done doneLabel="Vyzkoušeno" />
-      </ul>,
-    );
-
-    // Two icons: the gesture the step teaches, plus the tick applied to it.
-    expect(container.querySelectorAll('svg')).toHaveLength(2);
+    expect(screen.getByText('Souhlasím')).toBeInTheDocument();
+    expect(screen.getByText('Táhněte kartu doleva.')).toBeInTheDocument();
+    // One icon: the gesture. No tick — the list is reference, not a checklist.
+    expect(container.querySelectorAll('svg')).toHaveLength(1);
   });
 });

@@ -25,34 +25,6 @@
     color var(--vk-duration-fast) ease;
 }
 
-.badgeDone {
-  background: var(--vk-color-agree-soft);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-agree-wash-strong);
-  color: var(--vk-color-agree);
-}
-
-/*
- * The tick sits on the badge's edge rather than inside it, so it reads as a
- * mark applied to the step instead of as a second icon competing with the
- * gesture arrow for the same 20px.
- */
-.tick {
-  position: absolute;
-  right: -0.125rem;
-  bottom: -0.125rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.125rem;
-  height: 1.125rem;
-
-  border-radius: var(--vk-radius-pill);
-  background: var(--vk-color-agree);
-  color: var(--vk-color-agree-on);
-  box-shadow: 0 0 0 0.125rem var(--vk-color-surface);
-}
-
 .text {
   display: flex;
   flex-direction: column;

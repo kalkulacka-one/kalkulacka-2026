@@ -27,6 +27,13 @@ export {
 export { Dialog, type DialogProps } from './dialog/dialog';
 export { Donut, type DonutProps, type DonutSegment } from './donut/donut';
 export {
+  DRAG_DIRECTIONS,
+  type DragDirection,
+  DragGuides,
+  type DragGuidesLabels,
+  type DragGuidesProps,
+} from './drag-guides/drag-guides';
+export {
   FilterChips,
   type FilterChipsProps,
   type FilterOption,

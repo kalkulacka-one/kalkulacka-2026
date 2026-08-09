@@ -64,7 +64,18 @@ body {
 html[data-vk-scroll="document"],
 html[data-vk-scroll="document"] body {
   height: auto;
-  overflow: visible;
+  overflow-y: visible;
+  /*
+   * …but never sideways. The tutorial's practice card is a real `QuestionDeck`,
+   * and a committed card flies 480px past the viewport's edge before it fades;
+   * the pre-swipe nudge leans the stage 20px out on its own. In a scrolling
+   * document that is horizontal overflow, and the reader gets a page that
+   * suddenly pans sideways under a finger meant to be dragging a card.
+   *
+   * `clip`, not `hidden`: `hidden` would make this a scroll container, and the
+   * whole point of `document` mode is that the document itself is the scroller.
+   */
+  overflow-x: clip;
 }
 
 /*

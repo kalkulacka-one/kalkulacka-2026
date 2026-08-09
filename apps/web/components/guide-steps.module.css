@@ -1,8 +1,14 @@
+/*
+ * The negative `margin-top` pulls the list up against `Dialog`'s own header —
+ * `.panel`'s gap is sized for a two-line description above a body, not a body
+ * that starts with a list item, and left alone it read as its own extra
+ * paragraph break before the steps even started.
+ */
 .steps {
   display: flex;
   flex-direction: column;
   gap: var(--vk-space-5);
-  margin: 0;
+  margin: calc(var(--vk-space-3) * -1) 0 0;
   padding: 0;
   list-style: none;
 }

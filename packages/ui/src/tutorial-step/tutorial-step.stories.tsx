@@ -11,7 +11,7 @@ const meta = {
   args: {
     icon: 'arrowLeft',
     title: 'Souhlasím',
-    description: 'Táhněte kartu doleva, nebo klepněte na Souhlasím.',
+    description: 'Táhněte kartu doleva, nebo tapněte na Souhlasím.',
   },
 } satisfies Meta<typeof TutorialStep>;
 
@@ -20,66 +20,57 @@ type Story = StoryObj<typeof meta>;
 
 export const Single: Story = {};
 
-/** Ticked off by the practice card on `/navod`. */
-export const Done: Story = { args: { done: true, doneLabel: 'Vyzkoušeno' } };
-
-/** Mid-practice: what the checklist looks like with two of four tried. */
-export const PartlyDone: Story = {
+/** The touch wording — the app picks it from the pointer, not the viewport. */
+export const Touch: Story = {
   render: () => (
     <>
       <TutorialStep
         icon="arrowLeft"
         title="Souhlasím"
-        description="Táhněte kartu doleva, nebo klepněte na Souhlasím."
-        done
-        doneLabel="Vyzkoušeno"
+        description="Táhněte kartu doleva, nebo tapněte na Souhlasím."
       />
       <TutorialStep
         icon="arrowRight"
         title="Nesouhlasím"
-        description="Táhněte kartu doprava, nebo klepněte na Nesouhlasím."
-        done
-        doneLabel="Vyzkoušeno"
+        description="Táhněte kartu doprava, nebo tapněte na Nesouhlasím."
       />
       <TutorialStep
         icon="starThin"
         title="Pro mě důležité"
-        description="Otázka označená hvězdičkou má ve výsledku dvojnásobnou váhu."
-        done={false}
+        description="Táhněte kartu šikmo nahoru, nebo tapněte na hvězdičku. Otázka s hvězdičkou má ve výsledku dvojnásobnou váhu."
       />
       <TutorialStep
         icon="arrowDown"
         title="Přeskočit"
-        description="Otázku, na kterou nechcete odpovídat, můžete přeskočit."
-        done={false}
+        description="Otázku, na kterou nechcete odpovídat, táhněte dolů — do výsledku se nezapočítá."
       />
     </>
   ),
 };
 
-/** The set as the tutorial screen shows it. */
-export const Sequence: Story = {
+/** The same list on a desktop, where the shortcut is worth naming. */
+export const Pointer: Story = {
   render: () => (
     <>
       <TutorialStep
         icon="arrowLeft"
         title="Souhlasím"
-        description="Táhněte kartu doleva, nebo klepněte na Souhlasím."
+        description="Táhněte kartu doleva, stiskněte šipku vlevo, nebo klikněte na Souhlasím."
       />
       <TutorialStep
         icon="arrowRight"
         title="Nesouhlasím"
-        description="Táhněte kartu doprava, nebo klepněte na Nesouhlasím."
+        description="Táhněte kartu doprava, stiskněte šipku vpravo, nebo klikněte na Nesouhlasím."
       />
       <TutorialStep
         icon="starThin"
         title="Pro mě důležité"
-        description="Otázka označená hvězdičkou má ve výsledku dvojnásobnou váhu."
+        description="Táhněte kartu šikmo nahoru, stiskněte šipku nahoru, nebo klikněte na hvězdičku. Otázka s hvězdičkou má ve výsledku dvojnásobnou váhu."
       />
       <TutorialStep
         icon="arrowDown"
         title="Přeskočit"
-        description="Otázku, na kterou nechcete odpovídat, můžete přeskočit."
+        description="Otázku, na kterou nechcete odpovídat, táhněte dolů nebo stiskněte šipku dolů — do výsledku se nezapočítá."
       />
     </>
   ),

@@ -1,0 +1,17 @@
+/*
+ * Same rhythm as `GuideSteps`, one step tighter: those rows carry a two-clause
+ * instruction each and need the air, these carry a single fact.
+ *
+ * The negative `margin-top` pulls the list up against `Screen`'s own
+ * description paragraph above it — that gap is sized for a page whose next
+ * thing is a heading or a card, not a list item, and left alone it read as its
+ * own extra paragraph break before the facts even started.
+ */
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+  margin: calc(var(--vk-space-3) * -1) 0 0;
+  padding: 0;
+  list-style: none;
+}
