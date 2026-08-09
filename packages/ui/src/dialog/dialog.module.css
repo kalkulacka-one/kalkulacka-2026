@@ -45,7 +45,9 @@
   /* The signature asymmetric card shape, at dialog scale. */
   border-radius: var(--vk-radius-card);
   background: var(--vk-color-surface);
-  box-shadow: var(--vk-shadow-card-lifted);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-card-lifted);
 
   /*
    * Entry only. A native dialog leaves the top layer the instant it closes, so
@@ -76,7 +78,7 @@
 
 .head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--vk-space-3);
 }
 
@@ -86,6 +88,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--vk-space-2);
+  /* Optically lines the title up with the close icon, not just the button's box. */
+  padding-top: var(--vk-space-2);
 }
 
 .title {
