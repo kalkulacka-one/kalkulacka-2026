@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  # `push` is scoped to `main`; any other branch's push is already covered by
+  # `pull_request` while a PR is open, and running both would just duplicate
+  # the same commit's checks.
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to the same branch/PR supersedes the run in flight for it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Deliberately empty: every job below runs with no env vars and no secrets.
+# That's not an oversight — it's what proves the fixture-mode fallback (see
+# `apps/web/.env.example`) actually works, on the same footing a fresh clone
+# or a fork with no backend configured would run on.
+env: {}
+
+jobs:
+  # No separate "install" job: GitHub Actions jobs don't share a filesystem,
+  # so a prior install job would only be able to hand the next one an
+  # artifact-uploaded `node_modules` (slow, and easy to get subtly stale).
+  # Each job below does its own `pnpm install`, kept fast by the pnpm store
+  # cache — the sharing happens through that cache, not through job ordering.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `turbo run typecheck`'s own graph covers this: `@vk/database`'s
+      # `typecheck` script is `prisma generate && tsc --noEmit`, so the
+      # client is generated as part of the same task that needs it — no
+      # separate generate step here (unlike the `build` job below, whose
+      # graph does not reach `@vk/database` at all; see its comment).
+      - run: pnpm typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Vitest never imports the generated Prisma client at module scope in
+      # any suite that runs today, so no `generate` step is needed here.
+      - run: pnpm test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `turbo build`'s dependency graph is `dependsOn: ["^build"]`, and
+      # `@vk/database` has no `build` script — so unlike `@vk/tokens` (built
+      # as a dependency of `@vk/web`'s build automatically), the generated
+      # Prisma client is never produced by `pnpm build` alone. Skipping this
+      # fails `@vk/web`'s own `tsc` type-check step inside `next build` with
+      # "Parameter 'tx' implicitly has an 'any' type" on the one route that
+      # imports `db().$transaction`.
+      - run: pnpm --filter @vk/database generate
+      # `turbo run build`, not `next build` via `--filter`: the former walks
+      # the `^build` graph and builds `@vk/tokens` first automatically (its
+      # dist CSS is gitignored — see `pnpm-workspace.yaml`'s neighbouring
+      # comment on `allowBuilds` for the same "generated, not committed"
+      # shape); the latter would skip straight to `next build` and fail
+      # resolving `@vk/tokens/themes/*.css`.
+      - run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      # Always run, even on a cache hit: the binary download is what's
+      # skipped when the cache already has this version, but the OS package
+      # layer (`--with-deps`) isn't part of that cache and a hosted runner
+      # image can't be assumed to already carry it.
+      - name: Install Playwright's Chromium
+        run: pnpm --filter @vk/web exec playwright install --with-deps chromium
+      # Self-contained: `apps/web/playwright.config.ts`'s `webServer` runs
+      # `@vk/database generate` and `turbo run build` itself before starting
+      # `next start`, the same two steps the `build` job runs explicitly
+      # above — so this job doesn't depend on that one and can run in
+      # parallel with it.
+      - run: pnpm e2e
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          retention-days: 7
