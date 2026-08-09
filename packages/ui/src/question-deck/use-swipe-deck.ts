@@ -9,13 +9,13 @@ import {
 import {
   type CommitSpeed,
   PHYSICS,
-  SPEEDS,
-  SPRING_BACK_DURATION,
   STACK_BACK,
   STACK_NEXT,
   STACK_TRAVEL,
   type SwipeZone,
   shouldCommit,
+  speedFor,
+  springBackDuration,
   stackTransform,
   transform,
   zoneForOffset,
@@ -109,7 +109,9 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
 
   /** Animate the upcoming card rising and enlarging to the front on button/keyboard commit. */
   const animateStackRise = useCallback((speed: CommitSpeed = 'normal') => {
-    const { fly } = SPEEDS[speed];
+    // Near-zero under reduced motion, so the next card is simply already at
+    // the front rather than sliding and growing into it.
+    const { fly } = speedFor(speed);
     const easing = `transform ${fly}s var(--vk-easing-spring), filter ${fly}s ease, opacity ${fly}s ease`;
 
     const card = cardRef.current;
@@ -170,7 +172,10 @@ export function useSwipeDeck({ onCommit, onIntentChange, disabled = false }: Use
   }, []);
 
   const springBack = useCallback(() => {
-    const easing = `transform ${SPRING_BACK_DURATION}s var(--vk-easing-spring), filter ${SPRING_BACK_DURATION}s ease, opacity ${SPRING_BACK_DURATION}s ease`;
+    // The drag that got here was the reader's own hand and is never reduced;
+    // this is the part that plays by itself once they let go, so it is.
+    const settle = springBackDuration();
+    const easing = `transform ${settle}s var(--vk-easing-spring), filter ${settle}s ease, opacity ${settle}s ease`;
 
     const card = cardRef.current;
     if (card) {

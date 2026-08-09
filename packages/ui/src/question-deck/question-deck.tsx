@@ -21,8 +21,8 @@ import {
   advanceTransform,
   type CommitSpeed,
   exitTransform,
-  SPEEDS,
   type SwipeZone,
+  speedFor,
 } from './swipe-physics';
 import { type SwipeIntent, useSwipeDeck } from './use-swipe-deck';
 
@@ -194,7 +194,10 @@ export function QuestionDeck({
     const el = ghostRef.current;
     if (!el) return;
 
-    const { fly, fade } = SPEEDS[ghost.speed];
+    // Reduced motion collapses both to near-zero: the answered card is simply
+    // gone rather than thrown off the side of the screen, which is the single
+    // largest movement in the app and the one this preference exists for.
+    const { fly, fade } = speedFor(ghost.speed);
 
     el.style.transition = 'none';
     el.style.transform = ghost.from;
@@ -312,6 +315,11 @@ export function QuestionDeck({
         content={current}
         selection={activeSelection}
         labels={cardLabels}
+        /* The one card on the deck that is being read, so its statement is the
+           screen's heading. The layers behind it and the ghost in front are
+           `inert` and out of the accessibility tree entirely, so this never
+           puts a second `<h1>` in front of anyone. */
+        statementAs="h1"
         onPointerDown={onPointerDown}
         onAgree={handleAgree}
         onDisagree={handleDisagree}

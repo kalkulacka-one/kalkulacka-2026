@@ -68,6 +68,31 @@ describe('Dialog', () => {
   });
 
   /*
+   * The app keeps several dialogs mounted at once — the shell menu alone holds
+   * help, restart and leave, and the results screen adds share on top. The
+   * label id used to be derived from the CSS module's class name, i.e. one
+   * string shared by every instance, so all of them carried the same `id` and
+   * `aria-labelledby` resolved to whichever heading came first in the
+   * document: the open dialog announced a closed one's title.
+   */
+  it('labels each instance by its own heading, with several mounted at once', () => {
+    render(
+      <>
+        <Dialog open={false} onClose={() => {}} title="Nápověda" closeLabel="Zavřít" />
+        <Dialog open onClose={() => {}} title="Sdílet výsledek" closeLabel="Zavřít" />
+      </>,
+    );
+
+    const [help, share] = screen.getAllByRole('dialog', { hidden: true });
+    const labelOf = (dialog: HTMLElement | undefined) =>
+      document.getElementById(dialog?.getAttribute('aria-labelledby') ?? '')?.textContent;
+
+    expect(help?.getAttribute('aria-labelledby')).not.toBe(share?.getAttribute('aria-labelledby'));
+    expect(labelOf(help)).toBe('Nápověda');
+    expect(labelOf(share)).toBe('Sdílet výsledek');
+  });
+
+  /*
    * The regression that motivated Dialog's own onKeyDown handling: a modal
    * `<dialog>` dismisses itself on Escape, but that path only reports back via
    * the `close` event. If that event never arrives — verified true of the

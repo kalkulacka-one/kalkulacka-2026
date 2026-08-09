@@ -116,3 +116,22 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0) scale(1);
 }
+
+/*
+ * The toast's timings are literals rather than `--vk-duration-*` — they were
+ * measured against the drag's own feel, not the app's control tempo — so
+ * `base.css`'s blanket reduction does not reach them and this has to say it.
+ * The pill still appears and still says what releasing would do; it just
+ * arrives instead of rising into place, which matters when it is being read
+ * out of the corner of an eye that is following a moving card.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+    transform: translateX(-50%);
+  }
+
+  .toastVisible {
+    transform: translateX(-50%);
+  }
+}

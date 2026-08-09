@@ -8,6 +8,7 @@ import {
   ProgressSegments,
   QuestionDeck,
   type QuestionDeckHandle,
+  VisuallyHidden,
 } from '@vk/ui';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -166,6 +167,41 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
     return () => window.removeEventListener('keydown', handler);
   }, [goToPrevious, advanceAnimated]);
 
+  /**
+   * The card that just landed, spoken.
+   *
+   * Answering leaves focus on the control that was pressed while the card's
+   * content is replaced underneath it, so a reader working by keyboard hears
+   * the deck confirm their own answer ("Souhlasím") and is then told nothing
+   * whatsoever about the question they have arrived at — the one thing on the
+   * screen that changed. Polite, so it queues behind that confirmation and the
+   * two read in the order they happened.
+   *
+   * Empty until the first move: on arrival the question is simply part of the
+   * page, and a live region that speaks its own initial contents would read
+   * the card out a second time.
+   */
+  const [landed, setLanded] = useState('');
+  const settledRef = useRef(false);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `index` is the trigger; the rest is read at the moment it changes rather than driving this.
+  useEffect(() => {
+    if (!settledRef.current) {
+      settledRef.current = true;
+      return;
+    }
+
+    const landedQuestion = questions[index];
+    if (!landedQuestion) return;
+
+    setLanded(
+      `${format(messages.flow.questionCounter, {
+        position: index + 1,
+        total: questions.length,
+      })} ${landedQuestion.statement}`,
+    );
+  }, [index]);
+
   if (!question) return null;
 
   const answer = answers[question.id];
@@ -180,7 +216,11 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
 
   return (
     <AppShell calculator={calculator}>
-      <div className={styles.flow}>
+      {/* The flow's own landmark. It was the one screen in the app whose
+          content sat in a bare `<div>`, so "jump to the main content" — the
+          first thing a screen-reader user does on any page — had nowhere to
+          land on the forty-two screens they spend the longest on. */}
+      <main className={styles.flow}>
         <div className={styles.progress}>
           <ProgressSegments
             segments={segments}
@@ -264,8 +304,12 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
               },
             ]}
           />
+
+          <VisuallyHidden as="output" aria-live="polite">
+            {landed}
+          </VisuallyHidden>
         </div>
-      </div>
+      </main>
     </AppShell>
   );
 }

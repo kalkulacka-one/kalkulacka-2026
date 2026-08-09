@@ -166,22 +166,42 @@ test('completes a calculator from the picker through to ranked results, and shar
     await expect(page.getByText(messages.results.winner).first()).toBeVisible();
   });
 
+  await test.step('a comparison takes focus, and Escape hands it back to the row', async () => {
+    const ranking = page.getByRole('list').filter({ hasText: messages.results.winner });
+    const topRow = ranking.getByRole('listitem').first().getByRole('button');
+    await topRow.click();
+
+    /*
+     * The pane names itself after whoever's comparison it is holding, which
+     * makes it the one `region` on this screen — the dashboard's own cards are
+     * `<section>`s with no accessible name, so they are not landmarks. Focus
+     * goes to that name: it is the single thing a reader has to be told before
+     * the forty-two rows underneath it.
+     */
+    const comparison = page.getByRole('region');
+    await expect(comparison).toBeVisible();
+    await expect(comparison.getByRole('heading', { level: 2 })).toBeFocused();
+
+    // Escape is the third way out, beside the close button and the phone's
+    // drag handle — and it puts the reader back where they were, rather than
+    // unmounting the focused control and dropping them at the top of the page.
+    await page.keyboard.press('Escape');
+    await expect(comparison).toHaveCount(0);
+    await expect(topRow).toBeFocused();
+  });
+
   await test.step('share dialog opens image-only — no backend is configured', async () => {
     await page.getByRole('button', { name: messages.results.share, exact: true }).click();
 
     /*
-     * Not matched by name: every `Dialog` instance on the page (help,
-     * restart, leave, this one) labels itself via `aria-labelledby` pointing
-     * at an id built from a CSS module class name, which is identical across
-     * every instance — so the browser resolves it to whichever one happens
-     * to be first in the DOM, not this one. Only one `<dialog>` is ever
-     * `showModal`-open at a time, though, which is enough to find it.
+     * Matched by role *and* name, which is the assertion that every `Dialog`
+     * on this page (help, restart, leave, this one) labels itself rather than
+     * borrowing a sibling's heading — they used to share one `aria-labelledby`
+     * id derived from a CSS module class, so the browser resolved all four to
+     * whichever came first in the DOM.
      */
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog', { name: messages.results.shareDialog.title });
     await expect(dialog).toBeVisible();
-    await expect(
-      dialog.getByRole('heading', { name: messages.results.shareDialog.title, exact: true }),
-    ).toBeVisible();
 
     // No `NEXT_PUBLIC_SESSION_COOKIE_NAME`/`DATABASE_URL` means `canSync()` is
     // false, so `ShareDialog` never receives a `link` and never renders the
