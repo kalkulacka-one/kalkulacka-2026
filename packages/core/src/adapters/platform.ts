@@ -173,6 +173,7 @@ function resolveFromPerson(person: PlatformPerson, assetBase: string): ResolvedI
  */
 type CalculatorFields = {
   id: string;
+  version?: string;
   key?: string;
   calculatorGroupKey?: string;
   electionId?: string;
@@ -189,6 +190,7 @@ type CalculatorFields = {
 function extractCalculatorFields(calculator: PlatformCalculator): CalculatorFields {
   return {
     id: calculator.id,
+    version: calculator.version,
     key: 'key' in calculator ? calculator.key : undefined,
     calculatorGroupKey:
       'calculatorGroup' in calculator ? calculator.calculatorGroup.key : undefined,
@@ -296,6 +298,7 @@ export function adaptPlatformCalculator(
 
   return {
     id: fields.id,
+    version: fields.version,
     // No `elections.json` among the adapted files, so the only election data
     // available here is the bare reference calculator.json carries — see A3
     // note about surfacing the resolved election title separately.

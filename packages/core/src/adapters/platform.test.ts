@@ -41,6 +41,10 @@ describe('adaptPlatformCalculator (snemovni-2025-kalkulacka)', () => {
     expect(calculator.candidates).toHaveLength(23);
   });
 
+  it('carries the data version through, which is what a stored session is pinned to', () => {
+    expect(calculator.version).toBe('2.0.1');
+  });
+
   it('maps question fields 1:1 (the domain shape was designed after this one)', () => {
     const question = calculator.questions.find(
       (q) => q.id === '30e04a1c-5aae-46c8-b4c3-a990524b5b2f',

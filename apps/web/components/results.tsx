@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
+import { useResultsSync } from '../lib/session-sync';
 import { AppShell } from './app-shell';
 import { BackLink } from './back-link';
 import { ComparisonPane } from './comparison-pane';
@@ -74,6 +75,22 @@ export function Results({ calculator, electionKey, district }: ResultsProps) {
     const timer = window.setTimeout(() => setWaited(true), CALCULATING_MS);
     return () => window.clearTimeout(timer);
   }, []);
+
+  /*
+   * The one save the flow makes deliberately: a ranking is what marks the
+   * session finished server-side and what a shared result is drawn from.
+   * Withheld until the persisted answers have landed and there is at least one
+   * of them — a ranking computed from an empty map is not a result.
+   */
+  useResultsSync(
+    {
+      calculatorId: calculator.id,
+      calculatorGroup: electionKey,
+      calculatorKey: district,
+      calculatorVersion: calculator.version,
+    },
+    ready && answered > 0 ? results : undefined,
+  );
 
   const closeComparison = useCallback(() => setSelectedId(undefined), []);
 

@@ -23,6 +23,16 @@ type AnswersState = {
   setAnswer: (calculatorId: string, questionId: string, answer: AnswerValue) => void;
   skipQuestion: (calculatorId: string, questionId: string) => void;
   toggleImportant: (calculatorId: string, questionId: string) => void;
+  /**
+   * Take a whole answer map over from somewhere else — today, the anonymous
+   * session on the server (`lib/session-sync`).
+   *
+   * Not a merge and not for the screens: the one caller only ever uses it when
+   * this calculator has no local answers at all, so there is nothing here to
+   * reconcile. Anything the user has already answered on this device wins, and
+   * wins by never reaching this function.
+   */
+  adoptAnswers: (calculatorId: string, answers: AnswerMap) => void;
   resetCalculator: (calculatorId: string) => void;
 };
 
@@ -60,6 +70,11 @@ export const useAnswersStore = create<AnswersState>()(
               questionId,
             ),
           },
+        })),
+
+      adoptAnswers: (calculatorId, answers) =>
+        set((state) => ({
+          byCalculator: { ...state.byCalculator, [calculatorId]: answers },
         })),
 
       resetCalculator: (calculatorId) =>

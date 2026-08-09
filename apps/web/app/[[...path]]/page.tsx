@@ -1,8 +1,10 @@
-import { parseRoute } from '@vk/core';
+import { type Calculator, type CalculatorRoute, parseRoute } from '@vk/core';
 import { getMessages } from '@vk/i18n';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { AppShell } from '../../components/app-shell';
 import { CalculatorIntro } from '../../components/calculator-intro';
+import { CalculatorSession } from '../../components/calculator-session';
 import { DistrictPicker, type PickerDistrict } from '../../components/district-picker';
 import { Guide } from '../../components/guide';
 import { QuestionFlow } from '../../components/question-flow';
@@ -14,7 +16,7 @@ import {
   loadCalculator,
   loadElection,
 } from '../../lib/calculators';
-import { shellInfoOf, stepPath } from '../../lib/paths';
+import { type CalculatorRef, shellInfoOf, stepPath } from '../../lib/paths';
 import styles from './page.module.css';
 
 /**
@@ -66,48 +68,23 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     if (!calculator) notFound();
 
     const ref = { electionKey: route.electionKey, district: route.district ?? '' };
-    const shellInfo = shellInfoOf(calculator, ref);
 
-    switch (route.step) {
-      case 'intro':
-        return (
-          <CalculatorIntro
-            calculator={shellInfo}
-            candidateCount={calculator.candidates.length}
-            questions={calculator.questions}
-          />
-        );
-
-      case 'guide':
-        return <Guide calculator={shellInfo} />;
-
-      case 'question': {
-        const position = Number.parseInt(route.param ?? '1', 10);
-
-        return (
-          <QuestionFlow
-            calculator={shellInfo}
-            // Only the questions cross to the client; candidates and their
-            // answers are only needed on the results screen.
-            questions={calculator.questions}
-            initialPosition={Number.isNaN(position) ? 1 : position}
-          />
-        );
-      }
-
-      case 'review':
-        return <Recap calculator={shellInfo} questions={calculator.questions} />;
-
-      /*
-       * `comparison` deep-links into the same screen. The results list already
-       * expands a candidate's full answer-by-answer comparison in place, so a
-       * separate screen would be a second way to render the same thing —
-       * Phase 5 decides whether one is actually wanted.
-       */
-      case 'result':
-      case 'comparison':
-        return <Results {...ref} calculator={calculator} />;
-    }
+    return (
+      <>
+        {/*
+          Every calculator screen and no other: entering a calculator is what
+          opens an anonymous session, and browsing the picker is not entering
+          one. Renders nothing.
+        */}
+        <CalculatorSession
+          calculatorId={calculator.id}
+          calculatorGroup={ref.electionKey}
+          calculatorKey={ref.district}
+          calculatorVersion={calculator.version}
+        />
+        {calculatorScreen(route, calculator, ref)}
+      </>
+    );
   }
 
   /*
@@ -123,6 +100,61 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
       </main>
     </AppShell>
   );
+}
+
+/**
+ * Which of the five calculator screens the step names.
+ *
+ * Lifted out of the page so the session component above can sit alongside all
+ * of them without every case having to wrap itself in a fragment.
+ */
+function calculatorScreen(
+  route: CalculatorRoute,
+  calculator: Calculator,
+  ref: CalculatorRef,
+): ReactNode {
+  const shellInfo = shellInfoOf(calculator, ref);
+
+  switch (route.step) {
+    case 'intro':
+      return (
+        <CalculatorIntro
+          calculator={shellInfo}
+          candidateCount={calculator.candidates.length}
+          questions={calculator.questions}
+        />
+      );
+
+    case 'guide':
+      return <Guide calculator={shellInfo} />;
+
+    case 'question': {
+      const position = Number.parseInt(route.param ?? '1', 10);
+
+      return (
+        <QuestionFlow
+          calculator={shellInfo}
+          // Only the questions cross to the client; candidates and their
+          // answers are only needed on the results screen.
+          questions={calculator.questions}
+          initialPosition={Number.isNaN(position) ? 1 : position}
+        />
+      );
+    }
+
+    case 'review':
+      return <Recap calculator={shellInfo} questions={calculator.questions} />;
+
+    /*
+     * `comparison` deep-links into the same screen. The results list already
+     * expands a candidate's full answer-by-answer comparison in place, so a
+     * separate screen would be a second way to render the same thing —
+     * Phase 5 decides whether one is actually wanted.
+     */
+    case 'result':
+    case 'comparison':
+      return <Results {...ref} calculator={calculator} />;
+  }
 }
 
 /** Prerender the first question of every available calculator. */

@@ -96,6 +96,15 @@ export type UserAnswer = {
 
 export type Calculator = {
   id: string;
+  /**
+   * Semver of the published data, when the source has one.
+   *
+   * Only the platform format carries it; the archive does not, and nothing in
+   * the app renders it. It exists so a stored session records which version of
+   * the questions it was answered against — a session is otherwise silently
+   * reinterpreted when a calculator is republished.
+   */
+  version?: string;
   electionId: string;
   electionName: string;
   /**
