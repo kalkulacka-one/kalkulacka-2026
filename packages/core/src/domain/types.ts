@@ -8,6 +8,21 @@
  * exists and swapping in the real backend later touches one file.
  */
 
+import type { DistrictKind } from '@vk/i18n';
+
+/**
+ * What a voter is choosing between when they pick a district — a město, a
+ * senate obvod, a calculator variant, a Hungarian választókerület.
+ *
+ * Defined by the message catalog (`@vk/i18n`) rather than here: the kind
+ * selects the picker's entire vocabulary and nothing else in the domain reads
+ * it, so the catalog is the registry and a new country's kind costs one
+ * catalog section plus one config value. Re-exported here so consumers keep
+ * importing the domain vocabulary from one place; the import is type-only, so
+ * no message data reaches a bundle through `@vk/core`.
+ */
+export type { DistrictKind };
+
 /**
  * A position on a statement.
  *
@@ -83,7 +98,12 @@ export type Calculator = {
   id: string;
   electionId: string;
   electionName: string;
-  /** Municipality code or senate district number. */
+  /**
+   * Whatever identifies this calculator *within* its election: a municipality
+   * code, a senate obvod number, or — where the election is nationwide and its
+   * calculators are variants of one another — the variant key ("expresni").
+   * See `District.slug` for the URL-facing identifier, which may differ.
+   */
   districtCode: string;
   /** Display name, e.g. "Pardubice". */
   name: string;
@@ -93,16 +113,6 @@ export type Calculator = {
   /** Keyed by candidate id. A candidate that never answered has no entry. */
   candidateAnswers: Record<string, CandidateAnswer[]>;
 };
-
-/**
- * What a voter is choosing between when they pick a district.
- *
- * The picker's whole vocabulary hangs off this — "město" and "obvod" decline
- * differently in every sentence on the screen, so it cannot be papered over
- * with one neutral word. The archive format does not state it, so the adapter
- * infers it from whether the election's districts are numbered.
- */
-export type DistrictKind = 'municipality' | 'senate';
 
 /** An election, as listed on the picker. */
 export type Election = {
@@ -115,13 +125,23 @@ export type Election = {
   to?: string;
 };
 
-/** A selectable district/municipality within an election. */
+/** A selectable district/municipality/variant within an election. */
 export type District = {
   electionId: string;
   code: string;
   name: string;
+  /**
+   * The URL segment, e.g. "pardubice" or "expresni".
+   *
+   * Explicit rather than derived from `name` at the app layer: `slugifyDistrict`
+   * only works on Latin names (it strips what NFD decomposition can strip, so a
+   * Cyrillic name slugifies to the empty string), and the platform source
+   * already has a real key per calculator. Sources that have one supply it; the
+   * archive, which does not, derives it in its adapter.
+   */
+  slug: string;
   description?: string;
-  /** Senate districts are identified by number, municipalities are not. */
+  /** Senate obvody are identified by number; municipalities and variants are not. */
   showCode: boolean;
 };
 

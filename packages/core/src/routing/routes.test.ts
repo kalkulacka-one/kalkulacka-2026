@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildRoute, type ParsedRoute, parseRoute, questionPath } from './routes';
+import { buildRoute, type ParsedRoute, parseRoute, questionPath, slugifyDistrict } from './routes';
 
 const segs = (path: string) => path.split('/').filter(Boolean);
 
@@ -93,5 +93,26 @@ describe('questionPath', () => {
     expect(questionPath({ electionKey: 'komunalni-2022', district: 'pardubice' }, 5)).toBe(
       '/volby/komunalni-2022/pardubice/otazka/5',
     );
+  });
+});
+
+describe('slugifyDistrict', () => {
+  it('lowercases and hyphenates', () => {
+    expect(slugifyDistrict('Praha hl. m.')).toBe('praha-hl-m');
+  });
+
+  it('strips diacritics', () => {
+    expect(slugifyDistrict('Pardubice')).toBe('pardubice');
+    expect(slugifyDistrict('Ústí nad Labem')).toBe('usti-nad-labem');
+  });
+
+  /*
+   * The limit that makes `District.slug` a field rather than something derived
+   * on demand: a name in a script NFD cannot fold to ASCII has nothing left
+   * after the [^a-z0-9] pass, so every district in such an election would
+   * slugify to the same empty segment. Those sources carry their own slugs.
+   */
+  it('has nothing to derive from a name outside the Latin script', () => {
+    expect(slugifyDistrict('Скопје')).toBe('');
   });
 });

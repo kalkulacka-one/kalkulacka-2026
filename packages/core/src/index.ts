@@ -13,6 +13,12 @@ export {
   adaptArchiveIndex,
 } from './adapters/archive';
 export {
+  type AdaptPlatformCalculatorInput,
+  adaptPlatformCalculator,
+  adaptPlatformSummary,
+  type PlatformCalculatorSummary,
+} from './adapters/platform';
+export {
   type AnswerMap,
   type AnswerSegmentState,
   type AnswerTone,
@@ -98,4 +104,5 @@ export {
   parseRoute,
   questionPath,
   type RouteSlugs,
+  slugifyDistrict,
 } from './routing/routes';

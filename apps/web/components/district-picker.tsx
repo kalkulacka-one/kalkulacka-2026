@@ -1,7 +1,7 @@
 'use client';
 
 import type { DistrictKind } from '@vk/core';
-import { format, getMessages, plural } from '@vk/i18n';
+import { districtVocabulary, format, getMessages, plural } from '@vk/i18n';
 import { OptionRow, SearchField, VisuallyHidden } from '@vk/ui';
 import { useRouter } from 'next/navigation';
 import {
@@ -62,11 +62,13 @@ export function DistrictPicker({ electionName, districtKind, districts }: Distri
   const router = useRouter();
 
   /*
-   * `municipality` / `senate` rather than a `showCode`-derived guess: the copy
-   * differs in more places than the row's badge does, and every one of these
-   * sentences has to decline the noun correctly.
+   * The kind, rather than a `showCode`-derived guess: the copy differs in more
+   * places than the row's badge does, and every one of these sentences has to
+   * decline the noun correctly. Which kinds exist is the catalog's business
+   * (`@vk/i18n`) — this component renders whichever vocabulary it is handed and
+   * needs no edit when a country brings a new one.
    */
-  const copy = messages.picker[districtKind];
+  const copy = districtVocabulary(districtKind);
 
   const matches = useMemo(() => {
     const needle = normalize(query.trim());
