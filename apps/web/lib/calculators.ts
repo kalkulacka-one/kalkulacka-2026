@@ -60,6 +60,17 @@ export async function listAvailableCalculators(): Promise<
   return [{ electionKey: calculator.electionId, district: slugifyDistrict(calculator.name) }];
 }
 
+/** Every election the picker can list — the sitemap's other landing page. */
+export async function listElections(): Promise<{ key: string }[]> {
+  const config = getSiteDataConfig();
+
+  if (config) {
+    return config.elections.map((election) => ({ key: election.key }));
+  }
+
+  return getFixtureIndex().elections.map((election) => ({ key: election.key }));
+}
+
 export async function loadElection(electionKey: string): Promise<Election | null> {
   const config = getSiteDataConfig();
 

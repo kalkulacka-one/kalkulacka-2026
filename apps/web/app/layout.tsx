@@ -27,8 +27,18 @@ const sans = Geist({
   display: 'swap',
 });
 
+const messages = getMessages();
+
 export const metadata: Metadata = {
-  title: getMessages().app.title,
+  // `default` is what an untitled segment (the home route) gets, verbatim —
+  // `template` only wraps a *set* title, so it never doubles up with itself
+  // there. Every other route's `generateMetadata` sets a plain title string
+  // and lands inside the template.
+  title: {
+    default: messages.app.title,
+    template: `%s · ${messages.app.title}`,
+  },
+  description: messages.app.description,
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -76,9 +86,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           being parsed, before the browser paints anything: that's what stops
           a stored override from flashing the system mode first.
         */}
-        <script id="color-mode-bootstrap" suppressHydrationWarning>
-          {bootstrapColorMode}
-        </script>
+        <script
+          id="color-mode-bootstrap"
+          suppressHydrationWarning
+          // A child string triggers React's "script tag while rendering"
+          // dev warning, since a `<script>` child is normally page text, not
+          // code — `dangerouslySetInnerHTML` is the same output without it.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: `bootstrapColorMode` is a fixed, module-scope string with no user input, not markup built from a request.
+          dangerouslySetInnerHTML={{ __html: bootstrapColorMode }}
+        />
 
         {/*
           The backdrop lives here, not in `AppShell`, precisely because this
