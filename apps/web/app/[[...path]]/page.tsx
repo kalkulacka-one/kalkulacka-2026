@@ -13,12 +13,11 @@ import { AppShell } from '../../components/app-shell';
 import { CalculatorIntro } from '../../components/calculator-intro';
 import { CalculatorSession } from '../../components/calculator-session';
 import { DistrictPicker, type PickerDistrict } from '../../components/district-picker';
-import { EmbedTheme } from '../../components/embed-theme';
 import { Guide } from '../../components/guide';
 import { QuestionFlow } from '../../components/question-flow';
 import { Recap } from '../../components/recap';
 import { Results } from '../../components/results';
-import { embedConfigOf, isEmbedName } from '../../config/embeds';
+import { isEmbedName } from '../../config/embeds';
 import {
   listAvailableCalculators,
   listDistricts,
@@ -54,8 +53,6 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
    */
   if (route.embed && !isEmbedName(route.embed)) notFound();
   if (route.embed && route.kind === 'home') notFound();
-  const embedConfig = route.embed && isEmbedName(route.embed) ? embedConfigOf(route.embed) : null;
-  const embedTheme = embedConfig?.theme ? <EmbedTheme theme={embedConfig.theme} /> : null;
 
   if (route.kind === 'election') {
     const election = await loadElection(route.electionKey);
@@ -76,15 +73,12 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     );
 
     return (
-      <>
-        {embedTheme}
-        <DistrictPicker
-          electionName={election.name}
-          districtKind={election.districtKind}
-          districts={districts}
-          embed={route.embed}
-        />
-      </>
+      <DistrictPicker
+        electionName={election.name}
+        districtKind={election.districtKind}
+        districts={districts}
+        embed={route.embed}
+      />
     );
   }
 
@@ -117,17 +111,11 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
       // ranking under a headline claiming somebody's shoda.
       if (countAnswered(calculator.questions, shared.answers) === 0) notFound();
 
-      return (
-        <>
-          {embedTheme}
-          <Results {...ref} calculator={calculator} shared={{ answers: shared.answers }} />
-        </>
-      );
+      return <Results {...ref} calculator={calculator} shared={{ answers: shared.answers }} />;
     }
 
     return (
       <>
-        {embedTheme}
         {/*
           Every calculator screen and no other: entering a calculator is what
           opens an anonymous session, and browsing the picker is not entering

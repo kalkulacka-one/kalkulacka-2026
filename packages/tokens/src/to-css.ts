@@ -50,7 +50,20 @@ export function themeToCss(theme: Theme, { selector }: { selector?: string } = {
     ...Object.entries(decls).map(([prop, value]) => `  ${prop}: ${value};`),
   ];
 
-  return `${scope} {\n${lines.join('\n')}\n}\n`;
+  /*
+   * A single-mode theme's `color-scheme` must survive the app's manual mode
+   * override: `base.css`'s `:root[data-mode='dark']` is (0,2,0), which beats
+   * the (0,1,0) scope above — so a visitor who once stored a dark preference
+   * on the main site would get this theme's accents on the *default* theme's
+   * dark surfaces, a palette nobody authored (and dark-mode ink pinning
+   * breaks on light accents). `${scope}[data-mode]` ties that specificity and
+   * wins the same way every theme rule already beats `base.css`: by loading
+   * after it.
+   */
+  const singleMode = colorScheme === 'light' || colorScheme === 'dark';
+  const modePin = singleMode ? `${scope}[data-mode] {\n  color-scheme: ${colorScheme};\n}\n` : '';
+
+  return `${scope} {\n${lines.join('\n')}\n}\n${modePin}`;
 }
 
 /**

@@ -30,9 +30,12 @@ export type EmbedConfig = {
 export const embedsConfig = {
   /** The generic embed — partners without a negotiated config embed this. */
   default: {},
-  'diky-ze-muzem': {},
-  alarm: {},
-  prima: {},
+  // The three partners with negotiated brand themes on the old platform; the
+  // themes live in `@vk/tokens` (re-authored on the token contract) and a
+  // pinning test asserts these names resolve there.
+  'diky-ze-muzem': { theme: 'diky-ze-muzem' },
+  alarm: { theme: 'alarm' },
+  prima: { theme: 'prima' },
   idnes: {},
   nova: {},
   e15: {},

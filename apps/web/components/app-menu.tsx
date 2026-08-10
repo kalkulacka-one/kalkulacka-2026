@@ -24,6 +24,12 @@ export type AppMenuProps = {
    * in the header, which opens a new tab. Help and restart stay.
    */
   embed?: boolean;
+  /**
+   * False when the active theme is single-mode (partner brand themes are) —
+   * the toggle would visibly do nothing there. See `AppShell`, which is where
+   * this is decided.
+   */
+  colorModeToggle?: boolean;
 };
 
 const messages = getMessages();
@@ -39,7 +45,7 @@ type OpenDialog = 'none' | 'help' | 'restart' | 'leave';
  * reason: the answer is reassuring, and the moment someone worries about
  * losing their progress is exactly the moment to tell them it is saved.
  */
-export function AppMenu({ calculator, embed = false }: AppMenuProps) {
+export function AppMenu({ calculator, embed = false, colorModeToggle = true }: AppMenuProps) {
   const router = useRouter();
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
   const [dialog, setDialog] = useState<OpenDialog>('none');
@@ -58,21 +64,25 @@ export function AppMenu({ calculator, embed = false }: AppMenuProps) {
     // Labelled by what it switches *to*, matching every other item's
     // imperative phrasing — so the icon and label always describe the mode
     // one click away, not the one currently showing.
-    colorMode === 'dark'
-      ? {
-          id: 'color-mode',
-          label: messages.menu.lightMode,
-          detail: messages.menu.lightModeDetail,
-          icon: 'sun',
-          onSelect: toggleColorMode,
-        }
-      : {
-          id: 'color-mode',
-          label: messages.menu.darkMode,
-          detail: messages.menu.darkModeDetail,
-          icon: 'moon',
-          onSelect: toggleColorMode,
-        },
+    ...(colorModeToggle
+      ? [
+          colorMode === 'dark'
+            ? {
+                id: 'color-mode',
+                label: messages.menu.lightMode,
+                detail: messages.menu.lightModeDetail,
+                icon: 'sun' as const,
+                onSelect: toggleColorMode,
+              }
+            : {
+                id: 'color-mode',
+                label: messages.menu.darkMode,
+                detail: messages.menu.darkModeDetail,
+                icon: 'moon' as const,
+                onSelect: toggleColorMode,
+              },
+        ]
+      : []),
     ...(calculator
       ? ([
           {

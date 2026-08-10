@@ -78,6 +78,38 @@ test('framing headers split at /embed/: embeds may be framed, the app may not', 
   expect(embedded.headers()['content-security-policy-report-only']).toContain('frame-ancestors *');
 });
 
+test('a themed partner runs under its brand theme, with the dead mode toggle withheld', async ({
+  page,
+}) => {
+  // A dark preference stored on the main site must not leak into a
+  // single-mode partner theme — that combination (partner accents on the
+  // default theme's dark surfaces) is a palette nobody authored.
+  await page.addInitScript(() => localStorage.setItem('vk-color-mode', 'dark'));
+
+  await page.goto('/embed/alarm/volby/komunalni-2022/pardubice/uvod');
+
+  // Set by the pre-paint bootstrap script in the root layout, so no flash of
+  // the default theme — asserted on <html>, where the token stylesheets look.
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'alarm');
+
+  // The stored dark override is on the element (the color-mode bootstrap ran)
+  // but the single-mode theme's color-scheme pin outranks it.
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe(
+    'light',
+  );
+
+  // Partner themes are single-mode, which makes the dark-mode toggle a
+  // control that does nothing; the menu withholds it.
+  await page.getByRole('button', { name: messages.menu.label }).click();
+  await expect(
+    page.getByRole('menuitem', { name: new RegExp(messages.menu.darkMode) }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('menuitem', { name: new RegExp(messages.menu.lightMode) }),
+  ).toHaveCount(0);
+});
+
 test('the embed actually renders inside an iframe', async ({ page, baseURL }) => {
   await page.setContent(
     `<iframe src="${baseURL}${EMBED_INTRO}" style="width: 420px; height: 700px"></iframe>`,

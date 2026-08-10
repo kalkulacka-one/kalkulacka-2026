@@ -1,4 +1,5 @@
 import { getMessages } from '@vk/i18n';
+import { themes } from '@vk/tokens';
 import { AppHeader } from '@vk/ui';
 import type { ReactNode } from 'react';
 import { embedConfigOf, isEmbedName } from '../config/embeds';
@@ -79,6 +80,19 @@ export function AppShell({
   const embedName = embed ?? calculator?.embed;
   const embedConfig = embedName && isEmbedName(embedName) ? embedConfigOf(embedName) : undefined;
 
+  /*
+   * Partner themes are single-mode (light-only — see the theme files in
+   * `@vk/tokens`), which pins `color-scheme` at the theme's scope and makes
+   * the dark-mode toggle a control that does nothing. A dead toggle is worse
+   * than no toggle, so it is withheld exactly when the active embed theme
+   * provides only one palette.
+   */
+  const partnerTheme = embedConfig?.theme
+    ? themes.find((theme) => theme.name === embedConfig.theme)
+    : undefined;
+  const singleModeTheme =
+    !!partnerTheme && !(partnerTheme.color?.light && partnerTheme.color?.dark);
+
   return (
     <div className={styles.shell}>
       <ScrollMode mode={scroll} />
@@ -91,7 +105,11 @@ export function AppShell({
             calculatorName={calculator?.name}
             href={embedConfig?.attribution ? '/' : undefined}
             actions={
-              <AppMenu calculator={readOnly ? undefined : calculator} embed={!!embedConfig} />
+              <AppMenu
+                calculator={readOnly ? undefined : calculator}
+                embed={!!embedConfig}
+                colorModeToggle={!singleModeTheme}
+              />
             }
           />
         </div>
