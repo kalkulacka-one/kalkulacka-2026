@@ -7,6 +7,7 @@ import {
   getSessionCookie,
   getSessionFromRequest,
 } from '@/lib/session/server';
+import { isUuid } from '@/lib/session-sync/answer-wire';
 
 export async function POST(
   request: NextRequest,
@@ -18,6 +19,12 @@ export async function POST(
     }
 
     const { 'calculator-id': calculatorId } = await params;
+
+    // `calculatorId` heads for a `@db.Uuid` column; Prisma throws on a
+    // non-UUID `where` value rather than finding nothing, so guard here.
+    if (!isUuid(calculatorId)) {
+      return new NotFoundError('Session not found for this calculator').toResponse();
+    }
 
     const embedName = getEmbedNameFromRequest(request);
     const cookieData = await getSessionCookie({ embedName });
@@ -64,8 +71,17 @@ export async function POST(
      * wait long and does not come back. Deliberately not awaited and
      * deliberately silent — this is a nicety, and a failed warmup must not
      * cost the caller the public id it actually asked for.
+     *
+     * The URL is built from `NEXT_PUBLIC_BASE_URL`, never from `request.url`:
+     * that is derived from the incoming Host header, and a spoofed Host would
+     * aim this server-side fetch at an attacker-chosen origin. No configured
+     * base URL means no warm-up, which only costs the first crawler a slow
+     * response.
      */
-    void fetch(new URL(`/api/images/sessions/${publicId}/opengraph`, request.url)).catch(() => {});
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (baseUrl) {
+      void fetch(new URL(`/api/images/sessions/${publicId}/opengraph`, baseUrl)).catch(() => {});
+    }
 
     return Response.json({
       publicId,

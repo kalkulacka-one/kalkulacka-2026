@@ -16,6 +16,7 @@ import {
   getSessionCookie,
   getSessionFromRequest,
 } from '@/lib/session/server';
+import { isUuid } from '@/lib/session-sync/answer-wire';
 
 const matchSchema = z.object({
   id: z.uuid(),
@@ -41,6 +42,12 @@ export async function GET(
     }
 
     const { 'calculator-id': calculatorId } = await params;
+
+    // `calculatorId` heads for a `@db.Uuid` column; Prisma throws on a
+    // non-UUID `where` value rather than finding nothing, so guard here.
+    if (!isUuid(calculatorId)) {
+      return new NotFoundError('Session not found for this calculator').toResponse();
+    }
 
     const embedName = getEmbedNameFromRequest(request);
     const cookieData = await getSessionCookie({ embedName });
@@ -109,6 +116,10 @@ export async function POST(
     }
 
     const { 'calculator-id': calculatorId } = await params;
+
+    if (!isUuid(calculatorId)) {
+      return new NotFoundError('Session not found for this calculator').toResponse();
+    }
 
     const embedName = getEmbedNameFromRequest(request);
     const cookieData = await getSessionCookie({ embedName });

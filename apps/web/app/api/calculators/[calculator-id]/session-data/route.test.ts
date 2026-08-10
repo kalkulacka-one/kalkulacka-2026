@@ -90,6 +90,37 @@ describe('GET session-data', () => {
     expect(response.status).toBe(401);
   });
 
+  it('returns 404 for a non-UUID calculator id without touching the database', async () => {
+    withSessionCookie();
+    const badParams = { params: Promise.resolve({ 'calculator-id': 'not-a-uuid' }) };
+    const response = await GET(getRequest(), badParams);
+    expect(response.status).toBe(404);
+    expect(dbMock.calculatorSession.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 for a non-UUID bearer token instead of 500', async () => {
+    const request = new NextRequest(
+      `http://localhost/api/calculators/${calculatorId}/session-data`,
+      {
+        headers: { authorization: 'Bearer not-a-uuid' },
+      },
+    );
+    const response = await GET(request, routeParams);
+    expect(response.status).toBe(401);
+    expect(dbMock.calculatorSession.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('treats a malformed session cookie as no session and expires it', async () => {
+    // A garbage cookie used to throw straight into a 500 — on every session
+    // route, for 90 days, until the visitor cleared it by hand.
+    cookieJar.set('volebnikalkulacka', { value: 'not json {{{' });
+
+    const response = await GET(getRequest(), routeParams);
+
+    expect(response.status).toBe(401);
+    expect(cookieJar.get('volebnikalkulacka')?.value).toBe('');
+  });
+
   it('returns 503 when sessions are not configured', async () => {
     vi.stubEnv('DATABASE_URL', '');
     withSessionCookie();
