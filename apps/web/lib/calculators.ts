@@ -1,13 +1,25 @@
 import {
   type Calculator,
   type District,
+  type DistrictKind,
   type Election,
   getFixtureIndex,
   getPardubiceCalculator,
   slugifyDistrict,
 } from '@vk/core';
+import { cache } from 'react';
 import { getSiteDataConfig } from '../config/site';
 import { loadPlatformCalculator } from './platform-data';
+
+/**
+ * The one committed fixture, parsed once per request rather than per lookup.
+ *
+ * `getPardubiceCalculator()` runs the whole archive file through Zod every time
+ * it is called, and the availability scan below asks for it once per district —
+ * 35 times for the komunální index alone, and the homepage repeats that for
+ * every election in the index. `cache()` collapses all of them into one parse.
+ */
+const fixtureCalculator = cache(getPardubiceCalculator);
 
 /**
  * Calculator lookup.
@@ -37,7 +49,7 @@ export async function loadCalculator(
 
   if (electionKey !== 'komunalni-2022') return null;
 
-  const calculator = getPardubiceCalculator();
+  const calculator = fixtureCalculator();
   const matches =
     district === calculator.districtCode || district === slugifyDistrict(calculator.name);
 
@@ -56,8 +68,67 @@ export async function listAvailableCalculators(): Promise<
     );
   }
 
-  const calculator = getPardubiceCalculator();
+  const calculator = fixtureCalculator();
   return [{ electionKey: calculator.electionId, district: slugifyDistrict(calculator.name) }];
+}
+
+/** One election as the homepage lists it. */
+export type ElectionListing = {
+  key: string;
+  name: string;
+  description?: string;
+  districtKind: DistrictKind;
+  /** The calculators in it we actually hold data for — never empty. */
+  available: { slug: string }[];
+};
+
+/**
+ * Every election with at least one calculator ready — the homepage's list.
+ *
+ * Elections with nothing behind them are dropped rather than listed as
+ * "Připravujeme": the picker already says that about individual rows, and on
+ * fixtures three of the four archive elections have no committed data at all,
+ * so keeping them would make the front door mostly dead ends.
+ *
+ * The description is deliberately taken from site config only. The fixture
+ * index carries one too, but it is 2022 archive marketing with Markdown
+ * emphasis in it ("kalkulačky pro **35** měst") and it describes a corpus we do
+ * not serve — rendering it would print the asterisks and claim 35 calculators
+ * where one exists.
+ */
+export async function listReadyElections(): Promise<ElectionListing[]> {
+  const config = getSiteDataConfig();
+
+  if (config) {
+    // Every configured entry is available by definition — the config *is* the
+    // availability list — so this needs no data access at all.
+    return config.elections
+      .filter((election) => election.calculators.length > 0)
+      .map((election) => ({
+        key: election.key,
+        name: election.name,
+        description: election.description,
+        districtKind: election.districtKind,
+        available: election.calculators.map((entry) => ({ slug: entry.key })),
+      }));
+  }
+
+  const listings: ElectionListing[] = [];
+  for (const election of getFixtureIndex().elections) {
+    const available = (await listDistricts(election.key))
+      .filter((district) => district.available)
+      .map((district) => ({ slug: district.slug }));
+
+    if (available.length > 0) {
+      listings.push({
+        key: election.key,
+        name: election.name,
+        districtKind: election.districtKind,
+        available,
+      });
+    }
+  }
+  return listings;
 }
 
 /** Every election the picker can list — the sitemap's other landing page. */
