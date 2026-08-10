@@ -14,6 +14,12 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
+    // Prisma generates into node_modules, outside any cacheable output dir —
+    // a cache hit would skip generation entirely on a machine that has never
+    // run it, which is exactly the machine that needs it.
+    "@vk/database#build": {
+      "cache": false
+    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     }
