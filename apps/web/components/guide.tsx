@@ -24,8 +24,8 @@ const messages = getMessages();
  * so this screen can be the card and the hands on it.
  */
 export function Guide({ calculator }: GuideProps) {
-  const { name: calculatorName, electionKey, district } = calculator;
-  const ref = { electionKey, district };
+  const { name: calculatorName, electionKey, district, embed } = calculator;
+  const ref = { electionKey, district, embed };
 
   return (
     <Screen

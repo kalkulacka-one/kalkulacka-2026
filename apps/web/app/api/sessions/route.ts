@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { isEmbedName } from '@/config/embeds';
 import {
   HttpError,
   JsonParseError,
@@ -26,7 +27,11 @@ const postRequestSchema = z.object({
     .string()
     .regex(/^\d+\.\d+\.\d+$/)
     .optional(),
-  embedName: z.string().optional(),
+  // Becomes a cookie-name suffix and a stored session attribute, so only
+  // registry members pass (review item S7) — same rule as the Referer path in
+  // `getEmbedNameFromRequest`. Wire-compatible: legitimate clients only ever
+  // send names this app itself rendered an embed for.
+  embedName: z.string().refine(isEmbedName).optional(),
 });
 
 type SessionResponse = {

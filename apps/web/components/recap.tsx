@@ -39,7 +39,7 @@ const messages = getMessages();
  * action off the top made the step after it feel like a different product.
  */
 export function Recap({ calculator, questions }: RecapProps) {
-  const { id: calculatorId, electionKey, district } = calculator;
+  const { id: calculatorId, electionKey, district, embed } = calculator;
   const ready = useAnswersReady();
   const answers = useCalculatorAnswers(calculatorId);
   const setAnswer = useAnswersStore((s) => s.setAnswer);
@@ -91,7 +91,7 @@ export function Recap({ calculator, questions }: RecapProps) {
     lastScrollTopRef.current = top;
   }, []);
 
-  const ref = { electionKey, district };
+  const ref = { electionKey, district, embed };
 
   // Which questions a filter leaves, and what each chip counts, is @vk/core's
   // to decide — this screen only lays the answer out.

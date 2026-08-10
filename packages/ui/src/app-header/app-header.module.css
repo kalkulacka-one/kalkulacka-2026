@@ -54,3 +54,16 @@
   gap: var(--vk-space-2);
   margin-left: auto;
 }
+
+/* With `href` set (embeds), the brand is an anchor — but it is chrome first
+   and attribution second, so it reads as plain header until pointed at.
+   (After `.title` in source order: the hover rule below outranks it.) */
+a.brand {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.brand:hover .title,
+a.brand:focus-visible .title {
+  text-decoration: underline;
+}

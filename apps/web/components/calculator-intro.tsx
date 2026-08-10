@@ -44,6 +44,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
     electionName,
     electionKey,
     district,
+    embed,
   } = calculator;
   const answers = useCalculatorAnswers(calculatorId);
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
@@ -60,8 +61,8 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
   const nextIndex = firstUnansweredIndex(questions, answers);
   const resumePath =
     nextIndex === -1
-      ? stepPath({ electionKey, district }, 'review')
-      : questionPath({ electionKey, district }, nextIndex + 1);
+      ? stepPath({ electionKey, district, embed }, 'review')
+      : questionPath({ electionKey, district, embed }, nextIndex + 1);
 
   return (
     <Screen
@@ -71,7 +72,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
          the site names the place it returns to, and "Vyberte město" named an
          instruction instead — which also meant it had to be re-worded the
          moment a senate election, where it is an obvod, used the same link. */
-      back={{ href: electionPath(electionKey), label: electionName }}
+      back={{ href: electionPath(electionKey, embed), label: electionName }}
       description={format(messages.intro.description, {
         questions: plural(questions.length, {
           one: messages.intro.questionCountOne,
@@ -100,7 +101,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
           ) : (
             <Button
               as={Link}
-              href={stepPath({ electionKey, district }, 'guide')}
+              href={stepPath({ electionKey, district, embed }, 'guide')}
               size="large"
               // Fired on click, not on arrival at `/navod` — a tap here is the
               // decision to start; the tutorial after it is still onboarding,
@@ -147,7 +148,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
           setConfirmingRestart(false);
           // Same destination as the menu's restart: cleared answers and a
           // screen still saying "Pokračovat" would be its own small lie.
-          router.push(questionPath({ electionKey, district }, 1));
+          router.push(questionPath({ electionKey, district, embed }, 1));
         }}
       />
     </Screen>

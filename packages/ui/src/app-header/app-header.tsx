@@ -10,6 +10,12 @@ export type AppHeaderProps = {
   electionName?: string;
   /** The chosen region/district, shown between the election type and year. */
   calculatorName?: string;
+  /**
+   * Makes the brand block (mark + names) a link, opened in a new tab. Used by
+   * embeds, where the wordmark doubles as the attribution — the one way from a
+   * partner's iframe to the full site.
+   */
+  href?: string;
   /** Right-hand controls. In this app, the shell menu. */
   actions?: ReactNode;
 };
@@ -33,24 +39,36 @@ function splitElectionName(electionName: string): { type: string; year?: string 
  * instead of sitting inside the content column, which is what makes the
  * scrolling screens and the fixed flow read as the same app.
  */
-export function AppHeader({ title, electionName, calculatorName, actions }: AppHeaderProps) {
+export function AppHeader({ title, electionName, calculatorName, href, actions }: AppHeaderProps) {
   const election = electionName ? splitElectionName(electionName) : undefined;
+
+  const brandContent = (
+    <>
+      <Logo size={12} className={styles.logo} />
+      <div className={styles.names}>
+        <p className={styles.title}>{title}</p>
+        {election ? (
+          <p className={styles.subtitle}>
+            <span className={styles.electionType}>{election.type}</span>
+            {calculatorName ? <> {calculatorName}</> : null}
+            {election.year ? <> {election.year}</> : null}
+          </p>
+        ) : null}
+      </div>
+    </>
+  );
 
   return (
     <header className={styles.header}>
-      <div className={styles.brand}>
-        <Logo size={12} className={styles.logo} />
-        <div className={styles.names}>
-          <p className={styles.title}>{title}</p>
-          {election ? (
-            <p className={styles.subtitle}>
-              <span className={styles.electionType}>{election.type}</span>
-              {calculatorName ? <> {calculatorName}</> : null}
-              {election.year ? <> {election.year}</> : null}
-            </p>
-          ) : null}
-        </div>
-      </div>
+      {href ? (
+        // A real anchor, not a router link: from inside an iframe this must
+        // escape into a new tab, never navigate the embed itself away.
+        <a className={styles.brand} href={href} target="_blank" rel="noreferrer">
+          {brandContent}
+        </a>
+      ) : (
+        <div className={styles.brand}>{brandContent}</div>
+      )}
 
       {actions ? <div className={styles.actions}>{actions}</div> : null}
     </header>

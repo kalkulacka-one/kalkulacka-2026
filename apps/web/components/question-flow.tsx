@@ -28,7 +28,7 @@ export type QuestionFlowProps = {
 const messages = getMessages();
 
 export function QuestionFlow({ calculator, questions, initialPosition }: QuestionFlowProps) {
-  const { id: calculatorId, electionKey, district } = calculator;
+  const { id: calculatorId, electionKey, district, embed } = calculator;
   const [index, setIndex] = useState(() =>
     Math.min(Math.max(initialPosition - 1, 0), questions.length - 1),
   );
@@ -57,9 +57,9 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    * which is exactly the latency this interaction cannot afford.
    */
   useEffect(() => {
-    const path = questionPath({ electionKey, district }, index + 1);
+    const path = questionPath({ electionKey, district, embed }, index + 1);
     window.history.replaceState(null, '', path);
-  }, [electionKey, district, index]);
+  }, [electionKey, district, embed, index]);
 
   const deckRef = useRef<QuestionDeckHandle>(null);
   const router = useRouter();
@@ -72,11 +72,11 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    */
   const advance = useCallback(() => {
     if (index + 1 >= questions.length) {
-      router.push(stepPath({ electionKey, district }, 'review'));
+      router.push(stepPath({ electionKey, district, embed }, 'review'));
       return;
     }
     setIndex(index + 1);
-  }, [district, electionKey, index, questions.length, router]);
+  }, [district, electionKey, embed, index, questions.length, router]);
 
   /**
    * Back one card — and, from the first one, back to the tutorial.
@@ -89,11 +89,11 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    */
   const goToPrevious = useCallback(() => {
     if (index === 0) {
-      router.push(stepPath({ electionKey, district }, 'guide'));
+      router.push(stepPath({ electionKey, district, embed }, 'guide'));
       return;
     }
     setIndex((i) => Math.max(i - 1, 0));
-  }, [district, electionKey, index, router]);
+  }, [district, electionKey, embed, index, router]);
 
   /**
    * Lifts the card away without writing to the answer store — used both by

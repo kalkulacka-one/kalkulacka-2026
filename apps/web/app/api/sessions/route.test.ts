@@ -116,6 +116,40 @@ describe('POST /api/sessions', () => {
     expect(response.status).toBe(400);
   });
 
+  it('sets the suffixed cookie for a registered embed partner', async () => {
+    dbMock.calculatorSession.create.mockResolvedValue({
+      sessionId: '22222222-2222-4222-8222-222222222222',
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    const response = await POST(
+      postRequest({
+        calculatorId: '11111111-1111-4111-8111-111111111111',
+        calculatorKey: 'kalkulacka',
+        embedName: 'idnes',
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(cookieJar.get('volebnikalkulacka_embed_idnes')).toBeDefined();
+    expect(cookieJar.get('volebnikalkulacka')).toBeUndefined();
+  });
+
+  it('rejects an embed name the partner registry does not know (S7)', async () => {
+    // The name would become a cookie-name suffix and a session attribute;
+    // registry membership is the validation, same as the Referer path.
+    const response = await POST(
+      postRequest({
+        calculatorId: '11111111-1111-4111-8111-111111111111',
+        calculatorKey: 'kalkulacka',
+        embedName: 'not\r\na-partner',
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(dbMock.calculatorSession.create).not.toHaveBeenCalled();
+  });
+
   it('returns 503 when sessions are not configured', async () => {
     vi.stubEnv('DATABASE_URL', '');
     const response = await POST(
