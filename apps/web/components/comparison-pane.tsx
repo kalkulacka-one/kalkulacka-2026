@@ -9,7 +9,7 @@ import {
 } from '@vk/core';
 import { getMessages, percent } from '@vk/i18n';
 import { ComparisonList, type ComparisonRow, FilterChips, IconButton } from '@vk/ui';
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { answerLabelOf } from '../lib/answer-labels';
 import { useDragDismiss } from '../lib/use-drag-dismiss';
 import styles from './comparison-pane.module.css';
@@ -78,6 +78,67 @@ export function ComparisonPane({
     const timer = window.setTimeout(() => setClosingId(undefined), CLOSE_MS);
     return () => window.clearTimeout(timer);
   }, [closingId]);
+
+  /*
+   * Escape, the third route out — the close button covers the pointer, the
+   * grip covers a finger, and this is what the pane's own comment has always
+   * claimed existed. Handled explicitly rather than left to anything native:
+   * this is a `<section>`, not a `<dialog>`, so there is no built-in dismissal
+   * to inherit, and `dialog.tsx` documents why even the real element's own
+   * Escape is not trusted in this codebase.
+   *
+   * On `window` rather than the section, because on a desktop the pane is a
+   * column beside the ranking and the reader may well still be in the list —
+   * but skipped while a modal is up. The share, help, restart and leave sheets
+   * all sit over this pane, and dismissing the comparison underneath one would
+   * be answering a key that was aimed somewhere else.
+   */
+  useEffect(() => {
+    if (selectedId === undefined) return;
+
+    const handler = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (document.querySelector('dialog[open]')) return;
+      event.preventDefault();
+      closeComparison();
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedId, closeComparison]);
+
+  /**
+   * Where focus goes when the comparison closes — the row that opened it.
+   *
+   * Without this the close button is simply unmounted out from under the
+   * caret and focus falls to `<body>`, which on a ranking of nine candidates
+   * means tabbing back down from the top of the page to reach the next one.
+   */
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const wasOpenRef = useRef(false);
+  const headingId = useId();
+
+  useEffect(() => {
+    const open = selectedId !== undefined;
+
+    if (open) {
+      // Only on the way in: picking a second candidate while the first is
+      // still open must not record the first's close button as the way back.
+      if (!wasOpenRef.current) {
+        const active = document.activeElement;
+        returnFocusRef.current = active instanceof HTMLElement ? active : null;
+      }
+      // The name of whose comparison this is, which is the one thing a reader
+      // needs told before the 42 rows underneath it.
+      headingRef.current?.focus();
+    } else if (wasOpenRef.current) {
+      returnFocusRef.current?.focus();
+      returnFocusRef.current = null;
+    }
+
+    wasOpenRef.current = open;
+  }, [selectedId]);
 
   const { sheetRef, handleProps, dragging } = useDragDismiss({
     open: selectedId !== undefined,
@@ -197,6 +258,10 @@ export function ComparisonPane({
     <section
       ref={sheetRef as React.RefObject<HTMLElement>}
       className={styles.detail}
+      /* A named region only while it holds a comparison — with the dashboard
+         in it there is no one heading that describes the box, and a landmark
+         called nothing in particular is one more stop to skip past. */
+      aria-labelledby={selected && comparison ? headingId : undefined}
       data-open={selected ? '' : undefined}
       data-closing={closing ? '' : undefined}
       data-dragging={dragging ? '' : undefined}
@@ -211,7 +276,12 @@ export function ComparisonPane({
           <div className={styles.grip} {...handleProps} aria-hidden="true" />
           <div className={styles.detailHead}>
             <div className={styles.detailHeading}>
-              <h2 className={styles.detailTitle}>{selected.candidate.name}</h2>
+              {/* `tabIndex={-1}` is not a tab stop — it only makes the
+                  heading a legal target for the focus move above, so opening
+                  a comparison lands the reader on whose it is. */}
+              <h2 ref={headingRef} id={headingId} className={styles.detailTitle} tabIndex={-1}>
+                {selected.candidate.name}
+              </h2>
               {selected.match.matchPercentage !== undefined ? (
                 <p className={styles.detailPercent}>{percent(selected.match.matchPercentage)}</p>
               ) : null}

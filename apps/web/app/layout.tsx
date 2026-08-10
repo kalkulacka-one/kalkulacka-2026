@@ -2,7 +2,9 @@ import { activeLocale, getMessages } from '@vk/i18n';
 import { Backdrop } from '@vk/ui';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Radio_Canada } from 'next/font/google';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
+import { MonitoringBoot } from '../components/monitoring-boot';
 import { bootstrapColorMode } from '../lib/color-mode';
 
 import '@vk/tokens/base.css';
@@ -27,8 +29,18 @@ const sans = Geist({
   display: 'swap',
 });
 
+const messages = getMessages();
+
 export const metadata: Metadata = {
-  title: getMessages().app.title,
+  // `default` is what an untitled segment (the home route) gets, verbatim —
+  // `template` only wraps a *set* title, so it never doubles up with itself
+  // there. Every other route's `generateMetadata` sets a plain title string
+  // and lands inside the template.
+  title: {
+    default: messages.app.title,
+    template: `%s · ${messages.app.title}`,
+  },
+  description: messages.app.description,
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -53,6 +65,8 @@ export const viewport: Viewport = {
   themeColor: '#f8fafc',
 };
 
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   // The theme is chosen server-side, so the correct brand is in the first byte
   // of HTML — no flash of the default theme before hydration.
@@ -76,9 +90,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           being parsed, before the browser paints anything: that's what stops
           a stored override from flashing the system mode first.
         */}
-        <script id="color-mode-bootstrap" suppressHydrationWarning>
-          {bootstrapColorMode}
-        </script>
+        <script
+          id="color-mode-bootstrap"
+          suppressHydrationWarning
+          // A child string triggers React's "script tag while rendering"
+          // dev warning, since a `<script>` child is normally page text, not
+          // code — `dangerouslySetInnerHTML` is the same output without it.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: `bootstrapColorMode` is a fixed, module-scope string with no user input, not markup built from a request.
+          dangerouslySetInnerHTML={{ __html: bootstrapColorMode }}
+        />
 
         {/*
           The backdrop lives here, not in `AppShell`, precisely because this
@@ -91,6 +111,26 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div className="backdropLayer">
           <Backdrop />
         </div>
+
+        {/*
+          Plausible is cookieless: no identifier is written to the visitor's
+          device, so there is nothing here for a consent banner to gate — that's
+          the same posture production ships. Absent entirely without
+          `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`: no script tag, no request, on a fork
+          that hasn't configured an analytics domain. `src` is the first-party
+          path rewritten to plausible.io in `next.config.ts`, not the vendor's
+          own domain, so an adblocker measuring third-party requests doesn't
+          drop it.
+        */}
+        {plausibleDomain ? (
+          <Script
+            defer
+            data-domain={plausibleDomain}
+            src="/js/script.tagged-events.outbound-links.js"
+          />
+        ) : null}
+
+        <MonitoringBoot />
 
         {children}
       </body>

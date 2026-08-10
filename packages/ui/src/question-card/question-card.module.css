@@ -307,3 +307,21 @@
     display: inline;
   }
 }
+
+/*
+ * The star's tooltip fades and lifts on its own literal timings rather than
+ * `--vk-duration-*`, so `base.css`'s blanket reduction does not reach it.
+ * The tooltip still appears on hover and on focus — it is what names the
+ * control — it simply stops sliding up into place.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+    transform: none;
+  }
+
+  .important:hover .tooltip,
+  .important:focus-visible .tooltip {
+    transform: none;
+  }
+}

@@ -97,6 +97,12 @@ function ConsensusRow({
  * came here with. These cards are about the shape of the answers rather than the
  * order of the parties: which topics you actually have a position on, where you
  * stood nearly alone, and what the whole thing looks like as one figure.
+ *
+ * The card titles are `<h2>`: they sit directly under the results screen's own
+ * `<h1>`, and they are the same rung as the candidate name that replaces this
+ * whole pane when a comparison opens. They had been `<h3>`, which skipped a
+ * level and left a reader browsing by heading unable to tell whether they were
+ * one step down from the title or two.
  */
 export function ResultsDashboard({
   distribution,
@@ -147,7 +153,7 @@ export function ResultsDashboard({
     <div className={styles.container}>
       <div className={styles.grid}>
         <section className={styles.card}>
-          <h3 className={styles.cardTitle}>{dashboard.distributionTitle}</h3>
+          <h2 className={styles.cardTitle}>{dashboard.distributionTitle}</h2>
 
           <div className={styles.distribution}>
             <Donut
@@ -171,7 +177,7 @@ export function ResultsDashboard({
         </section>
 
         <section className={styles.card}>
-          <h3 className={styles.cardTitle}>{dashboard.topicsTitle}</h3>
+          <h2 className={styles.cardTitle}>{dashboard.topicsTitle}</h2>
           <p className={styles.cardSubtitle}>{dashboard.topicsSubtitle}</p>
 
           {topics.length > 0 ? (
@@ -223,7 +229,7 @@ export function ResultsDashboard({
         </section>
 
         <section className={styles.card}>
-          <h3 className={styles.cardTitle}>{dashboard.importantTitle}</h3>
+          <h2 className={styles.cardTitle}>{dashboard.importantTitle}</h2>
           <p className={styles.cardSubtitle}>{dashboard.importantSubtitle}</p>
 
           {important.length > 0 ? (
@@ -238,7 +244,7 @@ export function ResultsDashboard({
         </section>
 
         <section className={styles.card}>
-          <h3 className={styles.cardTitle}>{dashboard.grainTitle}</h3>
+          <h2 className={styles.cardTitle}>{dashboard.grainTitle}</h2>
           <p className={styles.cardSubtitle}>{dashboard.grainSubtitle}</p>
 
           {againstTheGrain.length > 0 ? (
@@ -257,7 +263,7 @@ export function ResultsDashboard({
           and it is the one card that concerns the whole screen rather than one
           slice of it. */}
       <section className={styles.card}>
-        <h3 className={styles.cardTitle}>{dashboard.promptTitle}</h3>
+        <h2 className={styles.cardTitle}>{dashboard.promptTitle}</h2>
         <p className={styles.cardSubtitle}>{dashboard.promptSubtitle}</p>
 
         {/*

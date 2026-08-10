@@ -14,8 +14,9 @@ import {
 import { getMessages, percent } from '@vk/i18n';
 import { Button, Calculating, MatchRow, type ShareCardContent, StickyBar } from '@vk/ui';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
+import { trackEvent } from '../lib/analytics';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
 import { canSync, useResultsSync } from '../lib/session-sync';
@@ -124,6 +125,19 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
     !shared && ready && answered > 0 ? results : undefined,
   );
 
+  /*
+   * Once per visit, the moment a ranking is first on screen for its own
+   * owner — the same condition `useResultsSync` saves on, so "completed"
+   * means the same thing here as it does server-side. `waited` is in the
+   * guard too: skipping it would count the calculating beat, not the result.
+   */
+  const completedTracked = useRef(false);
+  useEffect(() => {
+    if (shared || !ready || !waited || answered === 0 || completedTracked.current) return;
+    completedTracked.current = true;
+    trackEvent('Calculator completed', { calculator: calculator.id });
+  }, [shared, ready, waited, answered, calculator.id]);
+
   const closeComparison = useCallback(() => setSelectedId(undefined), []);
 
   /*
@@ -185,6 +199,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
         // needs readable pixels (the CDN sends no CORS header), everywhere
         // else on this screen keeps loading the CDN directly.
         avatarUrl: toProxiedAssetUrl(candidate.avatarUrl, calculator),
+        color: candidate.color,
         ...(match.matchPercentage === undefined
           ? { noAnswerLabel: messages.results.noAnswer }
           : {
@@ -303,6 +318,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
                   rank={rank}
                   name={candidate.name}
                   avatarUrl={candidate.avatarUrl}
+                  color={candidate.color}
                   matchPercentage={match.matchPercentage}
                   percentLabel={
                     match.matchPercentage === undefined ? undefined : percent(match.matchPercentage)

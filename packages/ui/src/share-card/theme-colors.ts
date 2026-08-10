@@ -156,8 +156,8 @@ export function washColors(colors: CardColorSet): ShaderColors {
  *  - `colorScheme` is a real CSS property, not a custom one, and it is what a
  *    genuine (unpolyfilled) `light-dark()` value resolves against — which is
  *    exactly what `MatchRow`'s own per-candidate accent is (`--row-accent`,
- *    set inline from `useLogoAccent`/`partyColor`, never touched by Lightning
- *    CSS since it never appears in an authored stylesheet). Without this, a
+ *    set inline from `partyColor`, never touched by Lightning CSS since it
+ *    never appears in an authored stylesheet). Without this, a
  *    dark card rendered while the app itself is in light mode would still
  *    pick every row's *light*-mode accent.
  *

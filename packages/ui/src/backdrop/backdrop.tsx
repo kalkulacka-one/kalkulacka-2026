@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { prefersReducedMotion } from '../prefers-reduced-motion';
 import styles from './backdrop.module.css';
 import { toRgbFloat } from './color-uniform';
 import { createShaderRenderer, type ShaderColors } from './shader-renderer';
@@ -124,6 +125,12 @@ function ShaderCanvas({ colors, onUnsupported }: { colors: Colors; onUnsupported
   // Read every frame without re-running the setup effect on every colour tick.
   const colorsRef = useRef(colors);
   colorsRef.current = colors;
+  /**
+   * Repaints the still frame, once GL is up. Only set on the reduced-motion
+   * path — the animated one has a loop that already reads the latest colours
+   * sixty times a second and needs no prompting.
+   */
+  const repaintStillRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -135,26 +142,36 @@ function ShaderCanvas({ colors, onUnsupported }: { colors: Colors; onUnsupported
       return;
     }
 
+    const draw = (time: number) => renderer.draw(time, colorsRef.current);
+    const reduceMotion = prefersReducedMotion();
+
     const resize = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
       const rect = parent.getBoundingClientRect();
       renderer.resize(rect.width * RENDER_SCALE, rect.height * RENDER_SCALE);
+      // Resizing a WebGL drawing buffer clears it. The animated path repaints
+      // on the very next frame and never notices; a single still frame does
+      // not, so rotating a phone or dragging a window edge wiped the wash to
+      // flat colour and left it there — the one reader who asked for less
+      // movement being the only one who lost the backdrop entirely.
+      if (reduceMotion) draw(0);
     };
     resize();
 
     const ro = new ResizeObserver(resize);
     if (canvas.parentElement) ro.observe(canvas.parentElement);
 
-    const draw = (time: number) => renderer.draw(time, colorsRef.current);
-
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (reduceMotion) {
       // One static frame — the prototype freezes time rather than hiding the
       // backdrop entirely, and a still gradient carries no motion risk.
       draw(0);
-      return () => ro.disconnect();
+      repaintStillRef.current = () => draw(0);
+
+      return () => {
+        repaintStillRef.current = null;
+        ro.disconnect();
+      };
     }
 
     const start = performance.now();
@@ -176,6 +193,21 @@ function ShaderCanvas({ colors, onUnsupported }: { colors: Colors; onUnsupported
     // Colour changes are picked up via colorsRef each frame without
     // re-initialising GL — `colors` is deliberately not a dependency here.
   }, [onUnsupported]);
+
+  /*
+   * …which leaves the still frame, whose "each frame" is one frame that has
+   * already been painted. Switching theme or light/dark left it showing the
+   * previous palette until something else happened to redraw it. A no-op on
+   * the animated path, where the ref is never set.
+   *
+   * `colors` is the effect's trigger, not something its body reads — the
+   * suppression has to stay a single line and sit directly on the hook, since
+   * Biome only parses the first line of a `//` run as the suppression.
+   */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the dep is the repaint trigger, not an input.
+  useEffect(() => {
+    repaintStillRef.current?.();
+  }, [colors]);
 
   return <canvas ref={canvasRef} className={styles.canvas} />;
 }

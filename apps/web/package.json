@@ -7,9 +7,14 @@
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --port 3000",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test"
   },
   "dependencies": {
+    "@appsignal/javascript": "1.6.1",
+    "@appsignal/plugin-breadcrumbs-network": "1.1.24",
+    "@appsignal/plugin-window-events": "1.0.26",
+    "@vercel/otel": "2.1.3",
     "@vk/core": "workspace:*",
     "@vk/database": "workspace:*",
     "@vk/i18n": "workspace:*",
@@ -19,10 +24,12 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
+    "sharp": "0.34.5",
     "zod": "4.4.3",
     "zustand": "5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "26.1.2",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
