@@ -12,7 +12,20 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      // Turbo runs in strict env mode on Vercel: anything not listed here is
+      // stripped from the build's environment, so an undeclared DATA_ENDPOINT
+      // silently flips the prerender to fixture data. NEXT_PUBLIC_* is
+      // inferred by the framework integration but declared anyway — local
+      // turbo has no such inference, and the hash should react to it too.
+      "env": [
+        "DATA_ENDPOINT",
+        "DATABASE_URL",
+        "DATABASE_INITIALIZED_AT",
+        "NEXT_PUBLIC_*",
+        "APPSIGNAL_*",
+        "OTEL_EXPORTER_OTLP_ENDPOINT"
+      ]
     },
     // Prisma generates into node_modules, outside any cacheable output dir —
     // a cache hit would skip generation entirely on a machine that has never
