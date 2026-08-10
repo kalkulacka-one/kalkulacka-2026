@@ -64,6 +64,19 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
   const deckRef = useRef<QuestionDeckHandle>(null);
   const router = useRouter();
 
+  /*
+   * The two `router.push` exits from this screen, warmed on mount.
+   * A push, unlike a viewport-visible `<Link>`, prefetches nothing — so
+   * without this the last card flies away and the flow then sits on a
+   * full RSC round-trip before the recap paints, dead air the user reads
+   * as lag. (No-op in dev, where prefetching is disabled — dev's
+   * first-navigation stalls are compilation, not this.)
+   */
+  useEffect(() => {
+    router.prefetch(stepPath({ electionKey, district, embed }, 'review'));
+    router.prefetch(stepPath({ electionKey, district, embed }, 'guide'));
+  }, [router, electionKey, district, embed]);
+
   /**
    * Move on — and off the end of the deck into the recap.
    *

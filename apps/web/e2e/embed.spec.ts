@@ -54,14 +54,21 @@ test('a registered embed renders the flow with embed chrome', async ({ page }) =
     'href',
     '/embed/default/volby/komunalni-2022/pardubice/navod',
   );
+
+  // No back link to the picker: the partner embedded this one calculator, so
+  // the intro is the entry point — there is no "up" inside the deal.
+  await expect(page.getByRole('link', { name: 'Komunální volby 2022' })).toHaveCount(0);
 });
 
-test('outside /embed/ the wordmark is not a link', async ({ page }) => {
+test('outside /embed/ the wordmark is not a link and the picker back link stays', async ({
+  page,
+}) => {
   await page.goto(CANONICAL_INTRO);
   await expect(page.getByRole('heading', { name: CALCULATOR_NAME, exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: new RegExp(`^${messages.app.title}`) })).toHaveCount(
     0,
   );
+  await expect(page.getByRole('link', { name: 'Komunální volby 2022' })).toBeVisible();
 });
 
 test('framing headers split at /embed/: embeds may be framed, the app may not', async ({

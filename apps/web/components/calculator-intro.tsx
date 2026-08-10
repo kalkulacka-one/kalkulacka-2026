@@ -71,8 +71,14 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
       /* The election, not the picker's own heading: every other back link on
          the site names the place it returns to, and "Vyberte město" named an
          instruction instead — which also meant it had to be re-worded the
-         moment a senate election, where it is an obvod, used the same link. */
-      back={{ href: electionPath(electionKey, embed), label: electionName }}
+         moment a senate election, where it is an obvod, used the same link.
+
+         No back link inside an embed: a partner embeds one specific
+         calculator, so this screen IS the entry point — a link up to "all
+         calculators" leads out of the deal the partner made. (If a partner
+         ever embeds the picker itself, this needs revisiting: the picker
+         would then be unreachable after this screen.) */
+      back={embed ? undefined : { href: electionPath(electionKey), label: electionName }}
       description={format(messages.intro.description, {
         questions: plural(questions.length, {
           one: messages.intro.questionCountOne,
