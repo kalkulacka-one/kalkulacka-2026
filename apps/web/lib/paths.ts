@@ -51,3 +51,19 @@ export function electionPath(electionKey: string): string {
 export function questionPath(ref: CalculatorRef, questionNumber: number): string {
   return coreQuestionPath(ref, questionNumber, routeSlugs());
 }
+
+/**
+ * The address offered alongside a shared image, absolute so it survives
+ * leaving the tab.
+ *
+ * Deliberately `stepPath(ref, 'intro')`, never the results page the sender is
+ * standing on: a recipient who opens `…/vysledek` would see the *sender's*
+ * ranking, not a blank calculator waiting for their own answers, which is the
+ * whole point of sharing it in the first place. `origin` is a parameter
+ * rather than read from `window` here because this module has no DOM to read
+ * one from — the caller (already client-side, already past hydration) is the
+ * one that knows it.
+ */
+export function shareIntroUrl(origin: string, ref: CalculatorRef): string {
+  return new URL(stepPath(ref, 'intro'), origin).toString();
+}

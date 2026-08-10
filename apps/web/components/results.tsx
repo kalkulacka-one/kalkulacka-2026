@@ -170,13 +170,15 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
   }, [calculator, answers, results, answered]);
 
   /*
-   * The page's own address, read after mount rather than during render: there
-   * is no `window` on the server, and a share dialog that rendered a URL into
-   * the HTML would be baking one visitor's district into everyone's page.
+   * The page's own host, read after mount rather than during render: there is
+   * no `window` on the server, and a share card that rendered it into the
+   * HTML would be baking one visitor's district into everyone's page. (The
+   * share dialog itself needs no address from here — it builds the OS sheet's
+   * URL from `ref` and the calculator's *intro* route, never this page's own.)
    */
-  const [location, setLocation] = useState({ href: '', host: '' });
+  const [host, setHost] = useState('');
   useEffect(() => {
-    setLocation({ href: window.location.href, host: window.location.host });
+    setHost(window.location.host);
   }, []);
 
   /** What gets painted onto the shared image — the top five, and where they came from. */
@@ -207,9 +209,9 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
               matchPercentage: match.matchPercentage,
             }),
       })),
-      url: location.host,
+      url: host,
     }),
-    [calculator, results, location.host],
+    [calculator, results, host],
   );
 
   /*
@@ -359,7 +361,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
           onClose={() => setShareOpen(false)}
           content={shareContent}
           fileName={`shoda-${calculator.id}`}
-          url={location.href}
+          calculatorRef={ref}
           /* Absent without a backend, which is what keeps the dialog image-only
              on a fork that configured none. */
           link={

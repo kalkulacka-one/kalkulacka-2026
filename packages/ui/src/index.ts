@@ -81,7 +81,10 @@ export { RecapRow, type RecapRowLabels, type RecapRowProps } from './recap-row/r
 export { SearchField, type SearchFieldProps } from './search-field/search-field';
 export { CARD_FORMATS, CARD_SIZES, type CardFormat } from './share-card/card-format';
 export {
+  type CopyImageResult,
+  type CopyShareCardOptions,
   canShareImages,
+  copyShareCardImage,
   downloadImage,
   renderShareCard,
   type ShareImageResult,
