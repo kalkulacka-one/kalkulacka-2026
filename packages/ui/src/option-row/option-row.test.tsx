@@ -23,4 +23,19 @@ describe('OptionRow', () => {
     expect(link).toHaveAttribute('href', '/somewhere');
     expect(link.className).toMatch(/highlighted/);
   });
+
+  it('forwards tabIndex, for a row that lives in a roving-tabindex list', () => {
+    render(<OptionRow label="Liberec" href="/somewhere" tabIndex={-1} />);
+    expect(screen.getByRole('link', { name: /Liberec/ })).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('leaves tabIndex off a plain row, so it just takes the browser default', () => {
+    render(<OptionRow label="Zlín" href="/somewhere" />);
+    expect(screen.getByRole('link', { name: /Zlín/ })).not.toHaveAttribute('tabindex');
+  });
+
+  it('never puts a disabled row in the tab order, even if a roving list passed it a tabIndex', () => {
+    render(<OptionRow label="Praha hl. m." href="/somewhere" disabled tabIndex={0} />);
+    expect(screen.getByText('Praha hl. m.')).not.toHaveAttribute('tabindex');
+  });
 });

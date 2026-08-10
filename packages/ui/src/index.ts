@@ -54,6 +54,11 @@ export { Menu, type MenuItem, type MenuProps } from './menu/menu';
 export { Meter, type MeterProps } from './meter/meter';
 export { OptionRow, type OptionRowProps } from './option-row/option-row';
 export {
+  OptionRowList,
+  type OptionRowListHandle,
+  type OptionRowListProps,
+} from './option-row/option-row-list';
+export {
   ProgressSegments,
   type ProgressSegmentsProps,
   type Segment,
