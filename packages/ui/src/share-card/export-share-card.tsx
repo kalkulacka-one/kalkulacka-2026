@@ -192,6 +192,63 @@ export function downloadImage(blob: Blob, fileName: string): boolean {
   return true;
 }
 
+export type CopyShareCardOptions = RenderShareCardOptions & {
+  /** Used only if the clipboard write fails and this falls back to a download. */
+  fileName: string;
+};
+
+export type CopyImageResult = 'copied' | 'downloaded' | 'failed';
+
+/**
+ * Put the card on the system clipboard as a PNG, or fail down to a download.
+ *
+ * Safari's rule for `navigator.clipboard.write` is stricter than Chrome's: the
+ * `ClipboardItem` must be constructed, and `write` called, inside the same
+ * synchronous stretch of the click handler that started this call — before
+ * anything here is `await`ed. Safari revokes the click's "this came from a
+ * user gesture" standing the instant control returns through a microtask, so
+ * an `await renderShareCard(...)` *before* building the `ClipboardItem` is
+ * exactly the shape that fails there (Chrome accepts it fine, which is why
+ * that ordering is tempting and easy to ship by accident). The fix is to
+ * never resolve the render first: `renderShareCard`'s promise is handed to
+ * `ClipboardItem` directly as its `image/png` value, so the write starts
+ * synchronously while the (async) render is still in flight behind it.
+ *
+ * Whatever goes wrong — no Clipboard API, the write refused, the render
+ * itself failing inside that promise — falls through to a plain download
+ * rather than leaving the reader with nothing to show for the click.
+ */
+export async function copyShareCardImage({
+  content,
+  theme,
+  format,
+  fileName,
+}: CopyShareCardOptions): Promise<CopyImageResult> {
+  // Not awaited: see the function comment above for why this has to stay a
+  // pending promise until after `ClipboardItem` exists.
+  const pngPromise = renderShareCard({ content, theme, format }).then((blob) => {
+    if (!blob) throw new Error('share card render failed');
+    return blob;
+  });
+
+  if (
+    typeof navigator !== 'undefined' &&
+    navigator.clipboard?.write &&
+    typeof ClipboardItem !== 'undefined'
+  ) {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromise })]);
+      return 'copied';
+    } catch {
+      // Refused, no permission, or the render promise above rejected — any of
+      // those lands here rather than a caught exception at the call site.
+    }
+  }
+
+  const blob = await pngPromise.catch(() => null);
+  return blob && downloadImage(blob, fileName) ? 'downloaded' : 'failed';
+}
+
 /** Whether the OS sheet is available for images at all — decides the dialog's wording. */
 export function canShareImages(): boolean {
   if (typeof navigator === 'undefined' || !navigator.canShare) return false;

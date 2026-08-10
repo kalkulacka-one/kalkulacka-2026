@@ -7,7 +7,9 @@ import {
   type CardTheme,
   canShareImages,
   cardSwatches,
+  copyShareCardImage,
   Dialog,
+  downloadImage,
   renderShareCard,
   ShareCard,
   type ShareCardContent,
@@ -17,7 +19,10 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { trackEvent } from '../lib/analytics';
 import { copyText } from '../lib/clipboard';
+import { type CalculatorRef, shareIntroUrl } from '../lib/paths';
 import { requestShareLink } from '../lib/session-sync';
+import { chooseShareMode } from '../lib/share-mode';
+import { usePointerKind } from '../lib/use-pointer-kind';
 import styles from './share-dialog.module.css';
 
 /**
@@ -40,8 +45,8 @@ export type ShareDialogProps = {
   content: ShareCardContent;
   /** Slugged into the downloaded file's name. */
   fileName: string;
-  /** Offered to the OS share sheet as the shared link, alongside the image. */
-  url: string;
+  /** What `shareIntroUrl` needs to build the address offered alongside the OS sheet. */
+  calculatorRef: CalculatorRef;
   link?: ShareLinkTarget;
 };
 
@@ -60,7 +65,14 @@ const FORMATS: readonly { id: CardFormat; label: string }[] = [
   { id: 'landscape', label: share.formatLandscape },
 ];
 
-type Status = 'idle' | 'working' | 'saved' | 'failed';
+/**
+ * Every outcome any of the three image actions (sheet-share, copy, download)
+ * can leave behind. One field for all three rather than one per action: only
+ * one of them is ever mid-flight at a time (see the `disabled` props below),
+ * so there is never a moment where two genuinely different outcomes need
+ * showing at once.
+ */
+type Status = 'idle' | 'working' | 'saved' | 'copied' | 'copyFailedSaved' | 'failed';
 
 /**
  * The link's own progress, kept apart from the image's.
@@ -74,36 +86,59 @@ type LinkStatus = 'idle' | 'working' | 'copied' | 'failed';
 /**
  * Turn the result into a picture someone can post.
  *
- * The whole thing runs in the tab. The card is rendered off-screen at export
- * size and rasterised, then handed to `navigator.share` as a `File` — so the
- * phone's own sheet decides where it goes (Stories, Messages, Photos,
- * AirDrop) and this app never has an image to store, serve, or forget to
- * delete. That same sheet's own "Save Image" entry is what covers saving on a
- * phone; there is no separate save action to offer alongside it. Only where
- * the sheet itself is unavailable — every desktop browser but Chrome, and any
- * `http://` origin — does the button fall back to a download, and it says so
- * rather than pretending.
+ * Two different UIs, chosen by pointer kind (`chooseShareMode`) rather than
+ * by feature-sniffing alone:
+ *
+ *  - On a touch device that can share files, the OS sheet is the single
+ *    action — Messages, Instagram, AirDrop, Photos are all destinations this
+ *    app has no business knowing about, and the sheet's own "Save Image"
+ *    entry already covers saving, so there is no separate save action beside
+ *    it. The address handed to the sheet alongside the picture is the
+ *    calculator's *intro*, not this results page — a recipient opening this
+ *    page's own URL would see the sender's ranking, not a blank calculator
+ *    waiting for their own answers.
+ *  - On a fine pointer, the sheet is never offered at all, even where
+ *    `navigator.share` claims to support files: macOS Safari answers that
+ *    claim honestly and then opens a sheet whose own "Copy" entry pastes the
+ *    exported PNG's *temp-file path* as text into whatever the reader pasted
+ *    into, not the image. Desktop gets two plain actions instead — copy the
+ *    image to the clipboard, or download it — neither of which routes
+ *    through that sheet.
  */
-export function ShareDialog({ open, onClose, content, fileName, url, link }: ShareDialogProps) {
+export function ShareDialog({
+  open,
+  onClose,
+  content,
+  fileName,
+  calculatorRef,
+  link,
+}: ShareDialogProps) {
   const [theme, setTheme] = useState<CardTheme>('light');
   const [cardFormat, setCardFormat] = useState<CardFormat>('story');
   const [status, setStatus] = useState<Status>('idle');
   const [linkStatus, setLinkStatus] = useState<LinkStatus>('idle');
+  const pointerKind = usePointerKind();
   /*
    * Resolved on the client, after mount: `navigator.canShare` is absent during
-   * the server render, and deciding the button's label from that would ship
-   * "Uložit obrázek" into the HTML and then swap it on hydration. `null` until
-   * known, which is the one frame the button spends without a label decision.
+   * the server render, and deciding the dialog's layout from that would ship
+   * one shape into the HTML and then swap it on hydration. `null` until known
+   * — `usePointerKind` starts at its own hydration-safe default ('touch') for
+   * the same reason, so the pair agrees with the server on every render up to
+   * the point the effects below correct them, and `mode` below falls back to
+   * the sheet layout for that one frame, which is what the app already showed
+   * before this dialog could tell touch and mouse apart.
    */
-  const [canShare, setCanShare] = useState<boolean | null>(null);
+  const [canShareFiles, setCanShareFiles] = useState<boolean | null>(null);
   /** Sampled once the dialog is up: reading them needs the themed DOM. */
   const [swatches, setSwatches] = useState<Record<CardTheme, string> | null>(null);
 
-  useEffect(() => setCanShare(canShareImages()), []);
+  useEffect(() => setCanShareFiles(canShareImages()), []);
 
   useEffect(() => {
     if (open) setSwatches(cardSwatches());
   }, [open]);
+
+  const mode = canShareFiles === null ? 'sheet' : chooseShareMode(pointerKind, canShareFiles);
 
   // Clearing on close as well as on a timer: reopening the dialog should not
   // still be showing the outcome of the last visit.
@@ -116,7 +151,8 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
 
   useEffect(() => {
     if (status === 'idle' || status === 'working') return;
-    const timer = window.setTimeout(() => setStatus('idle'), status === 'failed' ? 6000 : 2400);
+    const isError = status === 'failed' || status === 'copyFailedSaved';
+    const timer = window.setTimeout(() => setStatus('idle'), isError ? 6000 : 2400);
     return () => window.clearTimeout(timer);
   }, [status]);
 
@@ -156,7 +192,10 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
         fileName: exportName,
         title: content.title,
         text: caption,
-        url,
+        // The intro, not `window.location.href`: a recipient who opens this
+        // page's own address would render the sender's result, not a blank
+        // calculator waiting for their own answers.
+        url: shareIntroUrl(window.location.origin, calculatorRef),
       });
 
       // A dismissed share sheet is a finished interaction, not a failure —
@@ -173,7 +212,41 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
     } catch {
       setStatus('failed');
     }
-  }, [content, theme, cardFormat, exportName, url]);
+  }, [content, theme, cardFormat, exportName, calculatorRef]);
+
+  /**
+   * Copy the card straight onto the clipboard, as a PNG.
+   *
+   * The gesture-timing constraint that makes this work in Safari lives in
+   * `copyShareCardImage` itself (see its own comment) — this callback's only
+   * job is to stay out of that function's way, which is why it does not
+   * `await` anything before calling it.
+   */
+  const onCopyImage = useCallback(() => {
+    setStatus('working');
+    copyShareCardImage({ content, theme, format: cardFormat, fileName: exportName })
+      .then((result) => {
+        setStatus(
+          result === 'copied' ? 'copied' : result === 'downloaded' ? 'copyFailedSaved' : 'failed',
+        );
+        if (result !== 'failed') {
+          trackEvent('Result shared', { method: result === 'copied' ? 'image-copy' : 'image' });
+        }
+      })
+      .catch(() => setStatus('failed'));
+  }, [content, theme, cardFormat, exportName]);
+
+  const onDownload = useCallback(async () => {
+    setStatus('working');
+    try {
+      const blob = await renderShareCard({ content, theme, format: cardFormat });
+      const ok = blob ? downloadImage(blob, exportName) : false;
+      setStatus(ok ? 'saved' : 'failed');
+      if (ok) trackEvent('Result shared', { method: 'image-download' });
+    } catch {
+      setStatus('failed');
+    }
+  }, [content, theme, cardFormat, exportName]);
 
   /**
    * Turn the result into an address, and put it on the clipboard.
@@ -203,7 +276,7 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
   }, [link]);
 
   /*
-   * One line for both actions. They cannot be mid-flight and finished at the
+   * One line for every action. They cannot be mid-flight and finished at the
    * same time in any way worth reporting twice, and the link's outcome wins
    * because it is the more recent press whenever both have one.
    */
@@ -214,11 +287,16 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
         ? share.linkFailed
         : status === 'saved'
           ? share.saved
-          : status === 'failed'
-            ? share.failed
-            : '';
+          : status === 'copied'
+            ? share.imageCopied
+            : status === 'copyFailedSaved'
+              ? share.imageCopyFailedSaved
+              : status === 'failed'
+                ? share.failed
+                : '';
 
-  const failed = status === 'failed' || linkStatus === 'failed';
+  const failed = status === 'failed' || status === 'copyFailedSaved' || linkStatus === 'failed';
+  const imageBusy = status === 'working';
 
   return (
     <Dialog
@@ -230,7 +308,7 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
       actions={
         <>
           {/*
-            Second, and quieter: the picture is what this dialog is for. The
+            First, and quieter: the picture is what this dialog is for. The
             link is the thing you reach for when you want somebody to see the
             whole result rather than the top five.
           */}
@@ -245,18 +323,25 @@ export function ShareDialog({ open, onClose, content, fileName, url, link }: Sha
             </Button>
           ) : null}
 
-          <Button
-            onClick={onShare}
-            iconStart={canShare === false ? 'download' : 'share'}
-            disabled={status === 'working'}
-            fullWidth={!link}
-          >
-            {status === 'working'
-              ? share.working
-              : canShare === false
-                ? share.saveImage
-                : share.shareImage}
-          </Button>
+          {mode === 'sheet' ? (
+            <Button onClick={onShare} iconStart="share" disabled={imageBusy} fullWidth={!link}>
+              {imageBusy ? share.working : share.shareImage}
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={onDownload}
+                iconStart="download"
+                disabled={imageBusy}
+              >
+                {imageBusy ? share.working : share.download}
+              </Button>
+              <Button onClick={onCopyImage} iconStart="copy" disabled={imageBusy}>
+                {imageBusy ? share.working : share.copyImage}
+              </Button>
+            </>
+          )}
         </>
       }
     >

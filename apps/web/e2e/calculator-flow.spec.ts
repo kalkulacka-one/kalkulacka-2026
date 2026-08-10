@@ -190,7 +190,7 @@ test('completes a calculator from the picker through to ranked results, and shar
     await expect(topRow).toBeFocused();
   });
 
-  await test.step('share dialog opens image-only — no backend is configured', async () => {
+  await test.step('share dialog opens with the desktop pair — no backend, no share sheet', async () => {
     await page.getByRole('button', { name: messages.results.share, exact: true }).click();
 
     /*
@@ -210,13 +210,20 @@ test('completes a calculator from the picker through to ranked results, and shar
       dialog.getByRole('button', { name: messages.results.shareDialog.copyLink, exact: true }),
     ).toHaveCount(0);
 
-    // The image action is still offered, under whichever label the browser's
-    // share-sheet support resolves to.
-    const imageAction = dialog
-      .getByRole('button', { name: messages.results.shareDialog.shareImage, exact: true })
-      .or(
-        dialog.getByRole('button', { name: messages.results.shareDialog.saveImage, exact: true }),
-      );
-    await expect(imageAction).toBeVisible();
+    // `Desktop Chrome` reports a fine, hovering pointer, which `chooseShareMode`
+    // (see `apps/web/lib/share-mode.ts`) always sends to the copy/download pair
+    // — never the OS share sheet, regardless of what `navigator.share` itself
+    // claims to support (the macOS Safari "Copy" trap that pair exists to
+    // avoid). So the sheet's own label must be absent, not merely optional.
+    await expect(
+      dialog.getByRole('button', { name: messages.results.shareDialog.shareImage, exact: true }),
+    ).toHaveCount(0);
+
+    await expect(
+      dialog.getByRole('button', { name: messages.results.shareDialog.copyImage, exact: true }),
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: messages.results.shareDialog.download, exact: true }),
+    ).toBeVisible();
   });
 });

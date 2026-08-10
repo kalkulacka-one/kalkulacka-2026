@@ -152,6 +152,11 @@ export const icons = {
     ...THIN,
     paths: ['M12 3.5 L12 15 M6.5 9.5 L12 15 L17.5 9.5 M4.5 14 L4.5 20.5 L19.5 20.5 L19.5 14'],
   },
+  /** Copy to clipboard. Two overlapping rectangles, corners on the grid. */
+  copy: {
+    ...THIN,
+    paths: ['M9 3.5 L20.5 3.5 L20.5 15 L15 15', 'M3.5 9 L15 9 L15 20.5 L3.5 20.5 Z'],
+  },
   /** A URL. Two hooks on the diagonal the wordmark's cut already runs along. */
   link: {
     ...THIN,
