@@ -22,6 +22,12 @@ export type OptionRowProps = {
    * needs to look targeted without actually holding focus.
    */
   highlighted?: boolean;
+  /**
+   * For a row that lives in a roving-tabindex list (`OptionRowList`): `0` for
+   * the one row Tab should reach, `-1` for the rest. Left unset for a row
+   * outside such a list, which just takes the browser's own tab order.
+   */
+  tabIndex?: number;
 };
 
 /**
@@ -39,6 +45,7 @@ export function OptionRow({
   onClick,
   disabled = false,
   highlighted = false,
+  tabIndex,
 }: OptionRowProps) {
   // A disabled row stops being a control rather than staying one that rejects
   // clicks: a dead link is still focusable and still announced as a link.
@@ -51,6 +58,7 @@ export function OptionRow({
       onClick={disabled ? undefined : onClick}
       type={!disabled && Component === 'button' ? 'button' : undefined}
       aria-disabled={disabled ? true : undefined}
+      tabIndex={disabled ? undefined : tabIndex}
     >
       {leading ? <span className={styles.leading}>{leading}</span> : null}
 
