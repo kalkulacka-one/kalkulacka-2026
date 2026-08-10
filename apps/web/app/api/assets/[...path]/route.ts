@@ -21,6 +21,19 @@ import {
 const UPSTREAM_TIMEOUT_MS = 10_000;
 
 /**
+ * The proxy mirrors avatar images and nothing else. The CDN is a separately
+ * operated service; re-serving whatever `Content-Type` it sends would let any
+ * non-image it ever hosts (compromise, misconfiguration, a future upload
+ * feature) render as a document on *this* origin — stored XSS, cached for a
+ * day. Everything the platform serves today is png/jpg/webp; svg is
+ * deliberately absent from the list because it is active content.
+ */
+const ALLOWED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/gif']);
+
+/** Avatars are tens of KB; this is generous headroom, not a target. */
+const MAX_ASSET_BYTES = 5 * 1024 * 1024;
+
+/**
  * Resolve `path` against the configured data endpoint, or refuse.
  *
  * The segments Next hands us are already URL-decoded, so an encoded slash or
@@ -83,10 +96,49 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
       return new BadGatewayError(`Upstream returned ${upstream.status}`).toResponse();
     }
 
-    return new Response(upstream.body, {
+    const rawType = upstream.headers.get('content-type') ?? '';
+    const contentType = (rawType.split(';')[0] ?? '').trim().toLowerCase();
+    if (!ALLOWED_TYPES.has(contentType)) {
+      return new BadGatewayError('Upstream served a non-image type').toResponse();
+    }
+
+    const declaredLength = Number(upstream.headers.get('content-length'));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_ASSET_BYTES) {
+      return new BadGatewayError('Upstream asset too large').toResponse();
+    }
+
+    // Buffered rather than streamed: the size cap has to be enforceable after
+    // a missing/lying Content-Length, and aborting a stream mid-200 would hand
+    // the client (and the day-long cache) a truncated image instead of an
+    // error. The fetch's timeout signal still covers this read.
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    const reader = upstream.body.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.byteLength;
+        if (received > MAX_ASSET_BYTES) {
+          reader.cancel().catch(() => {});
+          return new BadGatewayError('Upstream asset too large').toResponse();
+        }
+        chunks.push(value);
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'TimeoutError') {
+        return new GatewayTimeoutError().toResponse();
+      }
+      return new BadGatewayError().toResponse();
+    }
+
+    return new Response(Buffer.concat(chunks), {
       status: 200,
       headers: {
-        'Content-Type': upstream.headers.get('content-type') ?? 'application/octet-stream',
+        'Content-Type': contentType,
+        // Set globally in next.config too; repeated here so the guarantee
+        // travels with the route rather than with the deployment config.
+        'X-Content-Type-Options': 'nosniff',
         // Versioned static assets — the CDN path changes when the image does.
         'Cache-Control': 'public, max-age=86400, immutable',
       },
