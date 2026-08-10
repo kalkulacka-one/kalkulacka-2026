@@ -115,9 +115,6 @@ export function AppMenu({ calculator }: AppMenuProps) {
             <Button
               onClick={() => {
                 close();
-                // The homepage is Phase 8, so this currently lands on the
-                // "Připravujeme" placeholder — the exit is real, the
-                // destination is the part that is still being built.
                 router.push('/');
               }}
             >
