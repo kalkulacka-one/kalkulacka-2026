@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { trackEvent } from '../lib/analytics';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorShellInfo, electionPath, questionPath, stepPath } from '../lib/paths';
+import { isSyncConfigured } from '../lib/session-sync';
 import styles from './calculator-intro.module.css';
 import { IntroFacts } from './intro-facts';
 import { RestartDialog } from './restart-dialog';
@@ -79,13 +80,22 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
          ever embeds the picker itself, this needs revisiting: the picker
          would then be unreachable after this screen.) */
       back={embed ? undefined : { href: electionPath(electionKey), label: electionName }}
-      description={format(messages.intro.description, {
-        questions: plural(questions.length, {
-          one: messages.intro.questionCountOne,
-          few: messages.intro.questionCountFew,
-          many: messages.intro.questionCountMany,
-        }),
-      })}
+      /* "Nikam se nic neposílá" was written for the localStorage-only app and
+         became untrue the moment server sessions shipped: with a backend
+         configured, answers autosave to an anonymous session (cross-device
+         sync, public share links). The claim now switches on the same
+         build-time flag the sync itself runs on, so a fork with no backend
+         keeps the original, still-true sentence. */
+      description={format(
+        isSyncConfigured() ? messages.intro.descriptionSynced : messages.intro.description,
+        {
+          questions: plural(questions.length, {
+            one: messages.intro.questionCountOne,
+            few: messages.intro.questionCountFew,
+            many: messages.intro.questionCountMany,
+          }),
+        },
+      )}
       footer={
         <StickyBar>
           {inProgress ? (

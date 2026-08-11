@@ -92,14 +92,29 @@
   outline-offset: var(--vk-focus-offset);
 }
 
+/*
+ * Centred via auto margins, not `justify-content: center`: with an overflowing
+ * flex container, `justify-content` splits the overflow both ways and the top
+ * half becomes unreachable — a long statement opened mid-sentence with its
+ * beginning clipped above the scroll. Auto margins give the same centring when
+ * the text fits and collapse to zero when it doesn't, so a scrolling card
+ * starts at the top.
+ */
 .body {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   padding: var(--vk-space-2) 0;
   overflow-y: auto;
+}
+
+.body > :first-child {
+  margin-top: auto;
+}
+
+.body > :last-child {
+  margin-bottom: auto;
 }
 
 /*

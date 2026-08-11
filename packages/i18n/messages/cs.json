@@ -100,6 +100,7 @@
   },
   "intro": {
     "description": "Odpovíte na {questions} a uvidíte, ke komu máte nejblíž. Nikam se nic neposílá — odpovědi zůstávají ve vašem prohlížeči.",
+    "descriptionSynced": "Odpovíte na {questions} a uvidíte, ke komu máte nejblíž. Odpovědi zůstávají ve vašem prohlížeči a ukládají se jen anonymně — bez jména a bez přihlášení.",
     "candidates": "Porovnáváme {candidates}.",
     "start": "Pokračovat",
     "continue": "Pokračovat v odpovídání",

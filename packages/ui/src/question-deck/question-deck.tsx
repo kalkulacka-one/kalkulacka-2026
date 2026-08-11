@@ -54,6 +54,14 @@ export type QuestionDeckProps = {
    * over every one of forty questions.
    */
   dragGuides?: { practised?: ReadonlySet<DragDirection>; split?: boolean };
+  /**
+   * The last card has been committed and the screen is leaving. The ghost
+   * still flies, but no live card snaps back behind it and further input is
+   * ignored — without this, the deck's decoupled-ghost design re-offers the
+   * same question for as long as the navigation away takes, and a slow
+   * network reads as "I can answer the last question forever."
+   */
+  finished?: boolean;
   ref?: Ref<QuestionDeckHandle>;
 };
 
@@ -93,6 +101,7 @@ export function QuestionDeck({
   onSkip,
   onToggleImportant,
   dragGuides,
+  finished = false,
   ref,
 }: QuestionDeckProps) {
   const [ghost, setGhost] = useState<Ghost | null>(null);
@@ -103,6 +112,7 @@ export function QuestionDeck({
 
   const commit = useCallback(
     (intent: SwipeIntent, speed: CommitSpeed, from: string) => {
+      if (finished) return;
       const { zone, important } = intent;
 
       setGhost({
@@ -129,7 +139,7 @@ export function QuestionDeck({
       if (zone === 'skip') onSkip();
       else onAnswer(zone === 'agree', important);
     },
-    [current, selection.important, labels, onAnswer, onSkip],
+    [current, finished, selection.important, labels, onAnswer, onSkip],
   );
 
   const { cardRef, nextRef, backRef, onPointerDown, isDragging, animateStackRise } = useSwipeDeck({
@@ -174,6 +184,7 @@ export function QuestionDeck({
     ref,
     () => ({
       advance: () => {
+        if (finished) return;
         // No fling: the answer is not changing, so the card just lifts away.
         setGhost({
           content: current,
@@ -185,7 +196,7 @@ export function QuestionDeck({
         animateStackRise('instant');
       },
     }),
-    [current, selection, animateStackRise],
+    [current, finished, selection, animateStackRise],
   );
 
   // Drive the ghost's flight once React has painted it at its starting point.
@@ -309,32 +320,34 @@ export function QuestionDeck({
         </div>
       ) : null}
 
-      <QuestionCard
-        ref={cardRef}
-        className={styles.active}
-        content={current}
-        selection={activeSelection}
-        labels={cardLabels}
-        /* The one card on the deck that is being read, so its statement is the
-           screen's heading. The layers behind it and the ghost in front are
-           `inert` and out of the accessibility tree entirely, so this never
-           puts a second `<h1>` in front of anyone. */
-        statementAs="h1"
-        onPointerDown={onPointerDown}
-        onAgree={handleAgree}
-        onDisagree={handleDisagree}
-        onToggleImportant={onToggleImportant}
-        guides={
-          dragGuides ? (
-            <DragGuides
-              labels={labels}
-              split={dragGuides.split}
-              practised={dragGuides.practised}
-              active={showHint ? directionForIntent(hint) : null}
-            />
-          ) : undefined
-        }
-      />
+      {finished ? null : (
+        <QuestionCard
+          ref={cardRef}
+          className={styles.active}
+          content={current}
+          selection={activeSelection}
+          labels={cardLabels}
+          /* The one card on the deck that is being read, so its statement is the
+             screen's heading. The layers behind it and the ghost in front are
+             `inert` and out of the accessibility tree entirely, so this never
+             puts a second `<h1>` in front of anyone. */
+          statementAs="h1"
+          onPointerDown={onPointerDown}
+          onAgree={handleAgree}
+          onDisagree={handleDisagree}
+          onToggleImportant={onToggleImportant}
+          guides={
+            dragGuides ? (
+              <DragGuides
+                labels={labels}
+                split={dragGuides.split}
+                practised={dragGuides.practised}
+                active={showHint ? directionForIntent(hint) : null}
+              />
+            ) : undefined
+          }
+        />
+      )}
 
       {ghost ? (
         <QuestionCard
