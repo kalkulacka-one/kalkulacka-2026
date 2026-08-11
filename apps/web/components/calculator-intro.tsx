@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { trackEvent } from '../lib/analytics';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorShellInfo, electionPath, questionPath, stepPath } from '../lib/paths';
-import { isSyncConfigured } from '../lib/session-sync';
 import styles from './calculator-intro.module.css';
 import { IntroFacts } from './intro-facts';
 import { RestartDialog } from './restart-dialog';
@@ -80,22 +79,18 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
          ever embeds the picker itself, this needs revisiting: the picker
          would then be unreachable after this screen.) */
       back={embed ? undefined : { href: electionPath(electionKey), label: electionName }}
-      /* "Nikam se nic neposílá" was written for the localStorage-only app and
-         became untrue the moment server sessions shipped: with a backend
-         configured, answers autosave to an anonymous session (cross-device
-         sync, public share links). The claim now switches on the same
-         build-time flag the sync itself runs on, so a fork with no backend
-         keeps the original, still-true sentence. */
-      description={format(
-        isSyncConfigured() ? messages.intro.descriptionSynced : messages.intro.description,
-        {
-          questions: plural(questions.length, {
-            one: messages.intro.questionCountOne,
-            few: messages.intro.questionCountFew,
-            many: messages.intro.questionCountMany,
-          }),
-        },
-      )}
+      /* No privacy clause here, by request. "Nikam se nic neposílá" predated
+         server sessions and became untrue with a backend configured; the
+         honest replacement read as a warning that something gets saved —
+         scarier than saying nothing. The reader deciding whether to start
+         does not care; the leave dialog still reassures where it matters. */
+      description={format(messages.intro.description, {
+        questions: plural(questions.length, {
+          one: messages.intro.questionCountOne,
+          few: messages.intro.questionCountFew,
+          many: messages.intro.questionCountMany,
+        }),
+      })}
       footer={
         <StickyBar>
           {inProgress ? (
