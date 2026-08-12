@@ -77,13 +77,13 @@ test('completes a calculator from the picker through to ranked results, and shar
   });
 
   await test.step('answers a mix of agree, disagree, skip and important', async () => {
-    // Q1: agree — the card's own "Souhlasím" button, which also commits and
+    // Q1: agree — the card's own "Ano" button, which also commits and
     // advances in one action.
-    await page.getByRole('button', { name: messages.flow.agree, exact: true }).click();
+    await page.getByRole('button', { name: messages.answer.yes, exact: true }).click();
     await expect(page).toHaveURL(/\/otazka\/2$/);
 
     // Q2: disagree.
-    await page.getByRole('button', { name: messages.flow.disagree, exact: true }).click();
+    await page.getByRole('button', { name: messages.answer.no, exact: true }).click();
     await expect(page).toHaveURL(/\/otazka\/3$/);
 
     // Q3: skip — via the nav's forward control, which reads "Přeskočit"
@@ -99,7 +99,7 @@ test('completes a calculator from the picker through to ranked results, and shar
     });
     await importantToggle.click();
     await expect(importantToggle).toHaveAttribute('aria-pressed', 'true');
-    await page.getByRole('button', { name: messages.flow.agree, exact: true }).click();
+    await page.getByRole('button', { name: messages.answer.yes, exact: true }).click();
     await expect(page).toHaveURL(/\/otazka\/5$/);
   });
 
@@ -122,16 +122,14 @@ test('completes a calculator from the picker through to ranked results, and shar
     // Text content, not just the accessible name: the row's answer mark is a
     // visually-hidden label sitting right next to the question's own title
     // inside the same button (see `RecapRow`/`AnswerMark`).
-    await expect(page.getByRole('button', { name: Q1_AGREE })).toContainText(messages.flow.agree);
-    await expect(page.getByRole('button', { name: Q2_DISAGREE })).toContainText(
-      messages.flow.disagree,
-    );
+    await expect(page.getByRole('button', { name: Q1_AGREE })).toContainText(messages.answer.yes);
+    await expect(page.getByRole('button', { name: Q2_DISAGREE })).toContainText(messages.answer.no);
     // Skipped reads as "no position" — same mark a never-reached question
     // wears (see `RecapRow`'s own comment on that) — but it must not have
     // picked up either answer.
     const skippedRow = page.getByRole('button', { name: Q3_SKIP });
-    await expect(skippedRow).not.toContainText(messages.flow.agree);
-    await expect(skippedRow).not.toContainText(messages.flow.disagree);
+    await expect(skippedRow).not.toContainText(messages.answer.yes);
+    await expect(skippedRow).not.toContainText(messages.answer.no);
 
     // "Důležité" only appears as a filter once something is marked — isolate
     // it and confirm it leaves exactly the one question armed above.
@@ -139,7 +137,7 @@ test('completes a calculator from the picker through to ranked results, and shar
     const importantRows = page.getByRole('list').getByRole('listitem');
     await expect(importantRows).toHaveCount(1);
     await expect(page.getByRole('button', { name: Q4_IMPORTANT_AGREE })).toContainText(
-      messages.flow.agree,
+      messages.answer.yes,
     );
 
     await filterChip(page, messages.recap.filterAll).click();

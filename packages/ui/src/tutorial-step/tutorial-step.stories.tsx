@@ -10,8 +10,8 @@ const meta = {
   ],
   args: {
     icon: 'arrowLeft',
-    title: 'Souhlasím',
-    description: 'Táhněte kartu doleva, nebo tapněte na Souhlasím.',
+    title: 'Ano',
+    description: 'Táhněte kartu doleva, nebo tapněte na Ano.',
   },
 } satisfies Meta<typeof TutorialStep>;
 
@@ -26,13 +26,13 @@ export const Touch: Story = {
     <>
       <TutorialStep
         icon="arrowLeft"
-        title="Souhlasím"
-        description="Táhněte kartu doleva, nebo tapněte na Souhlasím."
+        title="Ano"
+        description="Táhněte kartu doleva, nebo tapněte na Ano."
       />
       <TutorialStep
         icon="arrowRight"
-        title="Nesouhlasím"
-        description="Táhněte kartu doprava, nebo tapněte na Nesouhlasím."
+        title="Ne"
+        description="Táhněte kartu doprava, nebo tapněte na Ne."
       />
       <TutorialStep
         icon="starThin"
@@ -54,13 +54,13 @@ export const Pointer: Story = {
     <>
       <TutorialStep
         icon="arrowLeft"
-        title="Souhlasím"
-        description="Táhněte kartu doleva, stiskněte šipku vlevo, nebo klikněte na Souhlasím."
+        title="Ano"
+        description="Táhněte kartu doleva, stiskněte šipku vlevo, nebo klikněte na Ano."
       />
       <TutorialStep
         icon="arrowRight"
-        title="Nesouhlasím"
-        description="Táhněte kartu doprava, stiskněte šipku vpravo, nebo klikněte na Nesouhlasím."
+        title="Ne"
+        description="Táhněte kartu doprava, stiskněte šipku vpravo, nebo klikněte na Ne."
       />
       <TutorialStep
         icon="starThin"

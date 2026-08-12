@@ -11,8 +11,8 @@ const meta = {
   },
   args: {
     hints: [
-      { keys: [{ icon: 'arrowLeft', label: 'Šipka vlevo' }], label: 'Souhlasím' },
-      { keys: [{ icon: 'arrowRight', label: 'Šipka vpravo' }], label: 'Nesouhlasím' },
+      { keys: [{ icon: 'arrowLeft', label: 'Šipka vlevo' }], label: 'Ano' },
+      { keys: [{ icon: 'arrowRight', label: 'Šipka vpravo' }], label: 'Ne' },
       { keys: [{ icon: 'arrowUp', label: 'Šipka nahoru' }], label: 'Důležité' },
       { keys: [{ icon: 'arrowDown', label: 'Šipka dolů' }], label: 'Přeskočit' },
       {

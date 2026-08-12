@@ -163,8 +163,8 @@ export function GuidePractice() {
           }}
           selection={selection}
           labels={{
-            agree: messages.flow.agree,
-            disagree: messages.flow.disagree,
+            agree: messages.answer.yes,
+            disagree: messages.answer.no,
             important: messages.flow.important,
             importantSuffix: messages.flow.importantSuffix,
             skip: messages.flow.skip,
@@ -234,11 +234,11 @@ export function GuidePractice() {
           hints={[
             {
               keys: [{ icon: 'arrowLeft', label: messages.flow.keyArrowLeft }],
-              label: messages.flow.shortcutAgree,
+              label: messages.answer.yes,
             },
             {
               keys: [{ icon: 'arrowRight', label: messages.flow.keyArrowRight }],
-              label: messages.flow.shortcutDisagree,
+              label: messages.answer.no,
             },
             {
               keys: [{ icon: 'arrowUp', label: messages.flow.keyArrowUp }],

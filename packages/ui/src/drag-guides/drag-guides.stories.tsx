@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DragGuides } from './drag-guides';
 
 const LABELS = {
-  agree: 'Souhlasím',
-  disagree: 'Nesouhlasím',
+  agree: 'Ano',
+  disagree: 'Ne',
   important: 'Pro mě důležité',
   skip: 'Přeskočit',
 };

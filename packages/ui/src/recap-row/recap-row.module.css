@@ -1,6 +1,13 @@
+/*
+ * The card's shadow and its whole pointer behaviour are `.vk-pressable`'s, on
+ * this element in the markup — hence the radius here as well as on `.row`: a
+ * shadow drawn on a square box behind a rounded tile shows at the corners.
+ */
 .item {
   list-style: none;
   display: flex;
+
+  border-radius: var(--vk-radius-control);
 }
 
 /*
@@ -28,15 +35,8 @@
 
   border-radius: var(--vk-radius-control);
   background: var(--vk-color-surface);
-  box-shadow: var(--vk-shadow-surface);
 
-  transition:
-    box-shadow var(--vk-duration-base) ease,
-    opacity var(--vk-duration-base) ease;
-}
-
-.row:hover {
-  box-shadow: var(--vk-shadow-card-back);
+  transition: opacity var(--vk-duration-base) ease;
 }
 
 /*
@@ -79,9 +79,8 @@
   background: var(--vk-color-neutral-wash);
 }
 
-.star:active {
-  transform: scale(0.94);
-}
+/* No press transform of its own — the whole tile presses in under it now
+   (`.vk-pressable`), and two nested scales on one tap read as a wobble. */
 
 .star:focus-visible {
   outline: var(--vk-focus-width) solid var(--vk-focus-color);

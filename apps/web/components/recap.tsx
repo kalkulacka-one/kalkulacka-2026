@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  type AnswerValue,
   answerTone,
   buildRecapFilters,
   countRecapTotals,
@@ -15,6 +14,7 @@ import { Button, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { answerLabelOf } from '../lib/answer-labels';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { toCardContent } from '../lib/question-content';
@@ -224,7 +224,7 @@ export function Recap({ calculator, questions }: RecapProps) {
                           important={answer?.isImportant === true}
                           skipped={answer?.skipped === true}
                           labels={{
-                            answer: answerLabel(answer?.answer),
+                            answer: answerLabelOf(answer?.answer),
                             important: messages.flow.important,
                           }}
                           onOpen={() => setOpenIndex(index)}
@@ -277,8 +277,8 @@ export function Recap({ calculator, questions }: RecapProps) {
           important: openAnswer?.isImportant === true,
         }}
         labels={{
-          agree: messages.flow.agree,
-          disagree: messages.flow.disagree,
+          agree: messages.answer.yes,
+          disagree: messages.answer.no,
           important: messages.flow.important,
           skip: messages.flow.skip,
           close: messages.flow.close,
@@ -290,10 +290,4 @@ export function Recap({ calculator, questions }: RecapProps) {
       />
     </AppShell>
   );
-}
-
-function answerLabel(answer: AnswerValue | undefined): string {
-  if (answer === true) return messages.flow.agree;
-  if (answer === false) return messages.flow.disagree;
-  return messages.recap.noAnswer;
 }

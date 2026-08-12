@@ -69,7 +69,11 @@ export function MatchRow({
 
   return (
     <li
-      className={`${styles.item} ${winner ? styles.winner : ''}`}
+      className={`${styles.item} vk-pressable ${winner ? styles.winner : ''}`}
+      /* The float belongs to the whole card; `aria-pressed` belongs on the
+         button that opens the comparison. `data-open` is what joins them —
+         see `.vk-pressable` in `@vk/tokens`. */
+      data-open={selected && comparable ? '' : undefined}
       style={delay ? { animationDelay: `${delay}s` } : undefined}
     >
       <button

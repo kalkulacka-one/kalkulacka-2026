@@ -198,7 +198,7 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    *
    * Answering leaves focus on the control that was pressed while the card's
    * content is replaced underneath it, so a reader working by keyboard hears
-   * the deck confirm their own answer ("Souhlasím") and is then told nothing
+   * the deck confirm their own answer ("Ano") and is then told nothing
    * whatsoever about the question they have arrived at — the one thing on the
    * screen that changed. Polite, so it queues behind that confirmation and the
    * two read in the order they happened.
@@ -272,8 +272,8 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
                 important: answer?.isImportant === true,
               }}
               labels={{
-                agree: messages.flow.agree,
-                disagree: messages.flow.disagree,
+                agree: messages.answer.yes,
+                disagree: messages.answer.no,
                 important: messages.flow.important,
                 importantSuffix: messages.flow.importantSuffix,
                 skip: messages.flow.skip,
@@ -308,11 +308,11 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
             hints={[
               {
                 keys: [{ icon: 'arrowLeft', label: messages.flow.keyArrowLeft }],
-                label: messages.flow.shortcutAgree,
+                label: messages.answer.yes,
               },
               {
                 keys: [{ icon: 'arrowRight', label: messages.flow.keyArrowRight }],
-                label: messages.flow.shortcutDisagree,
+                label: messages.answer.no,
               },
               {
                 keys: [{ icon: 'arrowUp', label: messages.flow.keyArrowUp }],

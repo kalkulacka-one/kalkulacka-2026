@@ -1,11 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   type CardSelection,
   QuestionCard,
   type QuestionCardContent,
 } from '../question-card/question-card';
+import {
+  answerSwitchHold,
+  type CommitSpeed,
+  exitTransform,
+  type SwipeZone,
+  speedFor,
+} from '../question-deck/swipe-physics';
 import { type SwipeIntent, useSwipeDeck } from '../question-deck/use-swipe-deck';
 import styles from './question-dialog.module.css';
 
@@ -34,6 +41,22 @@ type Snapshot = {
   selection: CardSelection;
   labels: QuestionDialogLabels;
 };
+
+/**
+ * A card on its way out of the dialog, in the direction of the answer that sent
+ * it — left for "Ano", right for "Ne", down for a skip.
+ *
+ * The deck flies a *ghost* because it has a live card underneath that has to
+ * stay interactive; here the card is the only one there is and the dialog is
+ * closing behind it, so the card itself flies. Same transforms, same speeds
+ * (`swipe-physics`), so an answer changed from the recap leaves exactly the way
+ * the same answer leaves on the deck — which it did not before: it faded
+ * straight down, and the direction that means "this is what you chose"
+ * was the one thing the recap never showed.
+ */
+type Flight = { from: string; to: string; speed: CommitSpeed };
+
+const AT_REST = 'translate(0px, 0px) rotate(0deg)';
 
 /**
  * The full question, opened from a recap row.
@@ -66,6 +89,20 @@ export function QuestionDialog({
   const [snapshot, setSnapshot] = useState<Snapshot | undefined>();
   const [closing, setClosing] = useState(false);
 
+  /** Set the moment an answer is taken; cleared when the card has landed. */
+  const [flight, setFlight] = useState<Flight | null>(null);
+  /**
+   * The answer the card is leaving on.
+   *
+   * Held separately from `snapshot.selection` for two overlapping reasons: it
+   * is what the card shows through the switch hold, before the store knows
+   * about it, and it is what the card keeps showing through the flight, after
+   * the parent has cleared `question` and frozen the snapshot on the *old*
+   * answer. Either way the card that flies is visibly the answer just chosen.
+   */
+  const [taken, setTaken] = useState<SwipeIntent | null>(null);
+  const switchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (question) setSnapshot({ question, selection, labels });
   }, [question, selection, labels]);
@@ -79,24 +116,59 @@ export function QuestionDialog({
     if (snapshot) setClosing(true);
   }, [question]);
 
+  /*
+   * A dismissal during the switch hold cancels the answer outright. Escape, the
+   * corner close and a click on the veil all clear `question` upstream, and
+   * without this the held answer would still land a fraction of a second later
+   * — recording the very edit that was just backed out of.
+   */
+  useEffect(() => {
+    if (question) return;
+    if (switchTimer.current) {
+      clearTimeout(switchTimer.current);
+      switchTimer.current = null;
+      setTaken(null);
+    }
+  }, [question]);
+
+  const finish = useCallback(() => {
+    setSnapshot(undefined);
+    setClosing(false);
+    setFlight(null);
+    setTaken(null);
+  }, []);
+
   // The animation, not a timer, decides when the fade-out is actually done —
   // so `prefers-reduced-motion`'s near-zero duration still resolves promptly
   // instead of the dialog sitting invisible-but-mounted for a fixed delay.
   useEffect(() => {
     if (!closing) return;
+
+    // A card that is flying is animating with an inline transition rather than
+    // the shell's keyframes, so there is no `animationend` on the shell to wait
+    // for — the flight's own duration is what says when it has landed. Same
+    // arithmetic the deck uses to retire its ghost, including the slack.
+    if (flight) {
+      const { fly } = speedFor(flight.speed);
+      const timer = setTimeout(finish, fly * 1000 + 60);
+      return () => clearTimeout(timer);
+    }
+
     const shell = shellRef.current;
     if (!shell) {
-      setSnapshot(undefined);
-      setClosing(false);
+      finish();
       return;
     }
-    const handle = () => {
-      setSnapshot(undefined);
-      setClosing(false);
-    };
-    shell.addEventListener('animationend', handle, { once: true });
-    return () => shell.removeEventListener('animationend', handle);
-  }, [closing]);
+    shell.addEventListener('animationend', finish, { once: true });
+    return () => shell.removeEventListener('animationend', finish);
+  }, [closing, flight, finish]);
+
+  useEffect(
+    () => () => {
+      if (switchTimer.current) clearTimeout(switchTimer.current);
+    },
+    [],
+  );
 
   /**
    * Re-tapping the current answer clears it — an edit that leaves the question
@@ -131,26 +203,131 @@ export function QuestionDialog({
    *
    * On a successful drag the hook itself snaps the real card back to centre
    * right after `onCommit` runs — there is no "next card" underneath to
-   * reveal here, so the existing close animation (triggered by the answer
-   * clearing `question` upstream) is what actually carries the card away,
-   * exactly as it does for a tap on the same buttons.
+   * reveal here — so `flight` picks the card straight back up at the position
+   * it was released from and carries it the rest of the way out.
    */
   const handleCommit = useCallback(
-    (commitIntent: SwipeIntent) => {
-      if (commitIntent.zone === 'skip') {
+    (commitIntent: SwipeIntent, from: string) => {
+      const { zone, important } = commitIntent;
+
+      setTaken(commitIntent);
+      setFlight({ from, to: exitTransform(zone, important), speed: 'normal' });
+
+      if (zone === 'skip') {
         onSkip();
         return;
       }
-      if (commitIntent.important && !selection.important) onToggleImportant();
-      onAnswer(commitIntent.zone === 'agree');
+      if (important && !selection.important) onToggleImportant();
+      onAnswer(zone === 'agree');
     },
     [onAnswer, onSkip, onToggleImportant, selection.important],
   );
 
   const { cardRef, onPointerDown, isDragging, intent } = useSwipeDeck({
     onCommit: handleCommit,
-    disabled: closing,
+    disabled: closing || flight !== null || taken !== null,
   });
+
+  /**
+   * Fly the card, once React has painted it at its starting point.
+   *
+   * The reflow in the middle is what makes the browser treat the second
+   * assignment as something to animate rather than folding both into one paint
+   * — the same dance the deck does with its ghost. It matters twice on the drag
+   * path, where the hook has already snapped the card back to centre and the
+   * release position has to be put back before it can be animated away from.
+   */
+  useLayoutEffect(() => {
+    if (!flight) return;
+    const card = cardRef.current;
+    if (!card) return;
+
+    const { fly, fade } = speedFor(flight.speed);
+
+    card.style.transition = 'none';
+    card.style.transform = flight.from;
+    card.style.opacity = '1';
+
+    void card.offsetWidth;
+
+    card.style.transition = `transform ${fly}s var(--vk-easing-exit), opacity ${fade}s ease-in`;
+    card.style.transform = flight.to;
+    card.style.opacity = '0';
+  }, [flight, cardRef]);
+
+  /**
+   * Answer from a button or the keyboard.
+   *
+   * Same two-step rule the deck follows: replacing an answer that is already
+   * there holds the card on the new selection for a beat before it leaves, so
+   * the change and its consequence are two things you can see rather than one
+   * you can't. Committing from rest flies a little slower than a flick does —
+   * there is no momentum to inherit.
+   */
+  const commitFromButton = useCallback(
+    (zone: SwipeZone, important: boolean, replacing: boolean) => {
+      const fly = () => {
+        // Nulled as it fires: the cancel-on-dismiss effect above reads this ref
+        // to tell "an answer is still being held" from "one is already away".
+        switchTimer.current = null;
+        setFlight({ from: AT_REST, to: exitTransform(zone, important), speed: 'slow' });
+        if (zone === 'skip') onSkip();
+        else onAnswer(zone === 'agree');
+      };
+
+      setTaken({ zone, important });
+      if (!replacing) {
+        fly();
+        return;
+      }
+      switchTimer.current = setTimeout(fly, answerSwitchHold() * 1000);
+    },
+    [onAnswer, onSkip],
+  );
+
+  /**
+   * One route for every answer the card's own controls can produce, so the
+   * clear-by-repeating rule and the two-step rule are stated once.
+   *
+   * Re-choosing the current answer clears it and the dialog stays open (see
+   * `attentionSkip`), so that path takes no flight — nothing is leaving.
+   */
+  const answer = useCallback(
+    (agree: boolean) => {
+      if (taken) return;
+      const current = snapshot?.selection ?? selection;
+      if (agree ? current.agree : current.disagree) {
+        onAnswer(agree);
+        return;
+      }
+      commitFromButton(
+        agree ? 'agree' : 'disagree',
+        current.important,
+        agree ? current.disagree : current.agree,
+      );
+    },
+    [commitFromButton, onAnswer, selection, snapshot?.selection, taken],
+  );
+
+  const skip = useCallback(() => {
+    if (taken) return;
+    commitFromButton('skip', false, false);
+  }, [commitFromButton, taken]);
+
+  /**
+   * What the card's own controls read as, which is not always what the store
+   * says: through the switch hold the store has not been told yet, and through
+   * the flight the snapshot is frozen on the answer being replaced. A skip
+   * takes no answer with it, so it leaves the card showing exactly what it was.
+   */
+  const shownSelection: CardSelection =
+    taken && taken.zone !== 'skip' && snapshot
+      ? {
+          agree: taken.zone === 'agree',
+          disagree: taken.zone === 'disagree',
+          important: taken.important || snapshot.selection.important,
+        }
+      : (snapshot?.selection ?? selection);
 
   const visible = snapshot !== undefined;
 
@@ -204,19 +381,19 @@ export function QuestionDialog({
         switch (event.key) {
           case 'ArrowLeft':
             event.preventDefault();
-            onAnswer(true);
+            answer(true);
             break;
           case 'ArrowRight':
             event.preventDefault();
-            onAnswer(false);
+            answer(false);
             break;
           case 'ArrowDown':
             event.preventDefault();
-            onSkip();
+            skip();
             break;
           case 'ArrowUp':
             event.preventDefault();
-            onToggleImportant();
+            if (!taken) onToggleImportant();
             break;
           default:
             break;
@@ -224,12 +401,20 @@ export function QuestionDialog({
       }}
     >
       {snapshot ? (
-        <div ref={shellRef} className={`${styles.shell} ${closing ? styles.closing : ''}`}>
+        /*
+          The shell's own fade-out is for dismissals — close, Escape, a click on
+          the veil. An answered card is flying instead, and fading the shell out
+          from under it would take the flight with it.
+        */
+        <div
+          ref={shellRef}
+          className={`${styles.shell} ${closing && !flight ? styles.closing : ''}`}
+        >
           <div className={styles.stage}>
             <QuestionCard
               ref={cardRef}
               content={snapshot.question}
-              selection={snapshot.selection}
+              selection={shownSelection}
               labels={snapshot.labels}
               /* Second level, not first: this opens over the recap, whose own
                  `<h1>` names the screen the reader is still on. */
@@ -237,9 +422,9 @@ export function QuestionDialog({
               elevation="lifted"
               close={{ label: snapshot.labels.close, onClose }}
               onPointerDown={onPointerDown}
-              onAgree={() => onAnswer(true)}
-              onDisagree={() => onAnswer(false)}
-              onToggleImportant={onToggleImportant}
+              onAgree={() => answer(true)}
+              onDisagree={() => answer(false)}
+              onToggleImportant={taken ? undefined : onToggleImportant}
             />
 
             {/* Mirrors the deck's own drag hint — what releasing now would do. */}
@@ -261,7 +446,7 @@ export function QuestionDialog({
           */}
           {attentionSkip ? (
             <div className={styles.under}>
-              <button type="button" className={styles.skip} onClick={onSkip}>
+              <button type="button" className={styles.skip} onClick={skip}>
                 {snapshot.labels.skip}
               </button>
             </div>

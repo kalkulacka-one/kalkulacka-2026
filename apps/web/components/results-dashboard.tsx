@@ -154,11 +154,13 @@ export function ResultsDashboard({
     promptRef.current?.select();
   }, [prompt]);
 
+  /* The legend names the reader's own answers, so it uses the same four strings
+     the cards and the recap do rather than a synonym set of its own. */
   const segments: DonutSegment[] = [
-    { tone: 'agree', value: distribution.agree, label: dashboard.legendAgree },
-    { tone: 'disagree', value: distribution.disagree, label: dashboard.legendDisagree },
-    { tone: 'neutral', value: distribution.neutral, label: dashboard.legendNeutral },
-    { tone: 'none', value: distribution.unanswered, label: dashboard.legendUnanswered },
+    { tone: 'agree', value: distribution.agree, label: messages.answer.yes },
+    { tone: 'disagree', value: distribution.disagree, label: messages.answer.no },
+    { tone: 'neutral', value: distribution.neutral, label: messages.answer.neutral },
+    { tone: 'none', value: distribution.unanswered, label: messages.answer.none },
   ];
 
   return (

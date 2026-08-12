@@ -19,6 +19,7 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden';
 import styles from './question-deck.module.css';
 import {
   advanceTransform,
+  answerSwitchHold,
   type CommitSpeed,
   exitTransform,
   type SwipeZone,
@@ -110,6 +111,18 @@ export function QuestionDeck({
   const ghostRef = useRef<HTMLDivElement>(null);
   const ghostTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /**
+   * The answer a card is switching to, held on screen for `ANSWER_SWITCH_HOLD`
+   * before the card leaves on it — see that constant for why.
+   *
+   * Non-null only during that beat, and it is what the card renders while it
+   * lasts: the store still holds the *old* answer until `commit` runs, so
+   * without this the card would sit through the pause still showing the answer
+   * being replaced.
+   */
+  const [switching, setSwitching] = useState<SwipeIntent | null>(null);
+  const switchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const commit = useCallback(
     (intent: SwipeIntent, speed: CommitSpeed, from: string) => {
       if (finished) return;
@@ -145,6 +158,9 @@ export function QuestionDeck({
   const { cardRef, nextRef, backRef, onPointerDown, isDragging, animateStackRise } = useSwipeDeck({
     onCommit: (swipeIntent, from) => commit(swipeIntent, 'normal', from),
     onIntentChange: setHint,
+    // Not draggable through the hold: the card is showing an answer it is
+    // about to leave on, and a drag would be answering it a second time.
+    disabled: switching !== null,
   });
 
   const AT_REST = 'translate(0px, 0px) rotate(0deg)';
@@ -152,33 +168,76 @@ export function QuestionDeck({
   /** Tapping a button commits from rest, so it flies out a little slower. */
   const commitFromButton = useCallback(
     (zone: SwipeZone, important: boolean) => {
+      setSwitching(null);
       commit({ zone, important }, 'slow', AT_REST);
       animateStackRise('slow');
     },
     [commit, animateStackRise],
   );
 
+  /**
+   * Answer from a button or the keyboard.
+   *
+   * `replacing` an answer that is already there splits this into two visible
+   * steps — the selection moves to the pressed button, then the card leaves on
+   * it. A first answer stays a single step.
+   */
+  const answerFromButton = useCallback(
+    (zone: SwipeZone, important: boolean, replacing: boolean) => {
+      if (!replacing) {
+        commitFromButton(zone, important);
+        return;
+      }
+
+      setSwitching({ zone, important });
+      switchTimer.current = setTimeout(
+        () => commitFromButton(zone, important),
+        answerSwitchHold() * 1000,
+      );
+    },
+    [commitFromButton],
+  );
+
   const handleAgree = useCallback(() => {
+    // Presses during the hold are the same press arriving twice — the card is
+    // already committed to leaving on this answer.
+    if (switching) return;
     if (selection.agree) {
       // Choosing the same answer again clears it, without leaving the card.
       onAnswer(true, selection.important);
       return;
     }
-    commitFromButton('agree', selection.important);
-  }, [commitFromButton, onAnswer, selection.agree, selection.important]);
+    answerFromButton('agree', selection.important, selection.disagree);
+  }, [
+    answerFromButton,
+    onAnswer,
+    selection.agree,
+    selection.disagree,
+    selection.important,
+    switching,
+  ]);
 
   const handleDisagree = useCallback(() => {
+    if (switching) return;
     if (selection.disagree) {
       onAnswer(false, selection.important);
       return;
     }
-    commitFromButton('disagree', selection.important);
-  }, [commitFromButton, onAnswer, selection.disagree, selection.important]);
+    answerFromButton('disagree', selection.important, selection.agree);
+  }, [
+    answerFromButton,
+    onAnswer,
+    selection.agree,
+    selection.disagree,
+    selection.important,
+    switching,
+  ]);
 
   const handleSkip = useCallback(() => {
+    if (switching) return;
     commit({ zone: 'skip', important: false }, 'normal', AT_REST);
     animateStackRise('normal');
-  }, [commit, animateStackRise]);
+  }, [commit, animateStackRise, switching]);
 
   useImperativeHandle(
     ref,
@@ -229,6 +288,7 @@ export function QuestionDeck({
   useEffect(
     () => () => {
       if (ghostTimer.current) clearTimeout(ghostTimer.current);
+      if (switchTimer.current) clearTimeout(switchTimer.current);
     },
     [],
   );
@@ -292,13 +352,22 @@ export function QuestionDeck({
    * a question armed by an earlier star tap stays visibly armed through a
    * drag that does not itself reach the up-swipe threshold.
    */
-  const activeSelection: CardSelection = isDragging
+  const activeSelection: CardSelection = switching
     ? {
-        agree: hint?.zone === 'agree',
-        disagree: hint?.zone === 'disagree',
-        important: (hint !== null && hint.zone !== 'skip' && hint.important) || selection.important,
+        // The beat before the card leaves: it shows the answer it is leaving
+        // on, which the store does not hold yet.
+        agree: switching.zone === 'agree',
+        disagree: switching.zone === 'disagree',
+        important: switching.important || selection.important,
       }
-    : selection;
+    : isDragging
+      ? {
+          agree: hint?.zone === 'agree',
+          disagree: hint?.zone === 'disagree',
+          important:
+            (hint !== null && hint.zone !== 'skip' && hint.important) || selection.important,
+        }
+      : selection;
 
   return (
     <div className={styles.deck}>
@@ -389,12 +458,12 @@ function directionForIntent(intent: SwipeIntent | null): DragDirection | null {
 /**
  * What releasing right now would record.
  *
- * Always the full "Souhlasím" / "Nesouhlasím", never the compact "Ano" / "Ne"
- * it used to shrink to on a narrow deck. The toast is the only place in the
- * flow those two answers went by a different name — the card's own buttons,
- * the keyboard hints, the recap and the results all say the long form — and a
- * control that renames itself at the moment of committing is teaching the
- * reader a synonym they never asked for.
+ * Whatever the card's own buttons say, and nothing else. An answer has exactly
+ * one name in this app — `messages.answer` — and the toast is the one place
+ * that name used to be rewritten, first shrinking to a compact form on a narrow
+ * deck and later spelling out a longer synonym. A control that renames the
+ * answer at the moment of committing is teaching the reader a second word for
+ * the thing they just chose.
  */
 function HintLabel({ intent, labels }: { intent: SwipeIntent; labels: QuestionDeckLabels }) {
   if (intent.zone === 'skip') return <span>{labels.skip}</span>;

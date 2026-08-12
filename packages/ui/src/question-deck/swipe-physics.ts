@@ -81,6 +81,22 @@ export const SPEEDS: Record<CommitSpeed, { fly: number; fade: number }> = {
 export const SPRING_BACK_DURATION = 0.36;
 
 /**
+ * How long a card holds on a freshly-changed answer before it leaves.
+ *
+ * Only ever applies to *changing* an answer that already exists — pressing "Ne"
+ * on a card that currently reads "Ano". Committing and flying in the same frame
+ * makes those two presses look identical from the outside: the card is gone
+ * before the button it was pressed on has visibly changed, so the one thing the
+ * reader wanted confirmed — that the new answer took — is the one thing they
+ * never see. The beat is the confirmation; the flight is the consequence.
+ *
+ * A first answer does not get it. There is nothing to correct, the button's own
+ * press state already reads, and paying a quarter of a second on every one of
+ * forty cards to say what was never in doubt is a tax, not a reassurance.
+ */
+export const ANSWER_SWITCH_HOLD = 0.26;
+
+/**
  * What every duration here collapses to under `prefers-reduced-motion`.
  *
  * Near-zero rather than zero, matching what `base.css` does to the duration
@@ -107,6 +123,16 @@ export const REDUCED_DURATION = 0.001;
 export function speedFor(speed: CommitSpeed): { fly: number; fade: number } {
   if (prefersReducedMotion()) return { fly: REDUCED_DURATION, fade: REDUCED_DURATION };
   return SPEEDS[speed];
+}
+
+/**
+ * The beat between an answer changing and the card leaving on it.
+ *
+ * Collapsed under reduced motion along with everything else: with no flight to
+ * separate the change from, a pause is a delay and nothing more.
+ */
+export function answerSwitchHold(): number {
+  return prefersReducedMotion() ? REDUCED_DURATION : ANSWER_SWITCH_HOLD;
 }
 
 /** How long an abandoned drag takes to settle back to centre. */
@@ -141,7 +167,7 @@ export function zoneForOffset(
   }
 
   if (absX > PHYSICS.zoneActivateX) {
-    // Left is "Souhlasím" — it matches the button order on the card.
+    // Left is "Ano" — it matches the button order on the card.
     return {
       zone: dx < 0 ? 'agree' : 'disagree',
       important: dy < PHYSICS.importantLiftY,

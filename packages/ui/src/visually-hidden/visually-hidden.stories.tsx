@@ -23,6 +23,6 @@ export const LiveRegion: Story = {
   args: {
     as: 'output',
     'aria-live': 'polite',
-    children: 'Odpověď zaznamenána: Souhlasím',
+    children: 'Odpověď zaznamenána: Ano',
   },
 };
