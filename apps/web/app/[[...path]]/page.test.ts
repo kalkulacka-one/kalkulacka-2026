@@ -44,9 +44,9 @@ describe('generateMetadata', () => {
     expect(review.title).toBe(intro.title);
   });
 
-  it('returns nothing for an embed path', async () => {
-    const metadata = await metadataFor(['embed', 'partner']);
-    expect(metadata).toEqual({});
+  it('marks embed paths noindex — the canonical URLs are the indexable ones', async () => {
+    const metadata = await metadataFor(['embed', 'idnes', 'volby', 'komunalni-2022']);
+    expect(metadata).toEqual({ robots: { index: false, follow: false } });
   });
 
   it('returns nothing for an unresolved public result id', async () => {

@@ -1,6 +1,8 @@
 import { getMessages } from '@vk/i18n';
+import { themes } from '@vk/tokens';
 import { AppHeader } from '@vk/ui';
 import type { ReactNode } from 'react';
+import { embedConfigOf, isEmbedName } from '../config/embeds';
 import type { CalculatorShellInfo } from '../lib/paths';
 import { AppMenu } from './app-menu';
 import styles from './app-shell.module.css';
@@ -38,6 +40,12 @@ export type AppShellProps = {
    * answers and progress, and this page is somebody else's result.
    */
   readOnly?: boolean;
+  /**
+   * The embed partner, when rendering inside an iframe. Calculator screens
+   * carry it in `calculator.embed` already; this prop exists for the one
+   * shell consumer with no calculator — the district picker.
+   */
+  embed?: string;
   children: ReactNode;
 };
 
@@ -58,8 +66,33 @@ export function AppShell({
   calculator,
   scroll = 'pinned',
   readOnly = false,
+  embed,
   children,
 }: AppShellProps) {
+  /*
+   * Embed chrome: the same shell, two differences. The wordmark becomes the
+   * attribution — an outbound link to the full site, in a new tab, because it
+   * is the one way out of a partner's iframe (`href="/"` needs no configured
+   * base URL: the iframe's own origin is this app). And the menu drops
+   * "Opustit kalkulačku": navigating an iframe to our homepage inside someone
+   * else's article is not leaving, it is getting lost.
+   */
+  const embedName = embed ?? calculator?.embed;
+  const embedConfig = embedName && isEmbedName(embedName) ? embedConfigOf(embedName) : undefined;
+
+  /*
+   * Partner themes are single-mode (light-only — see the theme files in
+   * `@vk/tokens`), which pins `color-scheme` at the theme's scope and makes
+   * the dark-mode toggle a control that does nothing. A dead toggle is worse
+   * than no toggle, so it is withheld exactly when the active embed theme
+   * provides only one palette.
+   */
+  const partnerTheme = embedConfig?.theme
+    ? themes.find((theme) => theme.name === embedConfig.theme)
+    : undefined;
+  const singleModeTheme =
+    !!partnerTheme && !(partnerTheme.color?.light && partnerTheme.color?.dark);
+
   return (
     <div className={styles.shell}>
       <ScrollMode mode={scroll} />
@@ -70,7 +103,14 @@ export function AppShell({
             title={messages.app.title}
             electionName={calculator?.electionName ?? electionName}
             calculatorName={calculator?.name}
-            actions={<AppMenu calculator={readOnly ? undefined : calculator} />}
+            href={embedConfig?.attribution ? '/' : undefined}
+            actions={
+              <AppMenu
+                calculator={readOnly ? undefined : calculator}
+                embed={!!embedConfig}
+                colorModeToggle={!singleModeTheme}
+              />
+            }
           />
         </div>
 

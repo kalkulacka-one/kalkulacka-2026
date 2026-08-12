@@ -38,6 +38,8 @@ export type DistrictPickerProps = {
   /** Decides the screen's whole vocabulary — a město is not an obvod. */
   districtKind: DistrictKind;
   districts: PickerDistrict[];
+  /** The embed partner, when this picker renders inside an iframe. */
+  embed?: string;
 };
 
 const messages = getMessages();
@@ -62,7 +64,12 @@ function normalize(value: string): string {
  * into off-screen the moment the list grew past a few rows. Here the header
  * is a fixed row and only `.listWrap` scrolls underneath it.
  */
-export function DistrictPicker({ electionName, districtKind, districts }: DistrictPickerProps) {
+export function DistrictPicker({
+  electionName,
+  districtKind,
+  districts,
+  embed,
+}: DistrictPickerProps) {
   const [query, setQuery] = useState('');
   const listId = useId();
   const router = useRouter();
@@ -177,7 +184,7 @@ export function DistrictPicker({ electionName, districtKind, districts }: Distri
   }, [updateFades]);
 
   return (
-    <AppShell electionName={electionName}>
+    <AppShell electionName={electionName} embed={embed}>
       <main className={styles.screen}>
         <div className={styles.inner}>
           <header className={styles.header}>

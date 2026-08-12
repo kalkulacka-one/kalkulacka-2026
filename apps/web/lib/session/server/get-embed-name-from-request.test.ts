@@ -31,4 +31,18 @@ describe('getEmbedNameFromRequest', () => {
   it('returns undefined for a malformed referer', () => {
     expect(getEmbedNameFromRequest(requestWithReferer('not-a-url'))).toBeUndefined();
   });
+
+  it('rejects names the partner registry does not know (S7)', () => {
+    // The Referer is client-controlled and the name becomes a cookie-name
+    // suffix — registry membership is the validation.
+    const request = requestWithReferer(
+      'https://www.volebnikalkulacka.cz/embed/%0d%0aevil=1/kalkulacka',
+    );
+    expect(getEmbedNameFromRequest(request)).toBeUndefined();
+    expect(
+      getEmbedNameFromRequest(
+        requestWithReferer('https://www.volebnikalkulacka.cz/embed/unknown-partner/x'),
+      ),
+    ).toBeUndefined();
+  });
 });

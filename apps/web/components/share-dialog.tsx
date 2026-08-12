@@ -36,6 +36,9 @@ export type ShareLinkTarget = {
   calculatorId: string;
   /** The public result's path, once the server has said what its id is. */
   resultPath: (publicId: string) => string;
+  /** The embed partner, when minting from inside an iframe — routes the mint
+   * through the embed's own session rather than the first-party one. */
+  embedName?: string;
 };
 
 export type ShareDialogProps = {
@@ -260,7 +263,7 @@ export function ShareDialog({
     if (!link) return;
     setLinkStatus('working');
 
-    const publicId = await requestShareLink(link.calculatorId);
+    const publicId = await requestShareLink(link.calculatorId, link.embedName);
     if (!publicId) {
       setLinkStatus('failed');
       return;

@@ -21,7 +21,13 @@ import { buildAiPrompt } from '../lib/ai-prompt';
 import { trackEvent } from '../lib/analytics';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
 import { comparisonFilterSlug } from '../lib/comparison-filters';
-import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
+import {
+  type CalculatorRef,
+  canonicalRef,
+  questionPath,
+  shellInfoOf,
+  stepPath,
+} from '../lib/paths';
 import { canSync, useResultsSync } from '../lib/session-sync';
 import { toProxiedAssetUrl } from '../lib/share-asset-url';
 import { AppShell } from './app-shell';
@@ -107,7 +113,7 @@ function markResultsSeen(calculatorId: string): void {
  */
 const COLLAPSED_RESULTS = 5;
 
-export function Results({ calculator, electionKey, district, shared }: ResultsProps) {
+export function Results({ calculator, electionKey, district, embed, shared }: ResultsProps) {
   /*
    * Read unconditionally — hooks are — but ignored on a shared result. That is
    * the only contact this screen then has with the viewer's own store: a
@@ -115,7 +121,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
    */
   const ownAnswers = useCalculatorAnswers(calculator.id);
   const answers = shared?.answers ?? ownAnswers;
-  const ref = { electionKey, district };
+  const ref = { electionKey, district, embed };
   const shellInfo = shellInfoOf(calculator, ref);
 
   const answered = countAnswered(calculator.questions, answers);
@@ -182,6 +188,7 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
       calculatorGroup: electionKey,
       calculatorKey: district,
       calculatorVersion: calculator.version,
+      embedName: embed,
     },
     !shared && ready && answered > 0 ? results : undefined,
   );
@@ -496,7 +503,10 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
             canSync(calculator.id)
               ? {
                   calculatorId: calculator.id,
-                  resultPath: (publicId: string) => stepPath(ref, 'result', publicId),
+                  // Canonical, not embed-prefixed: a public link leaving the
+                  // app should open the full site, wherever it was minted.
+                  resultPath: (publicId: string) => stepPath(canonicalRef(ref), 'result', publicId),
+                  embedName: embed,
                 }
               : undefined
           }

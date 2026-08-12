@@ -6,10 +6,14 @@ import Script from 'next/script';
 import type { ReactNode } from 'react';
 import { MonitoringBoot } from '../components/monitoring-boot';
 import { bootstrapColorMode } from '../lib/color-mode';
+import { bootstrapEmbedTheme } from '../lib/embed-theme-bootstrap';
 
 import '@vk/tokens/base.css';
 import '@vk/tokens/themes/default.css';
 import '@vk/tokens/themes/midnight.css';
+import '@vk/tokens/themes/diky-ze-muzem.css';
+import '@vk/tokens/themes/alarm.css';
+import '@vk/tokens/themes/prima.css';
 import './globals.css';
 
 // Font *loading* is an app concern; themes only reference the resulting
@@ -98,6 +102,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           // code — `dangerouslySetInnerHTML` is the same output without it.
           // biome-ignore lint/security/noDangerouslySetInnerHtml: `bootstrapColorMode` is a fixed, module-scope string with no user input, not markup built from a request.
           dangerouslySetInnerHTML={{ __html: bootstrapColorMode }}
+        />
+
+        {/*
+          Partner embeds get their brand theme before first paint, for the
+          same reason and by the same mechanism as the color-mode script
+          above — an effect-based switch flashes the default theme inside a
+          partner's page. The map inside is baked from `config/embeds.ts` at
+          build time; see `lib/embed-theme-bootstrap.ts`.
+        */}
+        <script
+          id="embed-theme-bootstrap"
+          suppressHydrationWarning
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: `bootstrapEmbedTheme` is a fixed, module-scope string with no user input, not markup built from a request.
+          dangerouslySetInnerHTML={{ __html: bootstrapEmbedTheme }}
         />
 
         {/*

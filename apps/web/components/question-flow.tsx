@@ -28,7 +28,7 @@ export type QuestionFlowProps = {
 const messages = getMessages();
 
 export function QuestionFlow({ calculator, questions, initialPosition }: QuestionFlowProps) {
-  const { id: calculatorId, electionKey, district } = calculator;
+  const { id: calculatorId, electionKey, district, embed } = calculator;
   const [index, setIndex] = useState(() =>
     Math.min(Math.max(initialPosition - 1, 0), questions.length - 1),
   );
@@ -42,6 +42,16 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
   const [justCleared, setJustCleared] = useState(false);
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally keyed on `index` alone — this only resets on card change, nothing inside it reads `index`.
   useEffect(() => setJustCleared(false), [index]);
+
+  /**
+   * True from the moment the last question's commit pushes toward the recap
+   * until this screen unmounts. The push is asynchronous — an RSC round-trip,
+   * or in dev a compile — and without this flag the deck sits fully live in
+   * the meantime: its ghost design snaps the same card back after the exit
+   * animation, so a slow navigation read as "question 42 can be answered
+   * forever", each answer firing another push.
+   */
+  const [leaving, setLeaving] = useState(false);
 
   const answers = useCalculatorAnswers(calculatorId);
   const setAnswer = useAnswersStore((s) => s.setAnswer);
@@ -57,12 +67,25 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    * which is exactly the latency this interaction cannot afford.
    */
   useEffect(() => {
-    const path = questionPath({ electionKey, district }, index + 1);
+    const path = questionPath({ electionKey, district, embed }, index + 1);
     window.history.replaceState(null, '', path);
-  }, [electionKey, district, index]);
+  }, [electionKey, district, embed, index]);
 
   const deckRef = useRef<QuestionDeckHandle>(null);
   const router = useRouter();
+
+  /*
+   * The two `router.push` exits from this screen, warmed on mount.
+   * A push, unlike a viewport-visible `<Link>`, prefetches nothing — so
+   * without this the last card flies away and the flow then sits on a
+   * full RSC round-trip before the recap paints, dead air the user reads
+   * as lag. (No-op in dev, where prefetching is disabled — dev's
+   * first-navigation stalls are compilation, not this.)
+   */
+  useEffect(() => {
+    router.prefetch(stepPath({ electionKey, district, embed }, 'review'));
+    router.prefetch(stepPath({ electionKey, district, embed }, 'guide'));
+  }, [router, electionKey, district, embed]);
 
   /**
    * Move on — and off the end of the deck into the recap.
@@ -71,12 +94,14 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    * with a "Další" that does nothing, so the deck's end is the recap's entrance.
    */
   const advance = useCallback(() => {
+    if (leaving) return;
     if (index + 1 >= questions.length) {
-      router.push(stepPath({ electionKey, district }, 'review'));
+      setLeaving(true);
+      router.push(stepPath({ electionKey, district, embed }, 'review'));
       return;
     }
     setIndex(index + 1);
-  }, [district, electionKey, index, questions.length, router]);
+  }, [district, electionKey, embed, index, leaving, questions.length, router]);
 
   /**
    * Back one card — and, from the first one, back to the tutorial.
@@ -88,12 +113,13 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
    * returns to like every other back link in the app.
    */
   const goToPrevious = useCallback(() => {
+    if (leaving) return;
     if (index === 0) {
-      router.push(stepPath({ electionKey, district }, 'guide'));
+      router.push(stepPath({ electionKey, district, embed }, 'guide'));
       return;
     }
     setIndex((i) => Math.max(i - 1, 0));
-  }, [district, electionKey, index, router]);
+  }, [district, electionKey, embed, index, leaving, router]);
 
   /**
    * Lifts the card away without writing to the answer store — used both by
@@ -107,7 +133,7 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
 
   const handleAnswer = useCallback(
     (agree: boolean, important: boolean) => {
-      if (!question) return;
+      if (leaving || !question) return;
 
       const existing = answers[question.id];
       const isClearing = existing?.answer === agree;
@@ -119,14 +145,14 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
       setJustCleared(isClearing);
       if (!isClearing) advance();
     },
-    [advance, answers, calculatorId, question, setAnswer, toggleImportant],
+    [advance, answers, calculatorId, leaving, question, setAnswer, toggleImportant],
   );
 
   const handleSkip = useCallback(() => {
-    if (!question) return;
+    if (leaving || !question) return;
     skipQuestion(calculatorId, question.id);
     advance();
-  }, [advance, calculatorId, question, skipQuestion]);
+  }, [advance, calculatorId, leaving, question, skipQuestion]);
 
   const handleToggleImportant = useCallback(() => {
     if (!question) return;
@@ -255,6 +281,7 @@ export function QuestionFlow({ calculator, questions, initialPosition }: Questio
               onAnswer={handleAnswer}
               onSkip={handleSkip}
               onToggleImportant={handleToggleImportant}
+              finished={leaving}
             />
           </div>
 

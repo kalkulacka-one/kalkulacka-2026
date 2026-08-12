@@ -100,13 +100,19 @@ export function MatchRow({
           </span>
         ) : null}
 
-        <span className={styles.rank}>{rank ?? '–'}</span>
-
         <Avatar name={name} src={avatarUrl} size={winner ? 'large' : 'medium'} />
 
         <span className={styles.identity}>
           {winner && winnerLabel ? <Tag tone="neutral">{winnerLabel}</Tag> : null}
-          <span className={styles.name}>{name}</span>
+          {/* The rank rides the name as an ordinal — "2." is how Czech writes
+              one — rather than sitting in its own column, which spent a whole
+              grid track on one or two digits. An unranked candidate simply has
+              no ordinal: a bold "–" would shout on the one row that is meant
+              to stay quiet. */}
+          <span className={styles.nameLine}>
+            {rank === undefined ? null : <span className={styles.rank}>{rank}.</span>}
+            <span className={styles.name}>{name}</span>
+          </span>
           {comparable ? null : <span className={styles.noAnswer}>{noAnswerLabel}</span>}
         </span>
 

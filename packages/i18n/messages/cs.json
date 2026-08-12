@@ -99,7 +99,7 @@
     }
   },
   "intro": {
-    "description": "Odpovíte na {questions} a uvidíte, ke komu máte nejblíž. Nikam se nic neposílá — odpovědi zůstávají ve vašem prohlížeči.",
+    "description": "Odpovíte na {questions} a uvidíte, ke komu máte nejblíž.",
     "candidates": "Porovnáváme {candidates}.",
     "start": "Pokračovat",
     "continue": "Pokračovat v odpovídání",

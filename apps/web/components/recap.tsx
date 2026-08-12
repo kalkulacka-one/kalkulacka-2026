@@ -13,7 +13,8 @@ import {
 import { format, getMessages } from '@vk/i18n';
 import { Button, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
 import Link from 'next/link';
-import { useCallback, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswersReady, useAnswersStore, useCalculatorAnswers } from '../lib/answers-store';
 import { type CalculatorShellInfo, questionPath, stepPath } from '../lib/paths';
 import { toCardContent } from '../lib/question-content';
@@ -39,7 +40,7 @@ const messages = getMessages();
  * action off the top made the step after it feel like a different product.
  */
 export function Recap({ calculator, questions }: RecapProps) {
-  const { id: calculatorId, electionKey, district } = calculator;
+  const { id: calculatorId, electionKey, district, embed } = calculator;
   const ready = useAnswersReady();
   const answers = useCalculatorAnswers(calculatorId);
   const setAnswer = useAnswersStore((s) => s.setAnswer);
@@ -91,7 +92,19 @@ export function Recap({ calculator, questions }: RecapProps) {
     lastScrollTopRef.current = top;
   }, []);
 
-  const ref = { electionKey, district };
+  const ref = { electionKey, district, embed };
+
+  /*
+   * Warm the results route while the recap is being read. The CTA is a
+   * `<Link>`, but auto-prefetch for a dynamic route is not a given across
+   * Next versions/deployments — and the screen after this one opens on a
+   * loading animation that should start the moment the button is pressed,
+   * not after an RSC round-trip. Explicit is cheap. (No-op in dev.)
+   */
+  const router = useRouter();
+  useEffect(() => {
+    router.prefetch(stepPath({ electionKey, district, embed }, 'result'));
+  }, [router, electionKey, district, embed]);
 
   // Which questions a filter leaves, and what each chip counts, is @vk/core's
   // to decide — this screen only lays the answer out.

@@ -39,6 +39,12 @@ export type CalculatorSyncTarget = {
   calculatorKey: string;
   /** Semver of the data this session is being answered against, when known. */
   calculatorVersion?: string;
+  /**
+   * The embed partner, inside a partner iframe. Sent with the session POST so
+   * the server sets the suffixed, partitioned cookie, and used locally to key
+   * the sessionStorage mirror the Bearer fallback reads.
+   */
+  embedName?: string;
 };
 
 type Match = { id: string; match?: number };
@@ -108,8 +114,8 @@ function sessionDataUrl(calculatorId: string): string {
  * The Bearer fallback for browsers that drop our cookie (third-party contexts,
  * mainly embeds). Empty otherwise, so the cookie is the normal path.
  */
-function authHeaders(): Record<string, string> {
-  const runtimeSessionId = getRuntimeSessionId();
+function authHeaders(embedName?: string): Record<string, string> {
+  const runtimeSessionId = getRuntimeSessionId(embedName);
   return runtimeSessionId ? { authorization: `Bearer ${runtimeSessionId}` } : {};
 }
 
@@ -130,12 +136,13 @@ async function initialize(target: CalculatorSyncTarget): Promise<boolean> {
   try {
     const response = await fetch('/api/sessions', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...authHeaders() },
+      headers: { 'content-type': 'application/json', ...authHeaders(target.embedName) },
       body: JSON.stringify({
         calculatorId: target.calculatorId,
         calculatorKey: target.calculatorKey,
         calculatorGroup: target.calculatorGroup,
         ...(target.calculatorVersion ? { calculatorVersion: target.calculatorVersion } : {}),
+        ...(target.embedName ? { embedName: target.embedName } : {}),
       }),
     });
 
@@ -143,7 +150,7 @@ async function initialize(target: CalculatorSyncTarget): Promise<boolean> {
 
     const body: unknown = await response.json();
     const sessionId = (body as { sessionId?: unknown } | null)?.sessionId;
-    if (typeof sessionId === 'string') setRuntimeSessionId(sessionId);
+    if (typeof sessionId === 'string') setRuntimeSessionId(sessionId, target.embedName);
 
     // Kept apart from the session itself: a restore that fails means nothing
     // was adopted, not that there is nowhere to save to.
@@ -164,7 +171,9 @@ function hasLocalAnswers(calculatorId: string): boolean {
 async function restore(target: CalculatorSyncTarget): Promise<void> {
   if (hasLocalAnswers(target.calculatorId)) return;
 
-  const response = await fetch(sessionDataUrl(target.calculatorId), { headers: authHeaders() });
+  const response = await fetch(sessionDataUrl(target.calculatorId), {
+    headers: authHeaders(target.embedName),
+  });
   // 404 is the ordinary answer for a session that has never been saved.
   if (!response.ok) return;
 
@@ -209,7 +218,7 @@ async function save(target: CalculatorSyncTarget, matches?: Match[]): Promise<vo
   try {
     const response = await fetch(sessionDataUrl(target.calculatorId), {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...authHeaders() },
+      headers: { 'content-type': 'application/json', ...authHeaders(target.embedName) },
       body,
     });
     if (!response.ok) return;
@@ -340,7 +349,10 @@ export async function saveResults(
  * The server is idempotent — a session that already has a public id gets the
  * same one back — so pressing twice cannot mint two links to one result.
  */
-export async function requestShareLink(calculatorId: string): Promise<string | null> {
+export async function requestShareLink(
+  calculatorId: string,
+  embedName?: string,
+): Promise<string | null> {
   if (!canSync(calculatorId)) return null;
 
   /*
@@ -355,7 +367,7 @@ export async function requestShareLink(calculatorId: string): Promise<string | n
   try {
     const response = await fetch(`/api/calculators/${calculatorId}/sessions:share`, {
       method: 'POST',
-      headers: authHeaders(),
+      headers: authHeaders(embedName),
     });
     if (!response.ok) return null;
 

@@ -136,11 +136,12 @@ export function AnswersComparison({
   calculator,
   electionKey,
   district,
+  embed,
   initialFilter,
 }: AnswersComparisonProps) {
   const answers = useCalculatorAnswers(calculator.id);
   const ready = useAnswersReady();
-  const ref = { electionKey, district };
+  const ref = { electionKey, district, embed };
   const shellInfo = shellInfoOf(calculator, ref);
 
   const topics = useMemo(

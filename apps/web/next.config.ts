@@ -51,11 +51,12 @@ function dataOrigin(): string | null {
  * hand-written inline script in lib/color-mode.ts, evaluating
  * 'strict-dynamic') is the decision to make at enforcement time.
  *
- * `frame-ancestors 'none'` and the X-Frame-Options below must both become a
- * per-path split when Phase E lands — `/embed/*` needs to stay embeddable
- * while everything else keeps denying.
+ * Framing is a per-path split: `/embed/<partner>/…` exists to be iframed and
+ * gets `frame-ancestors *` (the Referer is not authenticatable, so a per-
+ * partner ancestor allowlist would be theatre — the registry gates what
+ * renders, not who may frame it); everything else denies.
  */
-function contentSecurityPolicy(): string {
+function contentSecurityPolicy(frameAncestors: string): string {
   const cdn = dataOrigin();
   return [
     "default-src 'self'",
@@ -72,8 +73,31 @@ function contentSecurityPolicy(): string {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'",
+    `frame-ancestors ${frameAncestors}`,
   ].join('; ');
+}
+
+/** On every response, embedded or not. */
+const baseSecurityHeaders = [
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // Ignored over plain http, so harmless in dev.
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+];
+
+/**
+ * Dev is exempt from the CSP header only: `next dev`'s tooling runs on eval
+ * and would report violations that production can never produce.
+ */
+function cspReportOnly(frameAncestors: string) {
+  return process.env.NODE_ENV === 'development'
+    ? []
+    : [
+        {
+          key: 'Content-Security-Policy-Report-Only',
+          value: contentSecurityPolicy(frameAncestors),
+        },
+      ];
 }
 
 const nextConfig: NextConfig = {
@@ -98,21 +122,21 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        // Everything except /embed/* — including bare `/embed`, which is a
+        // 404 and may as well deny framing too.
+        source: '/((?!embed/).*)',
         headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          // Ignored over plain http, so harmless in dev.
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
-          // Nothing legitimately frames the app until Phase E ships /embed/*;
-          // this then becomes a per-path split, not a blanket deny.
+          ...baseSecurityHeaders,
           { key: 'X-Frame-Options', value: 'DENY' },
-          // Dev is exempt: `next dev`'s tooling runs on eval and would report
-          // violations that production can never produce.
-          ...(process.env.NODE_ENV === 'development'
-            ? []
-            : [{ key: 'Content-Security-Policy-Report-Only', value: contentSecurityPolicy() }]),
+          ...cspReportOnly("'none'"),
         ],
+      },
+      {
+        // Embeds exist to be framed: no X-Frame-Options at all, and
+        // frame-ancestors open — see contentSecurityPolicy() for why there is
+        // no per-partner ancestor allowlist.
+        source: '/embed/:path*',
+        headers: [...baseSecurityHeaders, ...cspReportOnly('*')],
       },
     ];
   },

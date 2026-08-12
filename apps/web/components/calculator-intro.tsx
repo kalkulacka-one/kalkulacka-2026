@@ -44,6 +44,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
     electionName,
     electionKey,
     district,
+    embed,
   } = calculator;
   const answers = useCalculatorAnswers(calculatorId);
   const resetCalculator = useAnswersStore((s) => s.resetCalculator);
@@ -60,8 +61,8 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
   const nextIndex = firstUnansweredIndex(questions, answers);
   const resumePath =
     nextIndex === -1
-      ? stepPath({ electionKey, district }, 'review')
-      : questionPath({ electionKey, district }, nextIndex + 1);
+      ? stepPath({ electionKey, district, embed }, 'review')
+      : questionPath({ electionKey, district, embed }, nextIndex + 1);
 
   return (
     <Screen
@@ -70,8 +71,19 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
       /* The election, not the picker's own heading: every other back link on
          the site names the place it returns to, and "Vyberte město" named an
          instruction instead — which also meant it had to be re-worded the
-         moment a senate election, where it is an obvod, used the same link. */
-      back={{ href: electionPath(electionKey), label: electionName }}
+         moment a senate election, where it is an obvod, used the same link.
+
+         No back link inside an embed: a partner embeds one specific
+         calculator, so this screen IS the entry point — a link up to "all
+         calculators" leads out of the deal the partner made. (If a partner
+         ever embeds the picker itself, this needs revisiting: the picker
+         would then be unreachable after this screen.) */
+      back={embed ? undefined : { href: electionPath(electionKey), label: electionName }}
+      /* No privacy clause here, by request. "Nikam se nic neposílá" predated
+         server sessions and became untrue with a backend configured; the
+         honest replacement read as a warning that something gets saved —
+         scarier than saying nothing. The reader deciding whether to start
+         does not care; the leave dialog still reassures where it matters. */
       description={format(messages.intro.description, {
         questions: plural(questions.length, {
           one: messages.intro.questionCountOne,
@@ -100,7 +112,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
           ) : (
             <Button
               as={Link}
-              href={stepPath({ electionKey, district }, 'guide')}
+              href={stepPath({ electionKey, district, embed }, 'guide')}
               size="large"
               // Fired on click, not on arrival at `/navod` — a tap here is the
               // decision to start; the tutorial after it is still onboarding,
@@ -147,7 +159,7 @@ export function CalculatorIntro({ calculator, candidateCount, questions }: Calcu
           setConfirmingRestart(false);
           // Same destination as the menu's restart: cleared answers and a
           // screen still saying "Pokračovat" would be its own small lie.
-          router.push(questionPath({ electionKey, district }, 1));
+          router.push(questionPath({ electionKey, district, embed }, 1));
         }}
       />
     </Screen>

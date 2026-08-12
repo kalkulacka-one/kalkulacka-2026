@@ -18,6 +18,7 @@ import { Guide } from '../../components/guide';
 import { QuestionFlow } from '../../components/question-flow';
 import { Recap } from '../../components/recap';
 import { Results } from '../../components/results';
+import { isEmbedName } from '../../config/embeds';
 import {
   listAvailableCalculators,
   listDistricts,
@@ -43,10 +44,16 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
 
   if (!route) notFound();
 
-  // Embed mode is parsed by @vk/core but not yet rendered — Phase 7 builds it.
-  // Until then, an embed URL 404s rather than silently serving the full app
-  // shell to a partner expecting a stripped-down embed.
-  if (route.embed) notFound();
+  /*
+   * Embeds are the same grammar with a partner prefix, and the registry is the
+   * gate: an unregistered name is a 404, not a generic embed — the name goes
+   * on to become a cookie suffix and a session attribute (S7), and partners
+   * are a negotiated list, not an open enrolment. The prefix is only valid on
+   * election and calculator routes; embedding the homepage is nothing the old
+   * platform offered and nothing an iframe has room to be.
+   */
+  if (route.embed && !isEmbedName(route.embed)) notFound();
+  if (route.embed && route.kind === 'home') notFound();
 
   if (route.kind === 'election') {
     const election = await loadElection(route.electionKey);
@@ -59,7 +66,10 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
         slug: district.slug,
         showCode: district.showCode,
         available: district.available,
-        href: stepPath({ electionKey: route.electionKey, district: district.slug }, 'intro'),
+        href: stepPath(
+          { electionKey: route.electionKey, district: district.slug, embed: route.embed },
+          'intro',
+        ),
       }),
     );
 
@@ -68,6 +78,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
         electionName={election.name}
         districtKind={election.districtKind}
         districts={districts}
+        embed={route.embed}
       />
     );
   }
@@ -76,7 +87,11 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     const calculator = await loadCalculator(route.electionKey, route.district ?? '');
     if (!calculator) notFound();
 
-    const ref = { electionKey: route.electionKey, district: route.district ?? '' };
+    const ref = {
+      electionKey: route.electionKey,
+      district: route.district ?? '',
+      embed: route.embed,
+    };
 
     /*
      * A public link to somebody's finished result — the one calculator URL
@@ -112,6 +127,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
           calculatorGroup={ref.electionKey}
           calculatorKey={ref.district}
           calculatorVersion={calculator.version}
+          embedName={ref.embed}
         />
         {calculatorScreen(route, calculator, ref)}
       </>
@@ -209,8 +225,12 @@ export async function generateMetadata({
   const { path } = await params;
   const route: ParsedRoute | null = parseRoute(path ?? [], routeSlugs());
 
-  // Embed mode 404s in the page component above; it gets no metadata either.
-  if (!route || route.embed) return {};
+  if (!route) return {};
+
+  // Embeds render inside someone else's page — a search hit landing on a bare
+  // iframe URL would be the app with its chrome stripped for a context it
+  // isn't in. The canonical URLs are the indexable ones.
+  if (route.embed) return { robots: { index: false, follow: false } };
 
   const messages = getMessages();
 
