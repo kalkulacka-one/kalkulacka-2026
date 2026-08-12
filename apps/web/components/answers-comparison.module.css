@@ -1,0 +1,493 @@
+/*
+ * A single reading column, unlike the results screen's two panes: this is a
+ * list to be scanned top to bottom, and a second pane would only be somewhere
+ * for the eye to lose its place. The document scrolls (see `scroll="document"`
+ * on the shell), so long comment threads behave like a page, not a widget.
+ */
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+}
+
+.inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-5);
+
+  width: 100%;
+  /* Narrower than the results screen's 80rem: one column of statements reads
+     best at text width, and the stacks never need more. */
+  max-width: 52rem;
+  margin: 0 auto;
+  padding-top: var(--vk-space-5);
+  padding-bottom: var(--vk-scroll-tail);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vk-space-3);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-title);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
+  color: var(--vk-color-text);
+  text-wrap: balance;
+}
+
+.description {
+  margin: 0;
+  max-width: 32rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+}
+
+.filters {
+  min-width: 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vk-space-4);
+  padding: var(--vk-space-6) 0;
+}
+
+.emptyText {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  color: var(--vk-color-text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  animation: list-in 260ms var(--vk-easing-spring) backwards;
+}
+
+@keyframes list-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list {
+    animation: none;
+  }
+
+  .row,
+  .row:not([data-expanded]):has(.rowToggle:hover),
+  .row:not([data-expanded]):has(.rowToggle:active) {
+    transition: none;
+    transform: none;
+  }
+}
+
+/*
+ * One question. The same card the dashboard uses, so the view reads as the
+ * results screen unfolded rather than a different product.
+ *
+ * `position: relative` anchors the toggle's stretched overlay below — the
+ * whole collapsed card is clickable through it. Scale-not-lift on hover and
+ * the pressed-in active state are `MatchRow`'s own values, so reaching for a
+ * question feels like reaching for a party.
+ */
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  border-radius: var(--vk-radius-card);
+  background: var(--vk-color-surface);
+  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  transition:
+    box-shadow var(--vk-duration-base) ease,
+    transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/*
+ * Hover reads off the toggle, not the card: the stretched overlay makes the
+ * two the same surface everywhere *except* the avatar stacks, which sit above
+ * it — hovering a stack previews its popover and should not also promise the
+ * card is about to open. Only while collapsed: an expanded card is mostly
+ * reading surface, and a card that swells under a reader chasing a comment
+ * toggle is noise.
+ */
+.row:not([data-expanded]):has(.rowToggle:hover) {
+  transform: scale(1.008);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-card-back);
+}
+
+.row:not([data-expanded]):has(.rowToggle:active) {
+  transform: scale(0.99);
+  transition-duration: var(--vk-duration-fast);
+}
+
+/*
+ * The toggle is the statement line — and, while the card is collapsed, the
+ * stretched overlay below extends its hit area over the whole card, meta line
+ * and whitespace included. The avatar stacks stay clickable by sitting above
+ * the overlay (see `.stackPair`). A nested-button structure is what this
+ * dodges: the stacks are buttons of their own and cannot live inside this one.
+ */
+.rowToggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vk-space-3);
+  width: 100%;
+
+  padding: var(--vk-space-4) var(--vk-space-4) var(--vk-space-2);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--vk-radius-card) var(--vk-radius-card) 0 0;
+}
+
+.row:not([data-expanded]) .rowToggle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--vk-radius-card);
+}
+
+.rowToggle:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: calc(var(--vk-focus-offset) * -1);
+}
+
+.statement {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-base);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text);
+}
+
+.star {
+  vertical-align: -0.15em;
+  margin-right: 0.375rem;
+  color: var(--vk-color-text-muted);
+}
+
+.chevron {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  color: var(--vk-color-text-muted);
+  /* Optically level with the statement's first line. */
+  margin-top: 0.125rem;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--vk-space-3) var(--vk-space-5);
+  padding: 0 var(--vk-space-4) var(--vk-space-4);
+}
+
+.yourAnswer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+  white-space: nowrap;
+}
+
+/*
+ * A fixed-width column for every mark this card draws — the top "Vy" mark,
+ * every group header's mark — so the text beside them all starts at the same
+ * x regardless of whether the icon in that slot is a 1.5rem `AnswerMark` or a
+ * 2rem `Avatar` (which fills the slot exactly and needs no wrapper of its
+ * own). Without this a group's smaller mark left its label sitting to the
+ * left of where a party row's avatar leaves its name, and the whole card
+ * read as two uncoordinated columns rather than one.
+ */
+.groupIcon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+}
+
+/* The 1:1 comparison's own column-heading treatment for the same word — the
+   mark beside it is the answer, this only says whose. */
+.youLabel {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--vk-tracking-wide);
+  text-transform: uppercase;
+  color: var(--vk-color-text-muted);
+}
+
+.stacks {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2) var(--vk-space-5);
+}
+
+.stackPair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+/*
+ * The stack itself (the pair's one interactive child) rises above the
+ * toggle's stretched overlay so it still receives its tap. The z-index goes
+ * on the stack's own root, *not* on `.stackPair`: a positioned wrapper with a
+ * z-index is a stacking context, and it would cap the stack's open popover at
+ * this same level — under the next card's beads. When the popover opens, the
+ * stack raises that same element far higher itself.
+ */
+.stackPair > div {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sits directly under the statement now that the open card drops its summary
+   line, so it carries the gap the summary line used to provide. */
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-5);
+  padding: var(--vk-space-2) var(--vk-space-4) var(--vk-space-4);
+}
+
+/*
+ * The border between groups is the *only* horizontal rule inside the expanded
+ * card — individual party rows carry none — so it reads as the one place Ano
+ * hands off to Ne hands off to Nevím. It stays on the same hairline colour as
+ * every other border in the app: it is a boundary between sections, not
+ * something that should out-weigh the card's own edge.
+ *
+ * Your side is marked by the "Vy" tag in the group's header and nothing
+ * else — no tinted container, by explicit request. The tag rather than
+ * reordering is what keeps the party order best-match-first in every group.
+ */
+.group {
+  border-top: var(--vk-border-width) solid var(--vk-color-border);
+  padding-top: var(--vk-space-4);
+}
+
+.group:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/*
+ * A real heading, set as such: body size and bold, the same rung the party
+ * names below it read at. It had been small uppercase, which made the one
+ * word that names each group — Ano, Ne — look like a field label rather than
+ * the answer it is.
+ */
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+  margin: 0 0 var(--vk-space-3);
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-base);
+  font-weight: 700;
+  color: var(--vk-color-text-strong);
+}
+
+.groupLabel {
+  min-width: 0;
+}
+
+.groupCount {
+  font-weight: 500;
+  color: var(--vk-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.groupList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* No divider between rows on purpose — see `.group` above. Vertical rhythm
+   alone is what separates one party from the next. */
+.party {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-1);
+}
+
+.partyLine {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+  min-height: 2rem;
+}
+
+.partyName {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text);
+}
+
+/*
+ * The party's own words — always shown, no disclosure — marked by the same
+ * raised-quote watermark the 1:1 comparison uses, so a comment reads as the
+ * same kind of thing in both places.
+ *
+ * A flex row rather than padding plus an absolutely-positioned glyph: the
+ * mark then *sits in* the same 2rem column the avatar above it occupies and
+ * the text starts at exactly the party name's x, with no offsets to keep in
+ * sync by hand. That is what the absolute version got wrong — it was placed
+ * against the paragraph's own box, so it drifted with every comment length.
+ */
+.comment {
+  display: flex;
+  gap: var(--vk-space-3);
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+/*
+ * U+201C is a *raised* mark: its ink sits high in the em box, nowhere near
+ * the baseline the box is positioned from. Left to the normal flow it
+ * therefore floats a good half-line above the text it opens, which is what
+ * made it read as debris in the margin.
+ *
+ * `line-height: 1` pins the glyph's box to its own em, and the nudge below is
+ * measured, not guessed: at this size the ink's centre lands 7.4px below the
+ * box top, while the first line's cap band centres at 9.3px — so ~2px down
+ * puts the mark level with the words beside it. Recheck it if the display
+ * face ever changes; the number belongs to that face's outlines.
+ */
+.comment::before {
+  content: "\201C";
+  flex: none;
+  width: 2rem;
+  margin-top: 0.125rem;
+  font-family: var(--vk-typeface-display);
+  font-size: 1.75rem;
+  line-height: 1;
+  text-align: center;
+  color: oklch(from var(--vk-color-text-muted) l c h / 0.35);
+  pointer-events: none;
+}
+
+/*
+ * On a desktop the shell reverts to a fixed frame (`app-shell.module.css`
+ * caps `document` mode back to `overflow: hidden` at this width), so the
+ * screen scrolls internally: the header and the filter row stay put, the
+ * question list is what moves — the same division the recap makes. The
+ * padding/negative-margin pair is the recap's trick too: `overflow-y: auto`
+ * clips at the padding box, and without the extra room the rows' focus
+ * rings would be sliced off at the edges.
+ */
+@media (min-width: 64rem) {
+  .screen {
+    overflow: hidden;
+  }
+
+  .inner {
+    min-height: 0;
+  }
+
+  .list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--vk-space-2) var(--vk-space-2) var(--vk-space-6);
+    margin: calc(var(--vk-space-2) * -1) calc(var(--vk-space-2) * -1) 0;
+  }
+
+  /* Roomier card inset once there is room — and the chevron stops hugging
+     the rounded corner for free. */
+  .rowToggle {
+    padding: var(--vk-space-5) var(--vk-space-5) var(--vk-space-3);
+  }
+
+  .rowMeta {
+    padding: 0 var(--vk-space-5) var(--vk-space-5);
+  }
+
+  .rowBody {
+    padding: var(--vk-space-2) var(--vk-space-5) var(--vk-space-5);
+  }
+
+  /*
+   * Fixed columns instead of the phone's flowing wrap, so the marks line up
+   * vertically card after card and the list can be read straight down a
+   * column of beads. `display: contents` dissolves the stacks wrapper into
+   * the grid; the explicit `grid-column` on each pair keeps "ne" in its own
+   * column even on a question where nobody answered "ano".
+   */
+  .rowMeta {
+    display: grid;
+    grid-template-columns: 4.5rem 14rem minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--vk-space-5);
+  }
+
+  .stacks {
+    display: contents;
+  }
+
+  .yourAnswer {
+    grid-column: 1;
+  }
+
+  .stackYes {
+    grid-column: 2;
+  }
+
+  .stackNo {
+    grid-column: 3;
+    justify-self: start;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -9,6 +9,7 @@ import { format, getMessages, routeSlugs } from '@vk/i18n';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { AnswersComparison } from '../../components/answers-comparison';
 import { AppShell } from '../../components/app-shell';
 import { CalculatorIntro } from '../../components/calculator-intro';
 import { CalculatorSession } from '../../components/calculator-session';
@@ -175,15 +176,17 @@ function calculatorScreen(
     case 'review':
       return <Recap calculator={shellInfo} questions={calculator.questions} />;
 
-    /*
-     * `comparison` deep-links into the same screen. The results list already
-     * expands a candidate's full answer-by-answer comparison in place, so a
-     * separate screen would be a second way to render the same thing —
-     * Phase 5 decides whether one is actually wanted.
-     */
     case 'result':
-    case 'comparison':
       return <Results {...ref} calculator={calculator} />;
+
+    /*
+     * The question-centric counterpart of the results screen: every party's
+     * answer to every question, with the reader's own laid over them. The
+     * optional param carries a filter — `dulezite` or a topic slug — which is
+     * what lets the dashboard's cards deep-link straight into a filtered view.
+     */
+    case 'comparison':
+      return <AnswersComparison {...ref} calculator={calculator} initialFilter={route.param} />;
   }
 }
 

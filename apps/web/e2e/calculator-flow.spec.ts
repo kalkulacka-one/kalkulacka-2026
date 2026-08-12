@@ -35,6 +35,8 @@ const ELECTION_PATH = '/volby/komunalni-2022';
 const CALCULATOR_NAME = 'Pardubice';
 const TOTAL_QUESTIONS = 42;
 const CANDIDATE_COUNT = 9;
+/** How many ranking rows show before "Zobrazit další strany" — see `results.tsx`. */
+const COLLAPSED_RESULTS = 5;
 
 // The first four questions, in fixture order, and what this test does with
 // each — one of every action the deck supports. Matched as a *substring* of a
@@ -159,6 +161,10 @@ test('completes a calculator from the picker through to ranked results, and shar
      * only ever appears on the top `MatchRow`.
      */
     const ranking = page.getByRole('list').filter({ hasText: messages.results.winner });
+    // The tail folds behind "Zobrazit další strany": five rows first, the
+    // full field only on request — and the unfold is one-way.
+    await expect(ranking.getByRole('listitem')).toHaveCount(COLLAPSED_RESULTS);
+    await page.getByRole('button', { name: messages.results.showMoreParties }).click();
     await expect(ranking.getByRole('listitem')).toHaveCount(CANDIDATE_COUNT);
     // Only three questions were answered, so a tie for first is expected
     // (`.first()` rather than asserting a single match) — the winner tag
@@ -188,6 +194,32 @@ test('completes a calculator from the picker through to ranked results, and shar
     await page.keyboard.press('Escape');
     await expect(comparison).toHaveCount(0);
     await expect(topRow).toBeFocused();
+  });
+
+  await test.step('the answers comparison lists every question and unfolds a party group', async () => {
+    await page.getByRole('link', { name: messages.results.compareAnswers, exact: true }).click();
+    await expect(page).toHaveURL(/\/porovnani$/);
+
+    await expect(
+      page.getByRole('heading', { name: messages.comparison.title, exact: true }),
+    ).toBeVisible();
+
+    // Every question appears — including the ones this run never answered.
+    // Scoped by the "Vy:" meta line every row carries, which no other list
+    // on this screen has.
+    const rows = page.getByRole('list').filter({ hasText: `${messages.comparison.you}:` });
+    await expect(rows.getByRole('listitem')).toHaveCount(TOTAL_QUESTIONS);
+
+    // Opening a question reveals the per-answer groups with the party rows —
+    // the row's first button is its statement toggle.
+    await rows.getByRole('listitem').first().getByRole('button').first().click();
+    await expect(
+      page.getByRole('heading', { name: new RegExp(`^${messages.results.answerYes}`) }).first(),
+    ).toBeVisible();
+
+    // The back link returns to the ranking.
+    await page.getByRole('link', { name: messages.comparison.back, exact: true }).click();
+    await expect(page).toHaveURL(/\/vysledek$/);
   });
 
   await test.step('share dialog opens with the desktop pair — no backend, no share sheet', async () => {

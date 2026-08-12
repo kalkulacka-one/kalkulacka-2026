@@ -252,6 +252,42 @@
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * The row as a link into the comparison view, filtered to its topic. The
+ * hover plate breathes past the row's own box via the negative margin, the
+ * same trick the results list uses, so the row doesn't jump when it gains a
+ * background.
+ */
+.topicLink {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  padding: var(--vk-space-1);
+  margin: calc(var(--vk-space-1) * -1);
+  border-radius: var(--vk-radius-control);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--vk-duration-fast) ease;
+}
+
+.topicLink:hover {
+  background: var(--vk-color-surface-hover);
+}
+
+.topicLink:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.topicChevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--vk-color-text-muted);
+}
+
+/* The card's one action, separated from the list it acts on. */
+.cardAction {
+  margin-top: var(--vk-space-4);
+}
+
 /* --- Important / against the grain ---------------------------------------- */
 
 .consensusList {

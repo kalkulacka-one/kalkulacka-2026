@@ -59,7 +59,7 @@
   flex: none;
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-areas: "back share" "title title";
+  grid-template-areas: "back share" "title title" "hint hint";
   align-items: start;
   column-gap: var(--vk-space-4);
   row-gap: var(--vk-space-3);
@@ -106,6 +106,20 @@
   text-wrap: balance;
 }
 
+/* The one-line invitation under the title — how the ranking's rows say they
+   can be opened. Caption scale: it annotates the title, it isn't a sentence
+   of the page. */
+.listHint {
+  grid-area: hint;
+  margin: 0;
+  min-width: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
 .shareBox {
   grid-area: share;
   justify-self: end;
@@ -121,7 +135,7 @@
     /* Back resumes sitting directly over the title, and share spans both rows
        to bottom-align with it — the grid area repeated across two rows is what
        makes it span them, no explicit `grid-row` needed. */
-    grid-template-areas: "back share" "title share";
+    grid-template-areas: "back share" "title share" "hint hint";
     align-items: end;
   }
 }
@@ -133,6 +147,16 @@
   align-items: start;
 }
 
+/* Holds the ranking and the actions under it, so the grid's left column stays
+   one child and the actions can sit outside the list's own scroll region. */
+.listPane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  min-height: 0;
+  min-width: 0;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -140,6 +164,12 @@
   margin: 0;
   padding: 0 0 var(--vk-space-4);
   list-style: none;
+}
+
+.listActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-3);
 }
 
 /* --- Two panes ------------------------------------------------------------
@@ -176,7 +206,13 @@
    * enough and every card looked cropped. Negative margins put the column back
    * where it was, so nothing moves visually.
    */
+  .listPane {
+    min-height: 0;
+  }
+
   .list {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: var(--vk-space-4) var(--vk-space-4) var(--vk-space-6);
     margin: calc(var(--vk-space-4) * -1) calc(var(--vk-space-4) * -1) 0;

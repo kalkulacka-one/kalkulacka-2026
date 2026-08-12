@@ -48,3 +48,8 @@ export const Medium: Story = {
 export const Empty: Story = {
   args: { items: [] },
 };
+
+/** Hover (mouse) or tap (touch/keyboard) opens a popover naming every face. */
+export const WithPopover: Story = {
+  args: { items: PARTIES, popover: { closeLabel: 'Zavřít' } },
+};

@@ -167,6 +167,7 @@
     "title": "Moje shoda",
     "calculating": "Počítáme vaši shodu",
     "description": "Shoda vychází jen z otázek, na které jste odpověděli.",
+    "listHint": "Tapnutím na stranu můžete porovnat svoje odpovědi",
     "noAnswer": "Neodpověděli",
     "winner": "Největší shoda",
     "closeComparison": "Zavřít porovnání",
@@ -182,6 +183,8 @@
     "answerNone": "Bez odpovědi",
     "important": "Pro mě důležité",
     "backToRecap": "Zpět na rekapitulaci",
+    "showMoreParties": "Zobrazit další strany",
+    "compareAnswers": "Porovnat odpovědi",
     "restart": "Vyplnit znovu",
     "share": "Sdílet",
     "shareDialog": {
@@ -254,8 +257,25 @@
       "promptAsk": "Vysvětli mi hlavní rozdíly mezi prvními třemi stranami v tomto seznamu a navrhni, na co se jich před volbami zeptat.",
       "promptAgree": "souhlasím",
       "promptDisagree": "nesouhlasím",
-      "promptNeutral": "nevím"
+      "promptNeutral": "nevím",
+      "importantCompare": "Porovnat důležité otázky",
+      "topicCompare": "Porovnat odpovědi k tématu {topic}"
     }
+  },
+  "comparison": {
+    "title": "Porovnání odpovědí",
+    "description": "Jak strany odpovídaly na jednotlivé otázky",
+    "back": "Zpět na výsledky",
+    "filterLabel": "Filtrovat otázky",
+    "filterAll": "Vše",
+    "filterImportant": "Důležité",
+    "you": "Vy",
+    "groupOther": "Nevím / bez odpovědi",
+    "stackYes": "Odpověděly ano",
+    "stackNo": "Odpověděly ne",
+    "close": "Zavřít",
+    "emptyFilter": "Tomuhle filtru neodpovídá žádná otázka.",
+    "emptyFilterAction": "Zobrazit všechny"
   },
   "notFound": {
     "title": "Stránka nenalezena",

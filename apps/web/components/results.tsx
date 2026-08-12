@@ -8,8 +8,10 @@ import {
   buildTopicMatches,
   type Calculator,
   countAnswered,
+  RECAP_FILTER_IMPORTANT,
   selectAgainstTheGrain,
   selectImportant,
+  topicFilterId,
 } from '@vk/core';
 import { getMessages, percent } from '@vk/i18n';
 import { Button, Calculating, MatchRow, type ShareCardContent, StickyBar } from '@vk/ui';
@@ -18,6 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildAiPrompt } from '../lib/ai-prompt';
 import { trackEvent } from '../lib/analytics';
 import { useAnswersReady, useCalculatorAnswers } from '../lib/answers-store';
+import { comparisonFilterSlug } from '../lib/comparison-filters';
 import { type CalculatorRef, questionPath, shellInfoOf, stepPath } from '../lib/paths';
 import { canSync, useResultsSync } from '../lib/session-sync';
 import { toProxiedAssetUrl } from '../lib/share-asset-url';
@@ -63,6 +66,47 @@ const CALCULATING_MS = 1700;
 /** Seconds between two rows arriving. Nine rows land inside half a second. */
 const ROW_STAGGER = 0.06;
 
+/**
+ * A row's `delay` when the entrance should not play at all: a negative delay
+ * longer than any of the row's animations (`--vk-duration-slow`, 250ms)
+ * starts them already finished — the ranking is simply there. Used on a
+ * return visit, where the reveal has already happened.
+ */
+const SKIP_ENTRANCE_DELAY = -1;
+
+/**
+ * The calculating beat and the bottom-up stagger are a *reveal* — they earn
+ * their time exactly once. Coming back from the comparison view (or any other
+ * later visit in the same browsing session) is not a reveal, so the first
+ * showing is remembered here. Session-scoped on purpose: a fresh visit
+ * tomorrow deserves the beat again. sessionStorage throws in some private
+ * modes; a visitor there just gets the beat every time.
+ */
+const seenKey = (calculatorId: string) => `vk-results-shown:${calculatorId}`;
+
+function hasSeenResults(calculatorId: string): boolean {
+  try {
+    return window.sessionStorage.getItem(seenKey(calculatorId)) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function markResultsSeen(calculatorId: string): void {
+  try {
+    window.sessionStorage.setItem(seenKey(calculatorId), '1');
+  } catch {
+    /* The next visit replays the beat — harmless. */
+  }
+}
+
+/**
+ * How much of the ranking shows before the tail folds behind "Zobrazit další
+ * strany". Five, because that is where a share card cuts too — the part of a
+ * ranking people actually read.
+ */
+const COLLAPSED_RESULTS = 5;
+
 export function Results({ calculator, electionKey, district, shared }: ResultsProps) {
   /*
    * Read unconditionally — hooks are — but ignored on a shared result. That is
@@ -90,6 +134,13 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
    * visitor of a public link gave none. Waiting there would be theatre.
    */
   const [waited, setWaited] = useState(shared !== undefined);
+  /**
+   * True when this session has already seen this ranking revealed — the beat
+   * is skipped above and the rows land without their entrance (see
+   * `SKIP_ENTRANCE_DELAY`). State rather than a render-time sessionStorage
+   * read: the server renders too, and it has no session to ask.
+   */
+  const [revisit, setRevisit] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const localReady = useAnswersReady();
   /* Server-supplied answers are ready in the first render — nothing to hydrate. */
@@ -98,14 +149,24 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
   useEffect(() => {
     if (shared) return;
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (hasSeenResults(calculator.id)) {
+      setRevisit(true);
       setWaited(true);
       return;
     }
 
-    const timer = window.setTimeout(() => setWaited(true), CALCULATING_MS);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setWaited(true);
+      markResultsSeen(calculator.id);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setWaited(true);
+      markResultsSeen(calculator.id);
+    }, CALCULATING_MS);
     return () => window.clearTimeout(timer);
-  }, [shared]);
+  }, [shared, calculator.id]);
 
   /*
    * The one save the flow makes deliberately: a ranking is what marks the
@@ -139,6 +200,14 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
   }, [shared, ready, waited, answered, calculator.id]);
 
   const closeComparison = useCallback(() => setSelectedId(undefined), []);
+
+  /**
+   * Whether the ranking's tail (below the fifth row) has been unfolded.
+   * One-way by design — see the buttons under the list.
+   */
+  const [showAllParties, setShowAllParties] = useState(false);
+  const visibleResults = showAllParties ? results : results.slice(0, COLLAPSED_RESULTS);
+  const hiddenResults = results.length - visibleResults.length;
 
   /*
    * Everything the dashboard reads, derived together: they all walk the same
@@ -287,6 +356,10 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
               {shared ? messages.results.shared.title : messages.results.title}
             </h1>
 
+            {/* Not on a shared result: the answers on this screen aren't the
+                visitor's, so "svoje odpovědi" would be a false promise. */}
+            {shared ? null : <p className={styles.listHint}>{messages.results.listHint}</p>}
+
             <div className={styles.shareBox}>
               {shared ? (
                 /* The only thing this page asks of its visitor. */
@@ -313,29 +386,69 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
           </header>
 
           <div className={styles.panes}>
-            <ul className={styles.list}>
-              {results.map(({ candidate, match, rank }, index) => (
-                <MatchRow
-                  key={candidate.id}
-                  rank={rank}
-                  name={candidate.name}
-                  avatarUrl={candidate.avatarUrl}
-                  color={candidate.color}
-                  matchPercentage={match.matchPercentage}
-                  percentLabel={
-                    match.matchPercentage === undefined ? undefined : percent(match.matchPercentage)
-                  }
-                  noAnswerLabel={messages.results.noAnswer}
-                  winner={rank === 1}
-                  winnerLabel={messages.results.winner}
-                  selected={candidate.id === selectedId}
-                  onSelect={() => setSelectedId(candidate.id)}
-                  /* Reversed, so the list assembles from the bottom and the top
-                   match is the last thing to land. */
-                  delay={(results.length - 1 - index) * ROW_STAGGER}
-                />
-              ))}
-            </ul>
+            <div className={styles.listPane}>
+              <ul className={styles.list}>
+                {visibleResults.map(({ candidate, match, rank }, index) => (
+                  <MatchRow
+                    key={candidate.id}
+                    rank={rank}
+                    name={candidate.name}
+                    avatarUrl={candidate.avatarUrl}
+                    color={candidate.color}
+                    matchPercentage={match.matchPercentage}
+                    percentLabel={
+                      match.matchPercentage === undefined
+                        ? undefined
+                        : percent(match.matchPercentage)
+                    }
+                    noAnswerLabel={messages.results.noAnswer}
+                    winner={rank === 1}
+                    winnerLabel={messages.results.winner}
+                    selected={candidate.id === selectedId}
+                    onSelect={() => setSelectedId(candidate.id)}
+                    /* Reversed, so the list assembles from the bottom and the top
+                   match is the last thing to land — unless this session has
+                   already watched it land once. */
+                    delay={
+                      revisit
+                        ? SKIP_ENTRANCE_DELAY
+                        : (visibleResults.length - 1 - index) * ROW_STAGGER
+                    }
+                  />
+                ))}
+              </ul>
+
+              {/*
+                The tail of the ranking is offered, not shown: places six and
+                down are rarely what anyone came for, and folding them is what
+                makes room to offer the question-centric view instead. One-way —
+                a ranking that re-folds under the reader is worse than a long
+                one. The comparison link stays after expanding; only a shared
+                result drops it, since that view compares the *visitor's* store
+                against a ranking that isn't theirs.
+              */}
+              {hiddenResults > 0 || !shared ? (
+                <div className={styles.listActions}>
+                  {hiddenResults > 0 ? (
+                    <Button variant="outline" size="small" onClick={() => setShowAllParties(true)}>
+                      {messages.results.showMoreParties} ({hiddenResults})
+                    </Button>
+                  ) : null}
+
+                  {shared ? null : (
+                    <Button
+                      as={Link}
+                      href={stepPath(ref, 'comparison')}
+                      variant="outline"
+                      size="small"
+                      iconEnd="arrowRight"
+                    >
+                      {messages.results.compareAnswers}
+                    </Button>
+                  )}
+                </div>
+              ) : null}
+            </div>
 
             <ComparisonPane
               calculator={calculator}
@@ -344,7 +457,22 @@ export function Results({ calculator, electionKey, district, shared }: ResultsPr
               selectedId={selectedId}
               onClose={closeComparison}
             >
-              <ResultsDashboard {...insights} />
+              <ResultsDashboard
+                {...insights}
+                comparePaths={
+                  shared
+                    ? undefined
+                    : {
+                        important: stepPath(
+                          ref,
+                          'comparison',
+                          comparisonFilterSlug(RECAP_FILTER_IMPORTANT),
+                        ),
+                        topic: (topic) =>
+                          stepPath(ref, 'comparison', comparisonFilterSlug(topicFilterId(topic))),
+                      }
+                }
+              />
             </ComparisonPane>
           </div>
         </div>

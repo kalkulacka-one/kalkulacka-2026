@@ -45,6 +45,112 @@
   z-index: 1;
 }
 
+/* --- The expandable variant ------------------------------------------------
+ *
+ * The stack becomes a real button and the popover hangs off this wrapper.
+ * `inline-flex` so the trigger takes only the room the faces do — the whole
+ * point of a stack is being narrow.
+ */
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+/*
+ * While the popover is open, the whole trigger+panel unit rises above its
+ * surroundings. The panel's own z-index is not enough on its own: in a list
+ * of cards each carrying a stack, the cards are siblings in one stacking
+ * context, so a *later* card's content would paint over an earlier card's
+ * open panel purely by DOM order.
+ */
+.root:has(.trigger[aria-expanded="true"]) {
+  z-index: var(--vk-z-toast);
+}
+
+.trigger {
+  border: none;
+  background: none;
+  padding-block: 0;
+  cursor: pointer;
+  border-radius: var(--vk-radius-pill);
+}
+
+.trigger:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--vk-space-2));
+  left: 0;
+  z-index: var(--vk-z-toast);
+
+  min-width: 14rem;
+  max-width: 18rem;
+  padding: var(--vk-space-2) var(--vk-space-3) var(--vk-space-3);
+
+  border-radius: calc(var(--vk-radius-chip) * 1.5 + var(--vk-space-2));
+  background: var(--vk-color-surface);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-card-lifted);
+
+  animation: stack-panel-in var(--vk-duration-base) var(--vk-easing-spring);
+  transform-origin: top left;
+}
+
+@keyframes stack-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vk-space-2);
+}
+
+.panelTitle {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  font-weight: 600;
+  color: var(--vk-color-text-muted);
+}
+
+.panelList {
+  margin: var(--vk-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.panelRow {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+.panelName {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-text-strong);
+  min-width: 0;
+}
+
 .overflowDisc {
   display: inline-flex;
   align-items: center;

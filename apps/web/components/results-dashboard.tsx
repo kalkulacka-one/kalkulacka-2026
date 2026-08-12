@@ -18,6 +18,7 @@ import {
   Icon,
   Meter,
 } from '@vk/ui';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { answerLabelOf } from '../lib/answer-labels';
 import { copyText } from '../lib/clipboard';
@@ -33,6 +34,15 @@ export type ResultsDashboardProps = {
   againstTheGrain: QuestionConsensus[];
   /** Pre-assembled by `buildAiPrompt` — this component only offers it. */
   prompt: string;
+  /**
+   * Links into the question-centric comparison view — the whole card row
+   * becomes an entry point. Absent on a shared result, where that view would
+   * compare the *visitor's* (likely empty) answers, not the ones on screen.
+   */
+  comparePaths?: {
+    important: string;
+    topic: (topic: string) => string;
+  };
 };
 
 /**
@@ -73,6 +83,7 @@ function ConsensusRow({
               avatarUrl: candidate.avatarUrl,
             }))}
             label={dashboard.agreeingParties}
+            popover={{ closeLabel: messages.comparison.close }}
           />
         ) : (
           <Meter value={share} tone="neutral" size="small" />
@@ -110,6 +121,7 @@ export function ResultsDashboard({
   important,
   againstTheGrain,
   prompt,
+  comparePaths,
 }: ResultsDashboardProps) {
   const { dashboard } = messages.results;
   const [copyState, setCopyState] = useState<'idle' | 'done' | 'failed'>('idle');
@@ -183,37 +195,64 @@ export function ResultsDashboard({
           {topics.length > 0 ? (
             <>
               <ul className={styles.topics}>
-                {topics.map((topic) => (
-                  <li key={topic.topic} className={styles.topicRow}>
-                    {/* Decorative: the topic is named in the text beside it,
-                        and the icon is a second reading of the same word. */}
-                    <span className={styles.topicIcon}>
-                      <Icon name={topicIcon(topic.topic)} size={22} />
-                    </span>
-
-                    <span className={styles.topicBody}>
-                      <span className={styles.topicName}>
-                        {topic.topic}
-                        <span className={styles.topicCount}>{topic.answeredCount}</span>
+                {topics.map((topic) => {
+                  const row = (
+                    <>
+                      {/* Decorative: the topic is named in the text beside it,
+                          and the icon is a second reading of the same word. */}
+                      <span className={styles.topicIcon}>
+                        <Icon name={topicIcon(topic.topic)} size={22} />
                       </span>
 
-                      <span className={styles.topicBest}>
-                        <Avatar
-                          name={topic.best.candidate.name}
-                          src={topic.best.candidate.avatarUrl}
-                          size="small"
-                        />
-                        <span className={styles.topicBestName}>
-                          {topic.best.candidate.shortName}
+                      <span className={styles.topicBody}>
+                        <span className={styles.topicName}>
+                          {topic.topic}
+                          <span className={styles.topicCount}>{topic.answeredCount}</span>
+                        </span>
+
+                        <span className={styles.topicBest}>
+                          <Avatar
+                            name={topic.best.candidate.name}
+                            src={topic.best.candidate.avatarUrl}
+                            size="small"
+                          />
+                          <span className={styles.topicBestName}>
+                            {topic.best.candidate.shortName}
+                          </span>
                         </span>
                       </span>
-                    </span>
 
-                    <span className={styles.topicPercent}>
-                      {percent(topic.best.matchPercentage)}
-                    </span>
-                  </li>
-                ))}
+                      <span className={styles.topicPercent}>
+                        {percent(topic.best.matchPercentage)}
+                      </span>
+                    </>
+                  );
+
+                  return (
+                    <li key={topic.topic}>
+                      {comparePaths ? (
+                        /*
+                          The whole row is the link, with the chevron only
+                          saying so — an `aria-label` names the destination,
+                          because the row's visible text is a *finding*
+                          ("Doprava, nejblíž Piráti") rather than an action.
+                        */
+                        <Link
+                          className={`${styles.topicRow} ${styles.topicLink}`}
+                          href={comparePaths.topic(topic.topic)}
+                          aria-label={format(dashboard.topicCompare, { topic: topic.topic })}
+                        >
+                          {row}
+                          <span className={styles.topicChevron} aria-hidden="true">
+                            <Icon name="chevronRightThin" size={18} />
+                          </span>
+                        </Link>
+                      ) : (
+                        <span className={styles.topicRow}>{row}</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
 
               {/* Said plainly rather than left to be inferred from the counts: a
@@ -233,11 +272,27 @@ export function ResultsDashboard({
           <p className={styles.cardSubtitle}>{dashboard.importantSubtitle}</p>
 
           {important.length > 0 ? (
-            <ul className={styles.consensusList}>
-              {important.map((entry) => (
-                <ConsensusRow key={entry.question.id} entry={entry} show="agreeing" />
-              ))}
-            </ul>
+            <>
+              <ul className={styles.consensusList}>
+                {important.map((entry) => (
+                  <ConsensusRow key={entry.question.id} entry={entry} show="agreeing" />
+                ))}
+              </ul>
+
+              {comparePaths ? (
+                <div className={styles.cardAction}>
+                  <Button
+                    as={Link}
+                    href={comparePaths.important}
+                    variant="outline"
+                    size="small"
+                    iconEnd="arrowRight"
+                  >
+                    {dashboard.importantCompare}
+                  </Button>
+                </div>
+              ) : null}
+            </>
           ) : (
             <p className={styles.empty}>{dashboard.importantEmpty}</p>
           )}

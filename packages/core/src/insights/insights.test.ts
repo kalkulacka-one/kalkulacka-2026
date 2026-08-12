@@ -3,6 +3,7 @@ import { type AnswerMap, setAnswer, skipQuestion, toggleImportant } from '../ans
 import type { Calculator, Candidate, CandidateAnswer, Question } from '../domain/types';
 import {
   buildAnswerDistribution,
+  buildAnswerGroups,
   buildQuestionConsensus,
   buildTopicMatches,
   MIN_TOPIC_ANSWERS,
@@ -262,5 +263,54 @@ describe('selectAgainstTheGrain', () => {
     const picked = selectAgainstTheGrain(buildQuestionConsensus(sparse, answers));
 
     expect(picked.map((e) => e.question.id)).toEqual(['few', 'many']);
+  });
+});
+
+describe('buildAnswerGroups', () => {
+  // A calculator with every kind of stance in one place: yes, no, an explicit
+  // "nevím" carrying a comment, and a candidate with no record at all.
+  const mixed: Calculator = {
+    ...calculator,
+    questions: [d1, u1],
+    candidateAnswers: {
+      alfa: [
+        { questionId: 'd1', answer: true, comment: 'pro' },
+        { questionId: 'u1', answer: false },
+      ],
+      beta: [{ questionId: 'd1', answer: false }],
+      gama: [{ questionId: 'd1', answer: null, comment: 'váháme' }],
+    },
+  };
+
+  it('covers every question, answered by the user or not', () => {
+    const groups = buildAnswerGroups(mixed);
+
+    expect(groups.map((g) => g.question.id)).toEqual(['d1', 'u1']);
+  });
+
+  it('sorts candidates by their own answer and keeps comments', () => {
+    const [d1Groups] = buildAnswerGroups(mixed);
+
+    expect(d1Groups?.yes.map((p) => p.candidate.id)).toEqual(['alfa']);
+    expect(d1Groups?.yes[0]?.comment).toBe('pro');
+    expect(d1Groups?.no.map((p) => p.candidate.id)).toEqual(['beta']);
+  });
+
+  it('merges neutrals and silent candidates into one group, neutrals first', () => {
+    const [d1Groups] = buildAnswerGroups(mixed);
+
+    expect(d1Groups?.other.map((p) => p.candidate.id)).toEqual(['gama', 'ghost']);
+    // The neutral is a recorded answer — its comment survives; the silent
+    // candidate has no answer to distinguish from "nevím" except `undefined`.
+    expect(d1Groups?.other[0]?.answer).toBeNull();
+    expect(d1Groups?.other[0]?.comment).toBe('váháme');
+    expect(d1Groups?.other[1]?.answer).toBeUndefined();
+  });
+
+  it('accounts for every candidate on every question', () => {
+    for (const group of buildAnswerGroups(mixed)) {
+      const total = group.yes.length + group.no.length + group.other.length;
+      expect(total).toBe(mixed.candidates.length);
+    }
   });
 });

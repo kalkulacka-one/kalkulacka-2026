@@ -170,6 +170,77 @@ export function buildTopicMatches(
   );
 }
 
+/* --- Every party's answer, question by question ---------------------------- */
+
+/** One candidate's stance on one question, comment included. */
+export type CandidatePosition = {
+  candidate: Candidate;
+  /** `null` is an explicit "nevím"; `undefined` means no answer was recorded. */
+  answer?: AnswerValue;
+  comment?: string;
+};
+
+export type QuestionAnswerGroups = {
+  question: Question;
+  /** Candidates who answered "ano". */
+  yes: CandidatePosition[];
+  /** Candidates who answered "ne". */
+  no: CandidatePosition[];
+  /**
+   * "Nevím" plus candidates with no recorded answer, neutrals first. Kept as
+   * one group because the view treats both as "took no side" — but the
+   * per-entry `answer` still tells them apart, and a neutral can carry a
+   * comment worth showing.
+   */
+  other: CandidatePosition[];
+};
+
+/**
+ * All candidates sorted by their own answer, for every question.
+ *
+ * Unlike `buildQuestionConsensus` this is user-independent: it covers questions
+ * the user skipped, and it groups by what the party said rather than by
+ * agreement with the user. The comparison view lays the user's own answer over
+ * it. Candidates keep the calculator's order within each group; the caller
+ * re-sorts by ranking where that matters.
+ */
+export function buildAnswerGroups(calculator: Calculator): QuestionAnswerGroups[] {
+  const candidateAnswers = calculator.candidates.map((candidate) => ({
+    candidate,
+    byQuestion: new Map(
+      candidateAnswersFor(calculator, candidate.id).map((a) => [a.questionId, a]),
+    ),
+  }));
+
+  return calculator.questions.map((question): QuestionAnswerGroups => {
+    const yes: CandidatePosition[] = [];
+    const no: CandidatePosition[] = [];
+    const neutral: CandidatePosition[] = [];
+    const silent: CandidatePosition[] = [];
+
+    for (const { candidate, byQuestion } of candidateAnswers) {
+      const theirs = byQuestion.get(question.id);
+
+      if (!theirs) {
+        silent.push({ candidate });
+        continue;
+      }
+
+      const position: CandidatePosition = {
+        candidate,
+        answer: theirs.answer,
+        ...(theirs.comment ? { comment: theirs.comment } : {}),
+      };
+
+      if (theirs.answer === true) yes.push(position);
+      else if (theirs.answer === false) no.push(position);
+      else neutral.push(position);
+    }
+
+    return { question, yes, no, other: [...neutral, ...silent] };
+  });
+}
+
 /* --- Where each question left you ----------------------------------------- */
 
 export type QuestionConsensus = {

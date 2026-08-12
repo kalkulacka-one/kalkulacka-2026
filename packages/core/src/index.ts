@@ -52,9 +52,12 @@ export { getFixtureIndex, getPardubiceCalculator, PARDUBICE_TOPICS } from './fix
 export {
   type AnswerDistribution,
   buildAnswerDistribution,
+  buildAnswerGroups,
   buildQuestionConsensus,
   buildTopicMatches,
+  type CandidatePosition,
   MIN_TOPIC_ANSWERS,
+  type QuestionAnswerGroups,
   type QuestionConsensus,
   selectAgainstTheGrain,
   selectImportant,
