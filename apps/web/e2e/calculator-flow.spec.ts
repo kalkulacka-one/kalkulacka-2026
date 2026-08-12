@@ -212,7 +212,7 @@ test('completes a calculator from the picker through to ranked results, and shar
     // the row's first button is its statement toggle.
     await rows.getByRole('listitem').first().getByRole('button').first().click();
     await expect(
-      page.getByRole('heading', { name: new RegExp(`^${messages.results.answerYes}`) }).first(),
+      page.getByRole('heading', { name: new RegExp(`^${messages.answer.yes}`) }).first(),
     ).toBeVisible();
 
     // The back link returns to the ranking.

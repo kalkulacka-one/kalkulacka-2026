@@ -361,13 +361,13 @@ export function AnswersComparison({
                       <div className={styles.rowBody}>
                         <AnswerGroup
                           icon={<AnswerMark tone="agree" size="small" />}
-                          label={messages.results.answerYes}
+                          label={messages.answer.yes}
                           positions={entry.yes}
                           you={userAnswer === true}
                         />
                         <AnswerGroup
                           icon={<AnswerMark tone="disagree" size="small" />}
-                          label={messages.results.answerNo}
+                          label={messages.answer.no}
                           positions={entry.no}
                           you={userAnswer === false}
                         />
