@@ -144,6 +144,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        // `public/` files serve only at their exact path — no directory-index
+        // fallback — so /embed-preview and /embed-preview/ 404 without this.
+        source: '/embed-preview',
+        destination: '/embed-preview/index.html',
+      },
+      {
+        source: '/embed-preview/',
+        destination: '/embed-preview/index.html',
+      },
+      {
         source: '/js/script.tagged-events.outbound-links.js',
         destination: 'https://plausible.io/js/script.tagged-events.outbound-links.js',
       },

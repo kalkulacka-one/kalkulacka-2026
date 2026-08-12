@@ -277,11 +277,10 @@
 
   <p class="note">
     Živý embed uvnitř drátěného modelu partnerského článku. Kalkulačka běží z
-    <code id="appOrigin"></code> — spusťte vedle tohoto serveru i webový dev
-    server (<code>pnpm dev</code>), případně přidejte
-    <code>?app=https://…</code> do adresy a náhled poběží proti nasazené
-    aplikaci. Barevní partneři (diky-ze-muzem, alarm, prima) se přepnou do
-    své značky včetně pozadí.
+    <code id="appOrigin"></code> — přidejte <code>?app=https://…</code> do
+    adresy a náhled poběží proti jiné aplikaci (např. lokálnímu dev serveru).
+    Barevní partneři (diky-ze-muzem, alarm, prima) se přepnou do své značky
+    včetně pozadí.
   </p>
   <details class="note">
     <summary>Protiukázky (bezpečnostní chování)</summary>
@@ -294,15 +293,16 @@
   </details>
 
   <script>
-    // Also deployed as apps/web/public/embed-preview/index.html — keep the
-    // two in sync (that copy defaults APP to location.origin instead).
+    // Deployed copy of tools/embed-preview/index.html — keep the two in sync.
     // Keep in sync with apps/web/config/embeds.ts.
     const PARTNERS = [
       'default', 'diky-ze-muzem', 'alarm', 'prima', 'idnes', 'nova',
       'e15', 'reflex', 'blesk', 'denik', 'publico', 'aktuality',
     ];
 
-    const APP = new URLSearchParams(location.search).get('app') ?? 'http://localhost:3000';
+    // Deployed alongside the real app, so the iframe defaults to this same
+    // origin rather than a local dev server; ?app=... still overrides it.
+    const APP = new URLSearchParams(location.search).get('app') ?? location.origin;
     document.getElementById('appOrigin').textContent = APP;
 
     let partner = PARTNERS[0];
