@@ -12,8 +12,8 @@ const content = {
 };
 
 const labels = {
-  agree: 'Souhlasím',
-  disagree: 'Nesouhlasím',
+  agree: 'Ano',
+  disagree: 'Ne',
   important: 'Pro mě důležité',
 };
 

@@ -40,7 +40,7 @@ const THIN = {
 } as const satisfies Omit<IconDefinition, 'paths'>;
 
 export const icons = {
-  /** "Souhlasím" — the checkmark. */
+  /** "Ano" — the checkmark. */
   check: {
     viewBox: '0 0 23 18',
     mode: 'fill',
@@ -48,7 +48,7 @@ export const icons = {
       'M18.8702 0L22.2876 3.36487L10.8466 14.6297L7.42918 17.9946L0 10.6797L3.41742 7.31483L7.4292 11.2649L18.8702 0Z',
     ],
   },
-  /** "Nesouhlasím" — the cross. */
+  /** "Ne" — the cross. */
   cross: {
     viewBox: '0 0 19 18',
     mode: 'fill',

@@ -37,8 +37,8 @@ const QUESTIONS: QuestionCardContent[] = [
 ];
 
 const labels = {
-  agree: 'Souhlasím',
-  disagree: 'Nesouhlasím',
+  agree: 'Ano',
+  disagree: 'Ne',
   important: 'Pro mě důležité',
   importantSuffix: ' · Pro mě důležité',
   skip: 'Přeskočit',
@@ -110,7 +110,7 @@ export const Interactive: Story = {
 
 /**
  * The tutorial's practice deck: arrows around the statement for every direction
- * the card can leave in, lighting up as a drag reaches them. "Souhlasím" starts
+ * the card can leave in, lighting up as a drag reaches them. "Ano" starts
  * faded here, as it does once it has been tried.
  */
 export const WithDragGuides: Story = {

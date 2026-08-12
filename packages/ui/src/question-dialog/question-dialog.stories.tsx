@@ -21,8 +21,8 @@ const meta = {
     question: QUESTION,
     selection: { agree: false, disagree: false, important: false },
     labels: {
-      agree: 'Souhlasím',
-      disagree: 'Nesouhlasím',
+      agree: 'Ano',
+      disagree: 'Ne',
       important: 'Pro mě důležité',
       skip: 'Přeskočit',
       close: 'Zavřít',

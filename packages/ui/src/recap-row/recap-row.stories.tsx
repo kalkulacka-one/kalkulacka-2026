@@ -9,7 +9,7 @@ const meta = {
     title: 'Omezení vánoční výzdoby',
     tone: 'agree',
     important: false,
-    labels: { answer: 'Souhlasím', important: 'Pro mě důležité' },
+    labels: { answer: 'Ano', important: 'Pro mě důležité' },
     onOpen: () => {},
     onToggleImportant: () => {},
   },
@@ -28,7 +28,7 @@ type Story = StoryObj<typeof meta>;
 export const Agree: Story = {};
 
 export const Disagree: Story = {
-  args: { tone: 'disagree', labels: { answer: 'Nesouhlasím', important: 'Pro mě důležité' } },
+  args: { tone: 'disagree', labels: { answer: 'Ne', important: 'Pro mě důležité' } },
 };
 
 /** Never reached — same dashed mark a skip gets, but the row stays full-strength. */

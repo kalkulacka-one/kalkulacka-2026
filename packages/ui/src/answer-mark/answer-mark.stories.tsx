@@ -5,7 +5,7 @@ const meta = {
   title: 'Answers/AnswerMark',
   component: AnswerMark,
   parameters: { layout: 'centered' },
-  args: { tone: 'agree', label: 'Souhlasím' },
+  args: { tone: 'agree', label: 'Ano' },
 } satisfies Meta<typeof AnswerMark>;
 
 export default meta;
@@ -15,8 +15,8 @@ type Story = StoryObj<typeof meta>;
 export const Tones: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-      <AnswerMark tone="agree" label="Souhlasím" />
-      <AnswerMark tone="disagree" label="Nesouhlasím" />
+      <AnswerMark tone="agree" label="Ano" />
+      <AnswerMark tone="disagree" label="Ne" />
       <AnswerMark tone="neutral" label="Nevím" />
       <AnswerMark tone="none" label="Bez odpovědi" />
     </div>
@@ -27,8 +27,8 @@ export const Tones: Story = {
 export const Small: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-      <AnswerMark tone="agree" label="Souhlasím" size="small" />
-      <AnswerMark tone="disagree" label="Nesouhlasím" size="small" />
+      <AnswerMark tone="agree" label="Ano" size="small" />
+      <AnswerMark tone="disagree" label="Ne" size="small" />
       <AnswerMark tone="neutral" label="Nevím" size="small" />
       <AnswerMark tone="none" label="Bez odpovědi" size="small" />
     </div>

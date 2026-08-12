@@ -14,7 +14,7 @@ import styles from './recap-row.module.css';
  */
 
 export type RecapRowLabels = {
-  /** How this row's state reads aloud, e.g. "Souhlasím" or "Bez odpovědi". */
+  /** How this row's state reads aloud, e.g. "Ano" or "Bez odpovědi". */
   answer: string;
   /** The star toggle's accessible name, e.g. "Pro mě důležité". */
   important: string;
@@ -60,8 +60,14 @@ export function RecapRow({
   onOpen,
   onToggleImportant,
 }: RecapRowProps) {
+  /*
+   * `vk-pressable` goes on the `<li>` rather than the tile inside it: hover and
+   * press propagate up from whichever of the two buttons was reached for, so
+   * the card answers the pointer as one piece — the same hover, press and depth
+   * a results card has. See `.vk-pressable` in `@vk/tokens`.
+   */
   return (
-    <li className={styles.item}>
+    <li className={`${styles.item} vk-pressable`}>
       <div className={styles.row} data-secondary={skipped || undefined}>
         <button
           type="button"

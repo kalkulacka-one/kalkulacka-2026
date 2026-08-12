@@ -1,10 +1,18 @@
 /*
  * The row rises into place from below, and the list staggers the delays so the
- * ranking assembles bottom-up with the winner landing last. The animation is on
- * the `<li>` rather than the button so it never fights the button's own hover
- * and press transforms.
+ * ranking assembles bottom-up with the winner landing last.
  *
- * The shadow lives here too, not on the button — see `.row` below for why.
+ * Everything about how the card answers a pointer — the hover lift, the press,
+ * the float while its comparison is open — is `.vk-pressable` in `@vk/tokens`,
+ * carried on this element in the markup. It is the outer one, which is what the
+ * utility wants: the button inside clips its own shadow (see `.row`), and
+ * hover/active propagate up to here from it anyway.
+ *
+ * `backwards`, not `both`. A forwards-filled `transform: none` from this
+ * keyframe outranks every declarative transform, which would leave the card
+ * permanently inert under the pointer; `backwards` still holds the `from` state
+ * through the stagger delay, which is the only part that was ever needed.
+ *
  * Radius matches the brand's signature asymmetric card (square top-left,
  * rounded elsewhere), scaled to this row's size via `--vk-radius-control`
  * rather than the fixed 30px the big question card uses.
@@ -14,10 +22,8 @@
   display: flex;
 
   border-radius: 0 var(--vk-radius-control) var(--vk-radius-control) var(--vk-radius-control);
-  box-shadow: var(--vk-shadow-surface);
 
-  animation: rise var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1) both;
-  transition: box-shadow var(--vk-duration-base) ease;
+  animation: rise var(--vk-duration-slow) cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
 }
 
 @keyframes rise {
@@ -31,20 +37,13 @@
   }
 }
 
-/* The three states the row's shadow can be in, driven off the button inside —
-   see `.row` immediately below for why the shadow can't simply live there. */
-.item:has(.row:hover) {
-  box-shadow: var(--vk-shadow-card-back);
-}
-
-.item:has(.row[aria-pressed="true"]) {
-  box-shadow: var(--vk-shadow-card-lifted);
-}
-
 /* A candidate nobody can compare doesn't float above the page like an answer
-   card — see `.row:disabled` below. */
-.item:has(.row:disabled) {
+   card, and doesn't answer the pointer at all — see `.row:disabled` below.
+   Stated at both rest and hover so it outranks the utility's own hover rule. */
+.item:has(.row:disabled),
+.item:has(.row:disabled):hover {
   box-shadow: none;
+  transform: none;
 }
 
 .row {
@@ -78,7 +77,7 @@
   text-align: left;
   cursor: pointer;
 
-  transition: transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: background var(--vk-duration-base) ease;
 }
 
 /* --- The match bar, along the top edge --------------------------------- */
@@ -128,25 +127,10 @@
 }
 
 /* --- States --------------------------------------------------------------
- * Lift on hover, press in on click, and float when open. All three are the same
- * gesture at different depths, which is what makes the open row read as the one
- * you reached for rather than as a differently-decorated row. The shadow half of
- * "lift" is on `.item` above; this is the scale half.
+ * Hover, press and open are `.vk-pressable`'s, on `.item`. What is left here is
+ * the part that is this row's alone: the accent wash an open comparison paints
+ * over its own card, which needs `--row-accent` and so cannot be shared.
  */
-
-/*
- * Scale, not a lift. Translating the row upward slides it toward its neighbour
- * and leaves a widening gap beneath, so a slow read down the list reads as the
- * rows shuffling; growing in place keeps every row where it was put.
- */
-.row:hover {
-  transform: scale(1.008);
-}
-
-.row:active {
-  transform: scale(0.985);
-  transition-duration: var(--vk-duration-fast);
-}
 
 .row:focus-visible {
   outline: var(--vk-focus-width) solid var(--vk-focus-color);
@@ -167,15 +151,6 @@
 .row[aria-pressed="true"] {
   background:
     oklch(from var(--row-accent, var(--vk-color-agree)) l c h / 0.14), var(--vk-color-surface);
-  transform: scale(1.015);
-}
-
-.row[aria-pressed="true"]:hover {
-  transform: scale(1.022);
-}
-
-.row[aria-pressed="true"]:active {
-  transform: scale(0.985);
 }
 
 /*
@@ -193,7 +168,6 @@
   cursor: default;
   background: oklch(from var(--vk-color-surface) l c h / 0.4);
   box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
-  transform: none;
 }
 
 /* --- Contents ------------------------------------------------------------ */

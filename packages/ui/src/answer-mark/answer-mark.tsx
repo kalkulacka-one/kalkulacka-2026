@@ -15,7 +15,7 @@ export type AnswerMarkTone = 'agree' | 'disagree' | 'neutral' | 'none';
 export type AnswerMarkProps = {
   tone: AnswerMarkTone;
   /**
-   * Read in place of the shape, e.g. "Souhlasím".
+   * Read in place of the shape, e.g. "Ano".
    *
    * Omit it only where the mark is genuinely decorative and something around it
    * already carries the meaning — the calculating screen's film strip is the one

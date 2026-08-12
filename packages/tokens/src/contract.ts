@@ -14,9 +14,9 @@ import { z } from 'zod';
 const cssColor = z.string().min(1);
 
 const colorSetSchema = z.object({
-  /** "Souhlasím" — drives the agree button, progress segment and soft border. */
+  /** "Ano" — drives the agree button, progress segment and soft border. */
   agree: cssColor.optional(),
-  /** "Nesouhlasím". */
+  /** "Ne". */
   disagree: cssColor.optional(),
   /** Neutral/dark accent: skipped answers, toast, the important toggle. */
   neutral: cssColor.optional(),

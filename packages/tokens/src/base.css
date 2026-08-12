@@ -262,6 +262,88 @@
   --vk-z-card: 3;
   --vk-z-card-lifted: 4;
   --vk-z-toast: 6;
+
+  /* --- Pressable cards -----------------------------------------------------
+   * The depths a clickable card moves through. Overridable per card — a very
+   * large surface wants less scale than a list row — but the defaults are the
+   * ones the results ranking was tuned to and should be what a new card gets.
+   */
+  --vk-pressable-scale-hover: 1.008;
+  --vk-pressable-scale-press: 0.985;
+  --vk-pressable-scale-open: 1.015;
+  --vk-pressable-scale-open-hover: 1.022;
+}
+
+/* --- .vk-pressable ---------------------------------------------------------
+ *
+ * One clickable card's hover, press and open states, as a global class.
+ *
+ * The *only* rule in this file that is not a custom property, and deliberately
+ * so: this is a design-system decision about how a card behaves under a
+ * pointer, and it had already been made twice — the results ranking lifted and
+ * scaled, the recap rows only changed shadow — which is exactly the drift a
+ * shared piece exists to stop. A global class rather than a CSS-module
+ * `composes` or a React wrapper because the cards that need it live in three
+ * packages and two element shapes (a plain tile; an `<li>` wrapping a
+ * `<button>`), and a class name costs nothing to reach for from any of them.
+ *
+ * Put it on the OUTER element of a card — the one that owns the card's shadow
+ * and radius, not the button inside. `:hover` and `:active` both propagate up
+ * from descendants, so a card whose actual control is nested still lights up as
+ * one piece, and a button with `overflow: hidden` (which clips its own shadow)
+ * still gets a shadow from its parent.
+ *
+ * Three states:
+ *   rest    — resting on the page
+ *   hover   — grows very slightly and its shadow deepens
+ *   :active — presses in, and faster, so the press reads as contact
+ *   open    — `data-open`, or the element's own `aria-pressed="true"`: floats,
+ *             for a card that has opened something and stays chosen while it is
+ *             open. `data-open` exists for the common split where the pressed
+ *             control is a child (`aria-pressed` belongs on the button, the
+ *             float belongs on the card) — and so that a card that merely
+ *             *contains* an unrelated toggle, like the recap row's star, is not
+ *             mistaken for one.
+ *
+ * Grows in place rather than translating upward: a card that moves toward its
+ * neighbour and leaves a widening gap beneath makes a slow read down a list
+ * look like the rows are shuffling.
+ *
+ * A card that also runs an entrance animation must not fill it `forwards`
+ * (`animation: … both`) — a filled `transform: none` outranks every rule here
+ * and the card would never respond to a pointer again. Use `backwards`.
+ */
+.vk-pressable {
+  box-shadow: var(--vk-shadow-surface);
+  transition:
+    transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow var(--vk-duration-base) ease;
+}
+
+.vk-pressable:hover {
+  transform: scale(var(--vk-pressable-scale-hover));
+  box-shadow: var(--vk-shadow-card-back);
+}
+
+.vk-pressable:active {
+  transform: scale(var(--vk-pressable-scale-press));
+  transition-duration: var(--vk-duration-fast);
+}
+
+.vk-pressable[data-open],
+.vk-pressable[aria-pressed="true"] {
+  transform: scale(var(--vk-pressable-scale-open));
+  box-shadow: var(--vk-shadow-card-lifted);
+}
+
+.vk-pressable[data-open]:hover,
+.vk-pressable[aria-pressed="true"]:hover {
+  transform: scale(var(--vk-pressable-scale-open-hover));
+}
+
+.vk-pressable[data-open]:active,
+.vk-pressable[aria-pressed="true"]:active {
+  transform: scale(var(--vk-pressable-scale-press));
 }
 
 /*
