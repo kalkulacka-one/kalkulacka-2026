@@ -50,6 +50,9 @@
 .row {
   position: relative;
 
+  /* Shared by the bar itself and the padding compensation below. */
+  --edge-height: 0.3125rem;
+
   /*
    * Clips the top-edge bar to the card's rounded corners — and that is *all*
    * this does. It cannot also carry the box-shadow: an element's own
@@ -63,7 +66,7 @@
   border-radius: inherit;
 
   display: grid;
-  grid-template-columns: 1.25rem auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--vk-space-4);
 
@@ -88,8 +91,18 @@
 .edge {
   position: absolute;
   inset: 0 0 auto;
-  height: 0.3125rem;
+  height: var(--edge-height);
   background: var(--vk-color-border);
+}
+
+/*
+ * The bar eats into the top padding, so equal paddings left the contents
+ * sitting visibly high on the card. Compensated by exactly the bar's height —
+ * and only on rows that have a bar, which is what the `:has` is for: the
+ * no-answer row draws none and needs none.
+ */
+.row:has(.edge) {
+  padding-top: calc(var(--vk-space-4) + var(--edge-height));
 }
 
 /*
@@ -185,13 +198,21 @@
 
 /* --- Contents ------------------------------------------------------------ */
 
+.nameLine {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+/* An ordinal in front of the name; the avatar stays clean. */
 .rank {
+  flex: none;
   font-family: var(--vk-typeface-sans);
   font-size: var(--vk-text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--vk-color-text-muted);
   font-variant-numeric: tabular-nums;
-  text-align: center;
 }
 
 .identity {
@@ -248,6 +269,12 @@
   padding: var(--vk-space-5) var(--vk-space-4);
 }
 
+/* The same bar compensation as on `.row:has(.edge)` above — restated because
+   this later, equally specific padding shorthand would otherwise undo it. */
+.winner .row:has(.edge) {
+  padding-top: calc(var(--vk-space-5) + var(--edge-height));
+}
+
 .winner .name {
   font-size: var(--vk-text-lg);
 }
@@ -265,8 +292,16 @@
     padding: var(--vk-space-5);
   }
 
+  .row:has(.edge) {
+    padding-top: calc(var(--vk-space-5) + var(--edge-height));
+  }
+
   .winner .row {
     padding: var(--vk-space-6) var(--vk-space-5);
+  }
+
+  .winner .row:has(.edge) {
+    padding-top: calc(var(--vk-space-6) + var(--edge-height));
   }
 }
 
