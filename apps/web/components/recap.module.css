@@ -157,8 +157,51 @@
 }
 
 /* The back link is `BackLink` — shared with the other screens. */
+
+/*
+ * The filter row stays reachable while the header above it scrolls away —
+ * stuck directly under the app bar, at the height `ScrollMode` mirrors into
+ * `--vk-app-bar-h`. Below the bar's z-index (5), above the rows.
+ *
+ * The glass panel behind it is the app bar's own recipe (`app-shell`'s
+ * `.bar::before`), gated on the same `data-vk-header-surface` flag so the two
+ * surfaces come in together and read as one slab once content is moving
+ * underneath. Full viewport width via the `left: 50% / 100vw` trick, since the
+ * chips live inside a gutter-padded column; the negative `top` covers the
+ * column's gap up to the bar so rows never peek through between the two.
+ */
 .filters {
   flex: none;
+  position: sticky;
+  top: var(--vk-app-bar-h, 4rem);
+  z-index: 4;
+}
+
+.filters::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: calc(-1 * var(--vk-space-4));
+  bottom: calc(-1 * var(--vk-space-2));
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  pointer-events: none;
+
+  opacity: 0;
+  background: oklch(from var(--vk-color-page) l c h / 0.82);
+  backdrop-filter: var(--vk-plate-blur);
+  transition: opacity var(--vk-duration-base) ease;
+}
+
+:global(html[data-vk-header-surface]) .filters::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filters::before {
+    transition: none;
+  }
 }
 
 /* --- The list ----------------------------------------------------------- */
@@ -237,31 +280,33 @@
  * exactly over the under-glass strip this screen exists to leave open — the
  * button floats bare, legible by its own shadow and opaque pill.
  *
+ * `width: fit-content` is load-bearing, not cosmetic: iOS Safari treats a
+ * *full-width* box stuck at the viewport bottom as the page's own bottom
+ * chrome and stops rendering the document under its glass bar entirely — the
+ * strip behind the bar goes dead (verified by bisection on device). A box no
+ * wider than the button doesn't trip that heuristic, so the rows keep running
+ * beneath the glass around it.
+ *
  * `margin-top: auto` keeps it at the bottom of a screen shorter than the
  * viewport (a filtered-down list), same as `Screen`'s footer slot.
- * `pointer-events` pass through the full-width row so the rows sliding past
- * beside the button stay tappable.
  */
 .footer {
   position: sticky;
   bottom: 0;
   z-index: var(--vk-z-card-lifted);
+  width: fit-content;
+  margin-inline: auto;
   margin-top: auto;
   /* Sticks to the bottom of the layout viewport, which iOS already holds a
      little above its floating bar — breathing room, not clearance. The inset
      only bites in an installed PWA, where the browser chrome is gone and the
      hardware inset is real. */
   margin-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
 }
 
 /* The floating shadow `StickyBar` would have provided — the button must still
    read as chrome over rows sliding past. */
 .footer > * {
-  width: fit-content;
-  pointer-events: auto;
   box-shadow: var(--vk-shadow-card-back);
 }
 
@@ -332,6 +377,16 @@
     padding-bottom: 0;
   }
 
+  /* The whole header column holds still in the fixed frame — nothing for the
+     filter row to stick to, or need glass against. */
+  .filters {
+    position: static;
+  }
+
+  .filters::before {
+    content: none;
+  }
+
   /*
    * The inner scroller returns: everything below the filters lives in this one
    * positioned box — the list (or the empty state) fills it, the `EdgeFade`s
@@ -384,7 +439,9 @@
     bottom: 0;
     height: var(--vk-fade-action);
     z-index: 3;
+    width: auto;
     margin: 0;
+    display: flex;
     align-items: flex-end;
     justify-content: flex-end;
     padding-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));

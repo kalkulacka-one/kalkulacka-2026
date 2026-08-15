@@ -29,6 +29,31 @@ export function ScrollMode({ mode }: { mode: ScrollModeValue }) {
   }, [mode]);
 
   /*
+   * The app bar's rendered height, mirrored into `--vk-app-bar-h` in
+   * `document` mode. A screen that wants its own sticky row parked directly
+   * under the bar (the recap's filter chips) needs the bar's real height for
+   * its `top` — the bar's box is fluid padding plus content, which CSS alone
+   * cannot name. Written on `<html>` so any screen's module can read it.
+   */
+  useEffect(() => {
+    if (mode !== 'document') return;
+
+    const bar = document.querySelector('[data-vk-app-bar]');
+    if (!(bar instanceof HTMLElement)) return;
+
+    const root = document.documentElement;
+    const write = () => root.style.setProperty('--vk-app-bar-h', `${bar.offsetHeight}px`);
+    write();
+
+    const observer = new ResizeObserver(write);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty('--vk-app-bar-h');
+    };
+  }, [mode]);
+
+  /*
    * A second flag, only meaningful in `document` mode: whether the page has
    * moved off its top edge. The sticky header (`app-shell.module.css`) reads
    * this to bring in its glass surface only once there is something to

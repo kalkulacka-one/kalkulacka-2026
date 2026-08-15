@@ -122,8 +122,8 @@ export function Recap({ calculator, questions }: RecapProps) {
     >
       <main className={styles.screen}>
         <div className={styles.inner}>
-          {/* On a phone this simply scrolls away with the page; the sticky app
-              bar above and the sticky action below are the parts that stay. */}
+          {/* On a phone this simply scrolls away with the page; the app bar,
+              the filter row and the action below are the parts that stay. */}
           <header className={styles.header}>
             <div className={styles.headerInner}>
               <BackLink
