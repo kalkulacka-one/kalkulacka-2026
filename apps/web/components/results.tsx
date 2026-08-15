@@ -437,7 +437,7 @@ export function Results({ calculator, electionKey, district, embed, shared }: Re
               {hiddenResults > 0 || !shared ? (
                 <div className={styles.listActions}>
                   {hiddenResults > 0 ? (
-                    <Button variant="outline" size="small" onClick={() => setShowAllParties(true)}>
+                    <Button variant="outline" onClick={() => setShowAllParties(true)}>
                       {messages.results.showMoreParties} ({hiddenResults})
                     </Button>
                   ) : null}
@@ -447,7 +447,6 @@ export function Results({ calculator, electionKey, district, embed, shared }: Re
                       as={Link}
                       href={stepPath(ref, 'comparison')}
                       variant="outline"
-                      size="small"
                       iconEnd="arrowRight"
                     >
                       {messages.results.compareAnswers}

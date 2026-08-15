@@ -24,7 +24,11 @@
   width: 100%;
   max-width: 42rem;
   margin: 0 auto;
-  padding-top: var(--vk-space-7);
+  /* A *pinned* shell's app bar carries no bottom padding of its own — in
+     `document` mode the bar adds `space-3` there (`app-shell.module.css`), so
+     this makes up the difference and every screen's header lands on the same
+     line regardless of scroll mode. */
+  padding-top: calc(var(--vk-head-top) + var(--vk-space-3));
 }
 
 .header {
@@ -57,11 +61,13 @@
 }
 
 /* --- The list ------------------------------------------------------------
- * Same shape as the recap's `.listShell`/`.listWrap`/fade pair: the list (or
- * the empty state) fills a positioned box, and the fades sit over its edges
- * to signal there is more content in that direction than the box shows.
+ * Same shape as the recap's `.listShell`/`.listWrap` pair: the list (or the
+ * empty state) fills a positioned box, and the shared `EdgeFade` bands sit
+ * over its edges to signal there is more content in that direction than the
+ * box shows.
  */
 .listShell {
+  /* `EdgeFade` positions itself against this box. */
   position: relative;
   flex: 1;
   min-height: 0;
@@ -154,46 +160,4 @@
   font-weight: 700;
   color: var(--vk-color-text-muted);
   font-variant-numeric: tabular-nums;
-}
-
-/* --- Edge fades ------------------------------------------------------------
- * Each toggles independently: the top fade only once the list has actually
- * scrolled down, the bottom only while there is more below than the box
- * shows. A search that narrows the list to two rows leaves both off.
- */
-.topFade,
-.bottomFade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  height: 2.5rem;
-  pointer-events: none;
-  backdrop-filter: blur(12px);
-  opacity: 0;
-  transition: opacity var(--vk-duration-base) ease;
-}
-
-.topFade[data-visible],
-.bottomFade[data-visible] {
-  opacity: 1;
-}
-
-.topFade {
-  top: 0;
-  background: linear-gradient(to bottom, var(--vk-color-page) 0%, transparent 65%);
-  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
-}
-
-.bottomFade {
-  bottom: 0;
-  background: linear-gradient(to top, var(--vk-color-page) 0%, transparent 65%);
-  mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .topFade,
-  .bottomFade {
-    transition: none;
-  }
 }

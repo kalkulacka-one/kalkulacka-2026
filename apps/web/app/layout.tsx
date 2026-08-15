@@ -1,4 +1,5 @@
 import { activeLocale, getMessages } from '@vk/i18n';
+import { defaultTheme } from '@vk/tokens';
 import { Backdrop } from '@vk/ui';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Radio_Canada } from 'next/font/google';
@@ -64,9 +65,14 @@ export const viewport: Viewport = {
    * over anything written later. A single unconditional tag is the one
    * `color-mode.ts` can own: the bootstrap script corrects it before first
    * paint and the toggle rewrites it on every switch. This value is only what
-   * a browser sees in the served HTML, i.e. the light page colour.
+   * a browser sees in the served HTML — the light page colour, read from the
+   * theme itself so a rebrand cannot leave the address bar on the old palette.
+   *
+   * The optional chaining is for the schema, whose every colour is optional so
+   * a partner theme can override sparsely — the base theme always carries a
+   * full palette, so this never actually serves an absent tag.
    */
-  themeColor: '#f8fafc',
+  themeColor: defaultTheme.color?.light?.page,
 };
 
 const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;

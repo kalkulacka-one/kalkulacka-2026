@@ -37,7 +37,7 @@
   width: 100%;
   max-width: 80rem;
   margin: 0 auto;
-  padding-top: var(--vk-space-5);
+  padding-top: var(--vk-head-top);
 
   /* The page's last row would otherwise come to rest under the address bar
      with no way to bring it out — see `--vk-scroll-tail`. */
@@ -96,6 +96,10 @@
 .title {
   grid-area: title;
   margin: 0;
+  /* The back link (or a shared result's note) always occupies the row above —
+     the same clearance every screen gives a headline under a control; see the
+     header-rhythm tokens in `base.css`. */
+  margin-top: var(--vk-head-back-extra);
   min-width: 0;
   font-family: var(--vk-typeface-display);
   font-size: var(--vk-text-title);
@@ -166,9 +170,12 @@
   list-style: none;
 }
 
+/* Centred on a phone, where the whole column is centred reading; the desktop
+   block below left-aligns them under the list's own edge instead. */
 .listActions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--vk-space-3);
 }
 
@@ -210,11 +217,21 @@
     min-height: 0;
   }
 
+  /*
+   * `0 1 auto`, not `flex: 1`: the scroll box sizes to its rows and only
+   * *shrinks* when the pane runs out of room. Stretched, a folded ranking's
+   * short list left the box mostly empty and pushed `.listActions` to the
+   * bottom of the page, a pane's height away from the rows they act on.
+   */
   .list {
-    flex: 1;
+    flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
     padding: var(--vk-space-4) var(--vk-space-4) var(--vk-space-6);
     margin: calc(var(--vk-space-4) * -1) calc(var(--vk-space-4) * -1) 0;
+  }
+
+  .listActions {
+    justify-content: flex-start;
   }
 }

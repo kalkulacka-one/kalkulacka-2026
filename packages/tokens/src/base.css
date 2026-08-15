@@ -252,6 +252,52 @@
    */
   --vk-scroll-tail: max(4rem, env(safe-area-inset-bottom, 0px));
 
+  /* --- Edge fades ---------------------------------------------------------
+   * The one way content is allowed to fade out at the edge of a scroll area:
+   * a plain ramp of the page colour, no blur. Defined here as whole gradients
+   * rather than as heights alone so every consumer — the list fades
+   * (`EdgeFade`) and the scrim behind a floating `StickyBar` — ramps through
+   * exactly the same stops instead of each screen easing its own way.
+   *
+   * The stops approximate an ease-out curve; a two-stop linear ramp reads as
+   * a hard-edged band, not a fade.
+   */
+  --vk-fade-to-bottom: linear-gradient(
+    to bottom,
+    var(--vk-color-page) 0%,
+    oklch(from var(--vk-color-page) l c h / 0.92) 20%,
+    oklch(from var(--vk-color-page) l c h / 0.7) 45%,
+    oklch(from var(--vk-color-page) l c h / 0.4) 65%,
+    oklch(from var(--vk-color-page) l c h / 0.16) 82%,
+    oklch(from var(--vk-color-page) l c h / 0) 100%
+  );
+  --vk-fade-to-top: linear-gradient(
+    to top,
+    var(--vk-color-page) 0%,
+    oklch(from var(--vk-color-page) l c h / 0.92) 20%,
+    oklch(from var(--vk-color-page) l c h / 0.7) 45%,
+    oklch(from var(--vk-color-page) l c h / 0.4) 65%,
+    oklch(from var(--vk-color-page) l c h / 0.16) 82%,
+    oklch(from var(--vk-color-page) l c h / 0) 100%
+  );
+
+  /* A reading fade at a list's edge, and the taller band a floating action
+     sits in (the recap's control panel, a phone's sticky CTA). */
+  --vk-fade-edge: 3rem;
+  --vk-fade-action: 6rem;
+
+  /* --- Screen header rhythm ----------------------------------------------
+   * One scheme for every content screen's header, so the screens cannot
+   * drift on it: `--vk-head-top` clears the app bar above the first element;
+   * a back link gets `--vk-head-back-extra` *on top of* the header's own
+   * `space-3` gap before the title (the chip is a control, not the
+   * headline's first word); title and description keep the plain gap so they
+   * read as one unit. `--vk-head-top` grows on a desktop — see the media
+   * block after this rule.
+   */
+  --vk-head-top: var(--vk-space-4);
+  --vk-head-back-extra: var(--vk-space-1);
+
   --vk-border-width: 1.5px;
   --vk-focus-width: 3px;
   --vk-focus-offset: 2px;
@@ -272,6 +318,18 @@
   --vk-pressable-scale-press: 0.985;
   --vk-pressable-scale-open: 1.015;
   --vk-pressable-scale-open-hover: 1.022;
+}
+
+/*
+ * The desktop's extra header clearance. A token redefinition rather than a
+ * per-screen media query so "a little more generous on a desktop" stays one
+ * decision — the breakpoint is the one where the fixed frame returns
+ * (`globals.css`).
+ */
+@media (min-width: 64rem) {
+  :root {
+    --vk-head-top: var(--vk-space-6);
+  }
 }
 
 /* --- .vk-pressable ---------------------------------------------------------
