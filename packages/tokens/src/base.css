@@ -317,7 +317,12 @@
   --vk-z-card-next: 2;
   --vk-z-card: 3;
   --vk-z-card-lifted: 4;
-  --vk-z-toast: 6;
+  /* Above every sticky screen chrome a page can build (the app bar sits at 5,
+     the recap's filter row above it at 6 — see app-shell.module.css and
+     recap.module.css) — this tier is for things that must outrank a whole
+     page, not just its own neighbours: the app menu, a question dialog, a
+     toast. */
+  --vk-z-toast: 7;
 
   /* --- Pressable cards -----------------------------------------------------
    * The depths a clickable card moves through. Overridable per card — a very
