@@ -161,15 +161,16 @@
 /*
  * The filter row stays reachable while the header above it scrolls away —
  * stuck directly under the app bar, at the height `ScrollMode` mirrors into
- * `--vk-app-bar-h`. Below the bar's z-index (5), above the rows. No panel
- * behind it: each chip floats on its own shadow, like the app bar's own
- * controls and the call to action below.
+ * `--vk-app-bar-h`. Above the bar's z-index (5): the bar's page-colour ramp
+ * reaches below the bar's box, and chips dimmed by someone else's fade read
+ * as disabled. No panel behind it: each chip floats on its own shadow, like
+ * the app bar's own controls and the call to action below.
  */
 .filters {
   flex: none;
   position: sticky;
   top: var(--vk-app-bar-h, 4rem);
-  z-index: 4;
+  z-index: 6;
 }
 
 /* No chip styling here: the floating shadow is part of `FilterChips`' own
@@ -264,16 +265,19 @@
  */
 .footer {
   position: sticky;
-  bottom: 0;
+  /* The clearance rides in the sticky inset, not the margin: a stuck
+     element's inset constrains its border box, so Chrome — whose scrollport
+     reaches the true bottom of the screen — would pin a `bottom: 0` pill to
+     the very edge and ignore the margin entirely. Safari adds its own
+     reserve above the browser bar on top of this; that asymmetry is the
+     browsers' own. The small margin that remains is flow spacing for the
+     settled position at the end of the scroll. */
+  bottom: max(var(--vk-space-5), env(safe-area-inset-bottom, 0px));
   z-index: var(--vk-z-card-lifted);
   width: fit-content;
   margin-inline: auto;
   margin-top: auto;
-  /* Sticks to the bottom of the layout viewport; `space-5` keeps the pill
-     comfortably clear of the browser bar below in every bar state. The inset
-     only bites in an installed PWA, where the browser chrome is gone and the
-     hardware inset is real. */
-  margin-bottom: max(var(--vk-space-5), env(safe-area-inset-bottom, 0px));
+  margin-bottom: var(--vk-space-2);
 }
 
 /* The float-tier shadow is the button's whole separation from the rows

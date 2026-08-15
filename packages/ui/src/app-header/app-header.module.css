@@ -14,9 +14,6 @@
   align-items: center;
   gap: 0.875rem;
   min-width: 0;
-  /* No glass panel behind the bar anymore — a soft glyph-following shadow is
-     what keeps the wordmark readable over content scrolling beneath it. */
-  filter: drop-shadow(0 1px 2px oklch(from var(--vk-shadow-color) l c h / 0.45));
 }
 
 .logo {
