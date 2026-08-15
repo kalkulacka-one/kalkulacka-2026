@@ -216,21 +216,14 @@
   padding: 0 var(--vk-space-4) var(--vk-space-4);
 }
 
-.yourAnswer {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--vk-space-2);
-  white-space: nowrap;
-}
-
 /*
- * A fixed-width column for every mark this card draws — the top "Vy" mark,
- * every group header's mark — so the text beside them all starts at the same
- * x regardless of whether the icon in that slot is a 1.5rem `AnswerMark` or a
- * 2rem `Avatar` (which fills the slot exactly and needs no wrapper of its
- * own). Without this a group's smaller mark left its label sitting to the
- * left of where a party row's avatar leaves its name, and the whole card
- * read as two uncoordinated columns rather than one.
+ * A fixed-width column for every mark this card draws — every group header's
+ * mark — so the text beside them all starts at the same x regardless of
+ * whether the icon in that slot is a 1.5rem `AnswerMark` or a 2rem `Avatar`
+ * (which fills the slot exactly and needs no wrapper of its own). Without
+ * this a group's smaller mark left its label sitting to the left of where a
+ * party row's avatar leaves its name, and the whole card read as two
+ * uncoordinated columns rather than one.
  */
 .groupIcon {
   flex: none;
@@ -240,17 +233,6 @@
   width: 2rem;
 }
 
-/* The 1:1 comparison's own column-heading treatment for the same word — the
-   mark beside it is the answer, this only says whose. */
-.youLabel {
-  font-family: var(--vk-typeface-sans);
-  font-size: var(--vk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--vk-tracking-wide);
-  text-transform: uppercase;
-  color: var(--vk-color-text-muted);
-}
-
 .stacks {
   display: inline-flex;
   align-items: center;
@@ -258,10 +240,36 @@
   gap: var(--vk-space-2) var(--vk-space-5);
 }
 
+/*
+ * One side's summary — the mark, an optional "Vy" tag, the face stack. No
+ * separate "your answer" row any more: the tag moves into whichever pair
+ * matches the reader's own answer instead (see the component for why), so
+ * this same pair now has to hold three things some of the time and two the
+ * rest, hence the wrap-friendly `inline-flex` rather than a fixed slot count.
+ */
 .stackPair {
   display: inline-flex;
   align-items: center;
   gap: var(--vk-space-2);
+}
+
+/*
+ * The fallback pair for a skipped or explicit "nevím" answer, which matches
+ * neither face stack this summary shows (it only ever draws the yes/no
+ * groups — see `AnswerGroup`'s merged third group for where "nevím" gets its
+ * own row). Same mark-plus-tag shape as a matching pair.
+ */
+.stackYou {
+  white-space: nowrap;
+  /*
+   * On the phone's wrapping flow the pair is narrow enough to share a line
+   * with a party stack, where it reads as part of that stack's answer. A
+   * full-row basis gives it the line to itself, and `order` moves it up to
+   * where the old "your answer" row sat — neither applies on desktop, where
+   * `display: contents` dissolves the flex context and the grid seats it.
+   */
+  flex-basis: 100%;
+  order: -1;
 }
 
 /*
@@ -459,10 +467,24 @@
    * column of beads. `display: contents` dissolves the stacks wrapper into
    * the grid; the explicit `grid-column` on each pair keeps "ne" in its own
    * column even on a question where nobody answered "ano".
+   *
+   * No reserved column for the skip/neutral fallback pair here — it used to
+   * always claim column 1, leaving it empty (and its width plus the gap
+   * beside it as dead indent) on every card that got an ordinary yes/no
+   * answer, which is nearly all of them. The agree pair now opens column 1
+   * itself, flush with the statement text above it. `.rowMeta[data-has-fallback]`
+   * below re-adds the reserved column only for the handful of cards that
+   * actually render the fallback pair, at the cost of those specific cards'
+   * "ano" not lining up with everyone else's — an acceptable trade since
+   * cross-card bead alignment matters far less than the indent did.
+   *
+   * Column 1 ("ano") is sized for its fullest occupant — mark, "Vy" tag, a
+   * full face stack with overflow counter, and the tint pill's own padding —
+   * so the tag never wraps the counter onto a second line inside the pill.
    */
   .rowMeta {
     display: grid;
-    grid-template-columns: 4.5rem 14rem minmax(0, 1fr);
+    grid-template-columns: 16rem minmax(0, 1fr);
     align-items: center;
     column-gap: var(--vk-space-5);
   }
@@ -471,17 +493,33 @@
     display: contents;
   }
 
-  .yourAnswer {
+  .stackYes {
     grid-column: 1;
   }
 
-  .stackYes {
+  .stackNo {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  /* The few cards (skipped/neutral answer) that also render the fallback
+     pair get their reserved first column back, auto-sized to that pair's own
+     content rather than the old fixed 5.5rem — it only ever holds this one
+     pair, so there is nothing else it needs to stay wide for. */
+  .rowMeta[data-has-fallback] {
+    grid-template-columns: auto 16rem minmax(0, 1fr);
+  }
+
+  .rowMeta[data-has-fallback] .stackYou {
+    grid-column: 1;
+  }
+
+  .rowMeta[data-has-fallback] .stackYes {
     grid-column: 2;
   }
 
-  .stackNo {
+  .rowMeta[data-has-fallback] .stackNo {
     grid-column: 3;
-    justify-self: start;
   }
 }
 

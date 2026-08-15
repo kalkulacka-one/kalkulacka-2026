@@ -268,6 +268,11 @@ export function AnswersComparison({
                 const isExpanded = expanded.has(entry.question.id);
                 const isImportant = answer?.isImportant === true;
                 const userAnswer = answer?.answer;
+                // Only the skipped/neutral answer draws the fallback pair — see
+                // `.stackYou` below — and only those cards need the desktop
+                // grid's reserved first column, so the row's own markup carries
+                // that fact rather than duplicating the condition in CSS.
+                const hasFallbackPair = userAnswer !== true && userAnswer !== false;
 
                 return (
                   <li
@@ -302,55 +307,96 @@ export function AnswersComparison({
                       which of them is the reader's own is carried by the "Vy"
                       tag on that group's heading, so repeating their mark up
                       here would be the answer stated twice.
+
+                      There is no separate "your answer" row any more: it used
+                      to sit above the two stacks wearing a text label where
+                      every other row wears a face, so the eye had to parse a
+                      column that only sometimes held avatars. Instead the "Vy"
+                      tag moves *into* whichever stack matches — same "Vy" pill
+                      the expanded groups already use, reused rather than
+                      reinvented, immediately before that row's faces. A
+                      skipped or neutral answer matches no stack (this summary
+                      never shows the merged "nevím" group), so it falls back
+                      to its own pair with the tag and no faces.
                     */}
                     {isExpanded ? null : (
-                      <div className={styles.rowMeta}>
-                        {/* The mark carries the full answer for a screen reader;
-                            the visible text is just "Vy", set like the column
-                            heading the 1:1 comparison puts over the same mark. */}
-                        <span className={styles.yourAnswer}>
-                          <span className={styles.groupIcon}>
-                            <AnswerMark
-                              tone={answerTone(userAnswer)}
-                              label={`${messages.comparison.you}: ${answerLabelOf(userAnswer)}`}
-                              size="small"
-                            />
-                          </span>
-                          <span className={styles.youLabel} aria-hidden="true">
-                            {messages.comparison.you}
-                          </span>
-                        </span>
-
+                      <div
+                        className={styles.rowMeta}
+                        data-has-fallback={hasFallbackPair || undefined}
+                      >
                         <span className={styles.stacks}>
-                          {entry.yes.length > 0 ? (
+                          {entry.yes.length > 0 || userAnswer === true ? (
                             <span className={`${styles.stackPair} ${styles.stackYes}`}>
-                              <AnswerMark tone="agree" size="small" />
-                              <AvatarStack
-                                items={entry.yes.map(({ candidate }) => ({
-                                  id: candidate.id,
-                                  name: candidate.name,
-                                  avatarUrl: candidate.avatarUrl,
-                                }))}
-                                max={STACK_MAX}
-                                label={messages.comparison.stackYes}
-                                popover={{ closeLabel: messages.comparison.close }}
+                              <AnswerMark
+                                tone="agree"
+                                size="small"
+                                label={
+                                  userAnswer === true
+                                    ? `${messages.comparison.you}: ${answerLabelOf(userAnswer)}`
+                                    : undefined
+                                }
                               />
+                              {userAnswer === true ? (
+                                <Tag tone="neutral">
+                                  <span aria-hidden="true">{messages.comparison.you}</span>
+                                </Tag>
+                              ) : null}
+                              {entry.yes.length > 0 ? (
+                                <AvatarStack
+                                  items={entry.yes.map(({ candidate }) => ({
+                                    id: candidate.id,
+                                    name: candidate.name,
+                                    avatarUrl: candidate.avatarUrl,
+                                  }))}
+                                  max={STACK_MAX}
+                                  label={messages.comparison.stackYes}
+                                  popover={{ closeLabel: messages.comparison.close }}
+                                />
+                              ) : null}
                             </span>
                           ) : null}
 
-                          {entry.no.length > 0 ? (
+                          {entry.no.length > 0 || userAnswer === false ? (
                             <span className={`${styles.stackPair} ${styles.stackNo}`}>
-                              <AnswerMark tone="disagree" size="small" />
-                              <AvatarStack
-                                items={entry.no.map(({ candidate }) => ({
-                                  id: candidate.id,
-                                  name: candidate.name,
-                                  avatarUrl: candidate.avatarUrl,
-                                }))}
-                                max={STACK_MAX}
-                                label={messages.comparison.stackNo}
-                                popover={{ closeLabel: messages.comparison.close }}
+                              <AnswerMark
+                                tone="disagree"
+                                size="small"
+                                label={
+                                  userAnswer === false
+                                    ? `${messages.comparison.you}: ${answerLabelOf(userAnswer)}`
+                                    : undefined
+                                }
                               />
+                              {userAnswer === false ? (
+                                <Tag tone="neutral">
+                                  <span aria-hidden="true">{messages.comparison.you}</span>
+                                </Tag>
+                              ) : null}
+                              {entry.no.length > 0 ? (
+                                <AvatarStack
+                                  items={entry.no.map(({ candidate }) => ({
+                                    id: candidate.id,
+                                    name: candidate.name,
+                                    avatarUrl: candidate.avatarUrl,
+                                  }))}
+                                  max={STACK_MAX}
+                                  label={messages.comparison.stackNo}
+                                  popover={{ closeLabel: messages.comparison.close }}
+                                />
+                              ) : null}
+                            </span>
+                          ) : null}
+
+                          {hasFallbackPair ? (
+                            <span className={`${styles.stackPair} ${styles.stackYou}`}>
+                              <AnswerMark
+                                tone={answerTone(userAnswer)}
+                                label={`${messages.comparison.you}: ${answerLabelOf(userAnswer)}`}
+                                size="small"
+                              />
+                              <Tag tone="neutral">
+                                <span aria-hidden="true">{messages.comparison.you}</span>
+                              </Tag>
                             </span>
                           ) : null}
                         </span>
