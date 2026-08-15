@@ -1,11 +1,19 @@
 /*
- * The recap is a fixed composition, like the deck — not a document.
+ * Two scroll arrangements, split at the desktop-frame boundary (`64rem`,
+ * matching `globals.css`).
  *
- * `Screen` (the scroll-the-whole-page shell the other content screens use) is
- * deliberately not used here. This screen follows the last question directly,
- * and having the title and the primary action scroll away made the transition
- * out of the deck feel like leaving the app. So the frame holds still and the
- * list is the only thing that moves.
+ * On a phone the recap is a *document* that scrolls, like every other content
+ * screen: iOS only paints a scrolling document's canvas under its liquid-glass
+ * bar (`screen.tsx` records the same finding), so the earlier fixed frame with
+ * an inner scroller always ended in a dead strip above the bar — nothing an
+ * inner box paints can cross the viewport line, and the bar never minimizes
+ * over a page that does not scroll. The call to action stays put by being
+ * sticky instead of the frame being fixed.
+ *
+ * On a desktop (`≥64rem`, where the fixed frame returns) the recap keeps its
+ * original composition — header, filters and the control panel hold still and
+ * only the list scrolls, in an inner box the `EdgeFade`s and the floating
+ * panel position against.
  */
 .screen {
   flex: 1;
@@ -26,11 +34,15 @@
   width: 100%;
   max-width: 62rem;
   margin: 0 auto;
-  /* A *pinned* shell's app bar carries no bottom padding of its own — in
-     `document` mode the bar adds `space-3` there (`app-shell.module.css`), so
-     this makes up the difference and every screen's back link lands on the
-     same line regardless of scroll mode. */
-  padding-top: calc(var(--vk-head-top) + var(--vk-space-3));
+  /* The desktop footer positions against this box (see the `64rem` block). */
+  position: relative;
+  /* In `document` mode the app bar carries `space-3` of its own below itself
+     (`app-shell.module.css`, not media-gated), so the head offset here is the
+     bare token — the total matches the other screens' header line. */
+  padding-top: var(--vk-head-top);
+  /* The page's own tail: the last rows scroll up out of the under-glass zone
+     rather than stopping dead at the bar — see `--vk-scroll-tail`. */
+  padding-bottom: var(--vk-scroll-tail);
 }
 
 /*
@@ -40,7 +52,8 @@
  */
 .header,
 .filters,
-.listShell {
+.listShell,
+.footer {
   animation: rise 420ms var(--vk-easing-spring) backwards;
 }
 
@@ -48,7 +61,8 @@
   animation-delay: 60ms;
 }
 
-.listShell {
+.listShell,
+.footer {
   animation-delay: 110ms;
 }
 
@@ -62,13 +76,20 @@
 @media (prefers-reduced-motion: reduce) {
   .header,
   .filters,
-  .listShell {
+  .listShell,
+  .footer {
     animation: none;
   }
 }
 
 /* --- Header ------------------------------------------------------------- */
 
+/*
+ * In flow, so on a phone it simply scrolls away with the page — the sticky app
+ * bar above and the sticky action below are the parts that persist. (The old
+ * fixed frame collapsed it in place with a grid-rows transition; a scrolling
+ * document gets that behavior for free.)
+ */
 .header {
   flex: none;
 }
@@ -77,37 +98,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--vk-space-4);
-}
-
-/*
- * Phone-only: while scrolling forward through the list, the header collapses
- * to just the filter row below it, and re-expands the moment the scroll
- * reverses (`recap.tsx` tracks direction, not just distance from the top —
- * the common "toolbar hides advancing, reappears on the way back" pattern).
- *
- * The grid-rows trick, not `max-height`: `.headerInner`'s content — the back
- * link, the title, the description, the tally — has no fixed height to guess
- * at, and `max-height` transitions either overshoot (guess too high, the
- * animation has dead time at the end) or clip (guess too low). Animating
- * `grid-template-rows` from `1fr` to `0fr` instead sizes to the *actual*
- * content every time, with `.headerInner`'s `overflow: hidden` doing the
- * clipping as the row shrinks.
- */
-@media (width < 56rem) {
-  .header {
-    display: grid;
-    grid-template-rows: 1fr;
-    transition: grid-template-rows var(--vk-duration-slow) ease;
-  }
-
-  .header[data-collapsed] {
-    grid-template-rows: 0fr;
-  }
-
-  .headerInner {
-    overflow: hidden;
-    min-height: 0;
-  }
 }
 
 .headline {
@@ -174,34 +164,12 @@
 /* --- The list ----------------------------------------------------------- */
 
 /*
- * Everything below the filters lives in this one positioned box: the list (or
- * the empty state) fills it, the top `EdgeFade` sits over its upper edge (it
- * positions against this box), and the control panel floats over the list's
- * tail rather than taking a row of its own beneath it. `min-height: 0` is
- * what lets it shrink inside the flex column instead of pushing past the
- * viewport.
+ * On a phone this is just a stretch of the document. `position: relative`
+ * still anchors the top `EdgeFade` (which only ever shows on the desktop,
+ * where the inner scroller below exists to be scrolled).
  */
 .listShell {
   position: relative;
-  flex: 1;
-  min-height: 0;
-}
-
-.listWrap {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-
-  /* Room for row focus rings, which a tight scroll box would clip. */
-  padding-inline: 3px;
-  margin-inline: -3px;
-
-  /* Keeps the last row clear of the floating button — tracks the action
-     band's height. */
-  padding-bottom: calc(var(--vk-fade-action) - var(--vk-space-2));
 }
 
 .list {
@@ -233,8 +201,7 @@
 
 /*
  * Two columns once there is width for them — the point is not density but
- * *less scrolling*: forty-two rows in one column is a long haul past the very
- * viewport edge this screen is trying to hold still.
+ * *less scrolling*: forty-two rows in one column is a long haul.
  */
 @media (min-width: 56rem) {
   .list {
@@ -243,11 +210,67 @@
   }
 }
 
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-3);
+  text-align: center;
+  padding: var(--vk-space-7) 0;
+}
+
+.emptyText {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  color: var(--vk-color-text-muted);
+}
+
+/* --- The control panel --------------------------------------------------- */
+
+/*
+ * On a phone: sticky, the way every document screen pins its call to action —
+ * in flow after the list, riding at the viewport bottom while the list scrolls
+ * past underneath and under the glass beyond it. Deliberately *not*
+ * `StickyBar`: its phone scrim paints a solid page-colour tail below the bar,
+ * exactly over the under-glass strip this screen exists to leave open — the
+ * button floats bare, legible by its own shadow and opaque pill.
+ *
+ * `margin-top: auto` keeps it at the bottom of a screen shorter than the
+ * viewport (a filtered-down list), same as `Screen`'s footer slot.
+ * `pointer-events` pass through the full-width row so the rows sliding past
+ * beside the button stay tappable.
+ */
+.footer {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--vk-z-card-lifted);
+  margin-top: auto;
+  /* Sticks to the bottom of the layout viewport, which iOS already holds a
+     little above its floating bar — breathing room, not clearance. The inset
+     only bites in an installed PWA, where the browser chrome is gone and the
+     hardware inset is real. */
+  margin-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* The floating shadow `StickyBar` would have provided — the button must still
+   read as chrome over rows sliding past. */
+.footer > * {
+  width: fit-content;
+  pointer-events: auto;
+  box-shadow: var(--vk-shadow-card-back);
+}
+
 /*
  * `display: contents` so the `EdgeFade` inside keeps positioning against
  * `.listShell` as if unwrapped — the wrapper exists only to switch the band
- * off on phones (see recap.tsx for the iOS edge-sampling rationale). `64rem`
- * is the desktop-frame boundary (`globals.css`), not the list's own two-column
+ * off on phones, where the raw list edge is what iOS extends under its glass
+ * and the document arrangement needs no fade at all. `64rem` is the
+ * desktop-frame boundary (`globals.css`), not the list's own two-column
  * switch: the band belongs to the fixed frame, not to the wide layout.
  */
 .desktopFade {
@@ -260,85 +283,9 @@
   }
 }
 
-.empty {
-  position: absolute;
-  inset: 0;
-  /* Clears the floating control panel the same way the list's own bottom
-     padding does, so "Zobrazit vše" never sits under "Zobrazit výsledky". */
-  padding-bottom: var(--vk-fade-action);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--vk-space-3);
-  text-align: center;
-}
-
-.emptyText {
-  margin: 0;
-  font-family: var(--vk-typeface-sans);
-  font-size: var(--vk-text-md);
-  color: var(--vk-color-text-muted);
-}
-
-/*
- * The control panel — floating directly over the list's tail rather than in
- * a row beneath it, so the list reads as continuing underneath it instead of
- * stopping to make room. There is no fade behind it (see recap.tsx for why
- * the raw list edge matters on iOS); `--vk-fade-action` survives here purely
- * as the band's *spacing*: the panel's height and the list's bottom padding
- * stay one number by construction. Bottom-aligned
- * within the band rather than centred in it: `.content`
- * (`app-shell.module.css`) is already sized to `100dvh`, the live-tracking
- * edge just above the browser's own chrome — and iOS Safari keeps a reserve of
- * its own below that edge (measured ~27pt above the floating bar, with
- * `safe-area-inset-bottom` reading 0 in-browser), so `space-2` is the whole
- * clearance; the inset only bites in an installed PWA, where the browser
- * chrome is gone and the hardware inset is real. Centred horizontally on
- * a phone; `justify-content` moves to the right column edge on a desktop,
- * where "centred" would otherwise mean centred under a much wider two-column
- * list than the button has any relation to. `z-index: 3` keeps it above the
- * band (the fade paints at 2).
- */
-.footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--vk-fade-action);
-  z-index: 3;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
-  pointer-events: none;
-}
-
-/* The floating shadow `StickyBar` used to provide — the button sits in the
-   band directly now, but must still read as chrome over rows sliding past. */
-.footer > * {
-  width: fit-content;
-  pointer-events: auto;
-  box-shadow: var(--vk-shadow-card-back);
-}
-
-/* --- Wide screens -------------------------------------------------------- */
+/* --- Wide layout (56rem): typography and column arrangement -------------- */
 
 @media (min-width: 56rem) {
-  .screen {
-    /*
-     * The deck leaves room below itself on a tall viewport rather than
-     * stretching to fill it (`question-flow.module.css`'s `.stage` caps the
-     * same way); the recap matches that instead of using every last pixel just
-     * because a flex box will happily give it away.
-     */
-    padding-bottom: var(--vk-space-6);
-  }
-
-  .inner {
-    gap: var(--vk-space-4);
-  }
-
   /*
    * Wide enough for one line. Every line the header takes is a row of questions
    * the list doesn't get, and on this screen the list is the point.
@@ -365,10 +312,81 @@
     align-items: flex-end;
     text-align: right;
   }
+}
 
-  /* The button sits under the list's own right edge, not centred beneath a
-     column-and-a-half of rows it has no relationship to. */
+/* --- The fixed desktop frame (64rem) ------------------------------------- */
+
+@media (min-width: 64rem) {
+  .screen {
+    /*
+     * The deck leaves room below itself on a tall viewport rather than
+     * stretching to fill it (`question-flow.module.css`'s `.stage` caps the
+     * same way); the recap matches that instead of using every last pixel just
+     * because a flex box will happily give it away.
+     */
+    padding-bottom: var(--vk-space-6);
+  }
+
+  .inner {
+    /* The fixed frame bounds the column; the page has no tail to scroll. */
+    padding-bottom: 0;
+  }
+
+  /*
+   * The inner scroller returns: everything below the filters lives in this one
+   * positioned box — the list (or the empty state) fills it, the `EdgeFade`s
+   * sit over its edges, and the control panel floats over the list's tail.
+   * `min-height: 0` is what lets it shrink inside the flex column instead of
+   * pushing past the viewport.
+   */
+  .listShell {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .listWrap {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+
+    /* Room for row focus rings, which a tight scroll box would clip. */
+    padding-inline: 3px;
+    margin-inline: -3px;
+
+    /* Keeps the last row clear of the floating button — tracks the action
+       band's height. */
+    padding-bottom: calc(var(--vk-fade-action) - var(--vk-space-2));
+  }
+
+  .empty {
+    position: absolute;
+    inset: 0;
+    /* Clears the floating control panel the same way the list's own bottom
+       padding does, so "Zobrazit vše" never sits under "Zobrazit výsledky". */
+    padding: 0 0 var(--vk-fade-action);
+  }
+
+  /*
+   * The control panel floats over the desktop fade band instead of sticking to
+   * a scrolling page — its height is the same `--vk-fade-action` token the
+   * band uses, so the fade and the button's clearance stay one number by
+   * construction. Positioned against `.inner` (whose bottom edge is the list's
+   * bottom edge once the page tail is gone), under the list's own right edge
+   * rather than centred beneath a two-column list it has no relationship to.
+   */
   .footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--vk-fade-action);
+    z-index: 3;
+    margin: 0;
+    align-items: flex-end;
     justify-content: flex-end;
+    padding-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
   }
 }
