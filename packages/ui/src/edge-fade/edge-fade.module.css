@@ -1,0 +1,43 @@
+/*
+ * The gradients themselves live in the tokens (`--vk-fade-to-*`) so this band
+ * and the `StickyBar` scrim ramp through identical stops — this file only
+ * places the band and handles its visibility.
+ */
+.fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
+
+  opacity: 0;
+  transition: opacity var(--vk-duration-base) ease;
+}
+
+.fade[data-visible] {
+  opacity: 1;
+}
+
+.top {
+  top: 0;
+  background: var(--vk-fade-to-bottom);
+}
+
+.bottom {
+  bottom: 0;
+  background: var(--vk-fade-to-top);
+}
+
+.edge {
+  height: var(--vk-fade-edge);
+}
+
+.action {
+  height: var(--vk-fade-action);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade {
+    transition: none;
+  }
+}

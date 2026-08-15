@@ -48,7 +48,7 @@
 
 @media (min-width: 53.75rem) {
   .center {
-    gap: 0.5rem;
+    gap: var(--vk-space-2);
   }
 }
 

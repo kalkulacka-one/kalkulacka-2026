@@ -2,7 +2,7 @@
   margin: 0;
   font-family: var(--vk-typeface-sans);
   font-size: var(--vk-text-lg);
-  line-height: 1.55;
+  line-height: var(--vk-leading-relaxed);
   color: var(--vk-color-text-muted);
 }
 

@@ -10,7 +10,7 @@ import {
   type RecapFilterId,
 } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
-import { Button, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
+import { Button, EdgeFade, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -51,7 +51,7 @@ export function Recap({ calculator, questions }: RecapProps) {
   /** The question the dialog is showing, as an index into `questions`. */
   const [openIndex, setOpenIndex] = useState<number | undefined>();
 
-  /** Whether the list has been scrolled away from its top edge — drives the top blur (there's more above). */
+  /** Whether the list has been scrolled away from its top edge — drives the top fade (there's more above). */
   const [scrolled, setScrolled] = useState(false);
   /**
    * On a phone, the header (back link, title, description, tally) collapses
@@ -202,11 +202,7 @@ export function Recap({ calculator, questions }: RecapProps) {
               <>
                 {/* Only there to say "there's more above" — invisible at rest,
                     faded in once the list has actually moved. */}
-                <div
-                  className={styles.topFade}
-                  data-visible={scrolled || undefined}
-                  aria-hidden="true"
-                />
+                <EdgeFade edge="top" visible={scrolled} />
 
                 <div ref={listRef} className={styles.listWrap} onScroll={handleScroll}>
                   {/* Keyed on the filter so switching it replays the entrance
@@ -235,10 +231,10 @@ export function Recap({ calculator, questions }: RecapProps) {
                   </ul>
                 </div>
 
-                {/* Taller than the list's own bottom padding and blurred, so the
-                    control panel below reads as floating over the list rather
-                    than sitting in a lane of its own underneath it. */}
-                <div className={styles.bottomFade} aria-hidden="true" />
+                {/* The tall `action` band, so the control panel below reads as
+                    floating over the list rather than sitting in a lane of its
+                    own underneath it. */}
+                <EdgeFade edge="bottom" size="action" />
               </>
             )}
 

@@ -54,8 +54,10 @@ export function Screen({
 
           {children}
 
-          {/* `margin-top: auto` keeps the bar at the bottom of a short screen
-              rather than floating directly under the content. */}
+          {/* On a phone `margin-top: auto` keeps the bar at the bottom of a
+              short screen, within thumb reach. On a desktop the column is
+              content-height and the bar sits under the content instead,
+              sticking to the viewport edge only while the page overflows. */}
           {footer ? <div className={styles.footer}>{footer}</div> : null}
         </div>
       </main>

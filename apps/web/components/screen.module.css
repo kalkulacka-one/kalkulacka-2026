@@ -21,7 +21,7 @@
   max-width: 42rem;
   margin: 0 auto;
 
-  padding-top: var(--vk-space-7);
+  padding-top: var(--vk-head-top);
   padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
   /* The last thing on the page has to be able to clear the floating address
@@ -31,9 +31,13 @@
 
 /*
  * On a desktop the frame is fixed again (see `globals.css`), so this screen
- * goes back to being its own scroller and the column back to filling it — that
- * is what keeps `.footer` at the bottom of a short page rather than floating
- * under the content.
+ * goes back to being its own scroller. The column deliberately does *not*
+ * stretch to fill it: stretched, `.footer`'s `margin-top: auto` pinned the
+ * actions to the bottom of the viewport with a field of nothing between them
+ * and a short screen's content — the tutorial's CTA hung a screen-width away
+ * from the card it belongs to. Left at content height, the actions sit under
+ * the content they act on, and `.footer`'s `position: sticky` still pins them
+ * to the viewport's edge for exactly as long as the page actually overflows.
  */
 @media (min-width: 64rem) {
   .screen {
@@ -47,15 +51,17 @@
   }
 
   .inner {
-    min-height: 100%;
     padding-bottom: var(--vk-space-7);
   }
 }
 
 .header {
+  /* `space-3` keeps the title and its description reading as one unit; the
+     back link above them gets its extra clearance from `.title`'s own margin
+     below, so the chip stops crowding the headline it has no relation to. */
   display: flex;
   flex-direction: column;
-  gap: var(--vk-space-4);
+  gap: var(--vk-space-3);
 }
 
 /*
@@ -92,6 +98,12 @@
   line-height: var(--vk-leading-tight);
   color: var(--vk-color-text);
   text-wrap: balance;
+}
+
+/* Only when a back link precedes it — a headline with nothing above it needs
+   no clearance. See the header-rhythm tokens in `base.css`. */
+.title:not(:first-child) {
+  margin-top: var(--vk-head-back-extra);
 }
 
 .description {

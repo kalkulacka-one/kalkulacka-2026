@@ -25,7 +25,7 @@
      best at text width, and the stacks never need more. */
   max-width: 52rem;
   margin: 0 auto;
-  padding-top: var(--vk-space-5);
+  padding-top: var(--vk-head-top);
   padding-bottom: var(--vk-scroll-tail);
 }
 
@@ -38,6 +38,9 @@
 
 .title {
   margin: 0;
+  /* The back link precedes it — the same clearance every screen gives a
+     headline under a control; see the header-rhythm tokens in `base.css`. */
+  margin-top: var(--vk-head-back-extra);
   font-family: var(--vk-typeface-display);
   font-size: var(--vk-text-title);
   font-weight: 700;
@@ -125,7 +128,7 @@
   box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
   transition:
     box-shadow var(--vk-duration-base) ease,
-    transform var(--vk-duration-base) cubic-bezier(0.2, 0.9, 0.3, 1);
+    transform var(--vk-duration-base) var(--vk-easing-spring);
 }
 
 /*
@@ -137,7 +140,7 @@
  * toggle is noise.
  */
 .row:not([data-expanded]):has(.rowToggle:hover) {
-  transform: scale(1.008);
+  transform: scale(var(--vk-pressable-scale-hover));
   box-shadow:
     inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
     var(--vk-shadow-card-back);

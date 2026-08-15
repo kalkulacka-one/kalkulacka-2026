@@ -3,6 +3,7 @@
 import type { DistrictKind } from '@vk/core';
 import { districtVocabulary, format, getMessages, plural } from '@vk/i18n';
 import {
+  EdgeFade,
   OptionRow,
   OptionRowList,
   type OptionRowListHandle,
@@ -163,8 +164,10 @@ export function DistrictPicker({
     [available, highlightedIndex, router],
   );
 
-  // Only there to say "there's more above/below" — both start hidden, since a
-  // short result list (or the empty state) has nothing to hint at.
+  // Drives the edge fades, each toggling independently: the top one only once
+  // the list has actually scrolled down, the bottom only while there is more
+  // below than the box shows. Both start hidden, since a short result list
+  // (or the empty state) has nothing to hint at.
   const [scrolledDown, setScrolledDown] = useState(false);
   const [hasMoreBelow, setHasMoreBelow] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -222,11 +225,7 @@ export function DistrictPicker({
               <p className={styles.empty}>{format(copy.empty, { query: query.trim() })}</p>
             ) : (
               <>
-                <div
-                  className={styles.topFade}
-                  data-visible={scrolledDown || undefined}
-                  aria-hidden="true"
-                />
+                <EdgeFade edge="top" visible={scrolledDown} />
 
                 <div ref={listRef} id={listId} className={styles.listWrap} onScroll={updateFades}>
                   <div className={styles.results}>
@@ -255,11 +254,7 @@ export function DistrictPicker({
                   </div>
                 </div>
 
-                <div
-                  className={styles.bottomFade}
-                  data-visible={hasMoreBelow || undefined}
-                  aria-hidden="true"
-                />
+                <EdgeFade edge="bottom" visible={hasMoreBelow} />
               </>
             )}
           </div>

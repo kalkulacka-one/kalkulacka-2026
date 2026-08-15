@@ -26,7 +26,11 @@
   width: 100%;
   max-width: 62rem;
   margin: 0 auto;
-  padding-top: var(--vk-space-5);
+  /* A *pinned* shell's app bar carries no bottom padding of its own — in
+     `document` mode the bar adds `space-3` there (`app-shell.module.css`), so
+     this makes up the difference and every screen's back link lands on the
+     same line regardless of scroll mode. */
+  padding-top: calc(var(--vk-head-top) + var(--vk-space-3));
 }
 
 /*
@@ -171,29 +175,16 @@
 
 /*
  * Everything below the filters lives in this one positioned box: the list (or
- * the empty state) fills it, the top/bottom fades sit over its edges, and the
- * control panel floats over the bottom fade rather than taking a row of its
- * own beneath it. `min-height: 0` is what lets it shrink inside the flex
- * column instead of pushing past the viewport.
+ * the empty state) fills it, the `EdgeFade` bands sit over its edges (they
+ * position against this box), and the control panel floats over the bottom
+ * band rather than taking a row of its own beneath it. `min-height: 0` is
+ * what lets it shrink inside the flex column instead of pushing past the
+ * viewport.
  */
 .listShell {
   position: relative;
   flex: 1;
   min-height: 0;
-
-  /*
-   * Set once here rather than on `.bottomFade` and `.footer` separately —
-   * both inherit it, so the fade and the panel it holds the button in are the
-   * same height by construction, not by two literals someone has to remember
-   * to keep in sync.
-   *
-   * The band's own height, not the button's clearance from the edge — that
-   * clearance is `.footer`'s own small bottom padding now, so the button
-   * itself settles near the true bottom of `.content` (`100dvh`, already the
-   * correct, live-tracking edge — see `app-shell.module.css`) instead of
-   * floating centred partway up a tall band.
-   */
-  --vk-recap-safe: 6rem;
 }
 
 .listWrap {
@@ -208,13 +199,9 @@
   padding-inline: 3px;
   margin-inline: -3px;
 
-  /*
-   * The bottom padding is what keeps the last row clear of both the blur and
-   * the control panel floating over it — tall enough to clear the button now
-   * that it sits near the bottom of `--vk-recap-safe` rather than centred
-   * inside it.
-   */
-  padding-bottom: 5.5rem;
+  /* Keeps the last row clear of the floating button — tracks the action
+     band's height. */
+  padding-bottom: calc(var(--vk-fade-action) - var(--vk-space-2));
 }
 
 .list {
@@ -261,7 +248,7 @@
   inset: 0;
   /* Clears the floating control panel the same way the list's own bottom
      padding does, so "Zobrazit vše" never sits under "Zobrazit výsledky". */
-  padding-bottom: var(--vk-recap-safe);
+  padding-bottom: var(--vk-fade-action);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -277,88 +264,26 @@
   color: var(--vk-color-text-muted);
 }
 
-/* --- Edge fades ----------------------------------------------------------
- * Both sit over the list rather than inside its own mask, so they can carry a
- * real `backdrop-filter` blur — a `mask-image` on the scroll box itself can
- * only fade *opacity*, which reads as content dimming rather than as glass.
- *
- * Each is a *single* blurred layer, not several stacked at different radii.
- * Layering two independently-masked blurs was the earlier approach, and at
- * the seam between them — wherever their two mask curves happened to cross —
- * the change in blur amount was sharp enough to read as a hard edge instead
- * of a haze, exactly the "truly masked" feeling this is trying to produce.
- * One layer with a gradual, many-stop mask blurs smoothly along its whole
- * height instead.
- */
-
-.topFade,
-.bottomFade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  pointer-events: none;
-  backdrop-filter: blur(16px);
-}
-
-.topFade {
-  top: 0;
-  height: 4rem;
-  opacity: 0;
-  background: linear-gradient(to bottom, var(--vk-color-page) 0%, transparent 65%);
-  mask-image: linear-gradient(
-    to bottom,
-    black 0%,
-    black 20%,
-    rgba(0, 0, 0, 0.7) 45%,
-    rgba(0, 0, 0, 0.35) 70%,
-    transparent 100%
-  );
-  transition: opacity var(--vk-duration-base) ease;
-}
-
-.topFade[data-visible] {
-  opacity: 1;
-}
-
 /*
- * Tall enough to hold the control panel with room to spare — `--vk-recap-safe`
- * is shared with `.footer` below so the two stay the same height by
- * construction rather than by two numbers someone has to keep in sync by hand.
- */
-.bottomFade {
-  bottom: 0;
-  height: var(--vk-recap-safe);
-  backdrop-filter: blur(22px);
-  background: linear-gradient(to top, var(--vk-color-page) 0%, transparent 55%);
-  mask-image: linear-gradient(
-    to top,
-    black 0%,
-    black 22%,
-    rgba(0, 0, 0, 0.75) 42%,
-    rgba(0, 0, 0, 0.4) 62%,
-    rgba(0, 0, 0, 0.12) 82%,
-    transparent 100%
-  );
-}
-
-/*
- * The control panel — floating over the blur rather than in a row beneath it,
- * so the list reads as continuing underneath it instead of stopping to make
- * room. Bottom-aligned within the band rather than centred in it: `.content`
+ * The control panel — floating over the bottom `EdgeFade` band rather than in
+ * a row beneath it, so the list reads as continuing underneath it instead of
+ * stopping to make room. Its height is the same `--vk-fade-action` token the
+ * band uses, so the two stay one number by construction. Bottom-aligned
+ * within the band rather than centred in it: `.content`
  * (`app-shell.module.css`) is already sized to `100dvh`, the live-tracking
  * edge just above the browser's own chrome, so the button only needs a small
  * margin off that edge, not half the band's height. Centred horizontally on
  * a phone; `justify-content` moves to the right column edge on a desktop,
  * where "centred" would otherwise mean centred under a much wider two-column
- * list than the button has any relation to.
+ * list than the button has any relation to. `z-index: 3` keeps it above the
+ * band (the fade paints at 2).
  */
 .footer {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: var(--vk-recap-safe);
+  height: var(--vk-fade-action);
   z-index: 3;
   display: flex;
   align-items: flex-end;
@@ -386,7 +311,6 @@
   }
 
   .inner {
-    padding-top: var(--vk-space-5);
     gap: var(--vk-space-4);
   }
 

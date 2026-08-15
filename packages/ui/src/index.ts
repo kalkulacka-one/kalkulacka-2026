@@ -33,6 +33,7 @@ export {
   type DragGuidesLabels,
   type DragGuidesProps,
 } from './drag-guides/drag-guides';
+export { EdgeFade, type EdgeFadeProps } from './edge-fade/edge-fade';
 export {
   FilterChips,
   type FilterChipsProps,
