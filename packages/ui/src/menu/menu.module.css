@@ -3,14 +3,26 @@
   flex: none;
 }
 
-.list {
-  position: absolute;
-  top: calc(100% + var(--vk-space-2));
-  right: 0;
+/*
+ * Portaled to `document.body` (`menu.tsx`), so its position is a viewport
+ * coordinate written inline from the trigger's measured rect rather than a
+ * CSS offset against a DOM ancestor that no longer wraps it. `position: fixed`
+ * is also what makes the z-index below mean something: any stacking context
+ * — the sticky app bar included — caps every z-index inside it at that one
+ * slot from the outside, so a panel that needs to out-rank things elsewhere
+ * on the page has to not be inside one.
+ */
+.anchor {
+  position: fixed;
   z-index: var(--vk-z-toast);
+}
 
+.list {
   display: flex;
   flex-direction: column;
+  /* The gap the old `top: calc(100% + …)` carried, now that `.anchor` sits
+     flush against the trigger's own bottom edge. */
+  margin-top: var(--vk-space-2);
   /* Wide enough that the detail lines sit on one line rather than wrapping. */
   min-width: 17.5rem;
   padding: var(--vk-space-2);

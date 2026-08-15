@@ -143,6 +143,13 @@
   --vk-shadow-card-lifted:
     0 8px 20px -4px oklch(from var(--vk-shadow-color) l c h / 0.14),
     0 24px 52px -10px oklch(from var(--vk-shadow-color) l c h / 0.25);
+  /* The strongest tier: a floating call-to-action riding over content that
+     scrolls beneath it. Carries the whole separation job by itself — the
+     fade scrims that used to sit under these buttons are gone. */
+  --vk-shadow-float:
+    0 2px 6px -2px oklch(from var(--vk-shadow-color) l c h / 0.2),
+    0 10px 28px -6px oklch(from var(--vk-shadow-color) l c h / 0.35),
+    0 28px 64px -12px oklch(from var(--vk-shadow-color) l c h / 0.28);
   --vk-shadow-sticky: 0 -8px 24px -12px oklch(from var(--vk-shadow-color) l c h / 0.14);
 
   /*
@@ -282,9 +289,12 @@
   );
 
   /* A reading fade at a list's edge, and the taller band a floating action
-     sits in (the recap's control panel, a phone's sticky CTA). */
+     sits in (the recap's control panel, a phone's sticky CTA). The action band
+     is deliberately snug — a large button plus its `space-2` viewport margin is
+     4rem, so 5rem leaves 1rem of visible ramp above the button. Taller reads
+     as the fade starting mid-list on a phone. */
   --vk-fade-edge: 3rem;
-  --vk-fade-action: 6rem;
+  --vk-fade-action: 5rem;
 
   /* --- Screen header rhythm ----------------------------------------------
    * One scheme for every content screen's header, so the screens cannot
@@ -307,7 +317,12 @@
   --vk-z-card-next: 2;
   --vk-z-card: 3;
   --vk-z-card-lifted: 4;
-  --vk-z-toast: 6;
+  /* Above every sticky screen chrome a page can build (the app bar sits at 5,
+     the recap's filter row above it at 6 — see app-shell.module.css and
+     recap.module.css) — this tier is for things that must outrank a whole
+     page, not just its own neighbours: the app menu, a question dialog, a
+     toast. */
+  --vk-z-toast: 7;
 
   /* --- Pressable cards -----------------------------------------------------
    * The depths a clickable card moves through. Overridable per card — a very

@@ -55,6 +55,13 @@
   margin-left: auto;
 }
 
+/* The menu trigger floats on its own shadow, same as every other control
+   that sits over the scrolling page. */
+.actions > * {
+  box-shadow: var(--vk-shadow-card-back);
+  border-radius: var(--vk-radius-pill);
+}
+
 /* With `href` set (embeds), the brand is an anchor — but it is chrome first
    and attribution second, so it reads as plain header until pointed at.
    (After `.title` in source order: the hover rule below outranks it.) */
