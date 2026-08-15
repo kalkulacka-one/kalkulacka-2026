@@ -282,9 +282,12 @@
   );
 
   /* A reading fade at a list's edge, and the taller band a floating action
-     sits in (the recap's control panel, a phone's sticky CTA). */
+     sits in (the recap's control panel, a phone's sticky CTA). The action band
+     is deliberately snug — a large button plus its `space-2` viewport margin is
+     4rem, so 5rem leaves 1rem of visible ramp above the button. Taller reads
+     as the fade starting mid-list on a phone. */
   --vk-fade-edge: 3rem;
-  --vk-fade-action: 6rem;
+  --vk-fade-action: 5rem;
 
   /* --- Screen header rhythm ----------------------------------------------
    * One scheme for every content screen's header, so the screens cannot

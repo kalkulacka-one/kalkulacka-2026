@@ -10,7 +10,7 @@ import {
   type RecapFilterId,
 } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
-import { Button, EdgeFade, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
+import { Button, EdgeFade, FilterChips, QuestionDialog, RecapRow } from '@vk/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -231,35 +231,47 @@ export function Recap({ calculator, questions }: RecapProps) {
                   </ul>
                 </div>
 
-                {/* The tall `action` band, so the control panel below reads as
-                    floating over the list rather than sitting in a lane of its
-                    own underneath it. */}
-                <EdgeFade edge="bottom" size="action" />
+                {/*
+                  The bottom fade is desktop-only (the wrapper hides it below
+                  the desktop-frame breakpoint). On a phone the raw list edge
+                  is the point: iOS Safari samples the bottom edge of a
+                  non-scrolling page's viewport and extends it under the
+                  liquid-glass bar, so rows at the edge read as the list
+                  continuing behind the glass — the same look the document-mode
+                  screens get for real — where a fade-to-page-colour edge would
+                  smear flat background and end the screen in a dead strip. On
+                  a desktop there is no glass to hand the edge to, and the band
+                  is what keeps row text from colliding with the floating
+                  button.
+                */}
+                <div className={styles.desktopFade}>
+                  <EdgeFade edge="bottom" size="action" />
+                </div>
               </>
             )}
 
+            {/*
+              The button sits in the band directly — no `StickyBar`. Sticky
+              positioning is a no-op inside this non-scrolling footer, and the
+              bar's phone scrim would double the `EdgeFade` band already painted
+              behind it; its stacked paddings were also what held the button a
+              full step above the viewport edge on a phone.
+            */}
             <div className={styles.footer}>
-              <StickyBar>
-                {/*
-                  With nothing answered there is nothing to compare, so the control
-                  is a genuinely disabled button rather than a link wearing
-                  `aria-disabled` — which would still navigate on click.
-                */}
-                {ready && answered === 0 ? (
-                  <Button size="large" iconEnd="arrowRight" disabled>
-                    {messages.recap.showResults}
-                  </Button>
-                ) : (
-                  <Button
-                    as={Link}
-                    href={stepPath(ref, 'result')}
-                    size="large"
-                    iconEnd="arrowRight"
-                  >
-                    {messages.recap.showResults}
-                  </Button>
-                )}
-              </StickyBar>
+              {/*
+                With nothing answered there is nothing to compare, so the control
+                is a genuinely disabled button rather than a link wearing
+                `aria-disabled` — which would still navigate on click.
+              */}
+              {ready && answered === 0 ? (
+                <Button size="large" iconEnd="arrowRight" disabled>
+                  {messages.recap.showResults}
+                </Button>
+              ) : (
+                <Button as={Link} href={stepPath(ref, 'result')} size="large" iconEnd="arrowRight">
+                  {messages.recap.showResults}
+                </Button>
+              )}
             </div>
           </div>
         </div>

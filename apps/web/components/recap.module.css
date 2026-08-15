@@ -175,9 +175,9 @@
 
 /*
  * Everything below the filters lives in this one positioned box: the list (or
- * the empty state) fills it, the `EdgeFade` bands sit over its edges (they
- * position against this box), and the control panel floats over the bottom
- * band rather than taking a row of its own beneath it. `min-height: 0` is
+ * the empty state) fills it, the top `EdgeFade` sits over its upper edge (it
+ * positions against this box), and the control panel floats over the list's
+ * tail rather than taking a row of its own beneath it. `min-height: 0` is
  * what lets it shrink inside the flex column instead of pushing past the
  * viewport.
  */
@@ -243,6 +243,23 @@
   }
 }
 
+/*
+ * `display: contents` so the `EdgeFade` inside keeps positioning against
+ * `.listShell` as if unwrapped — the wrapper exists only to switch the band
+ * off on phones (see recap.tsx for the iOS edge-sampling rationale). `64rem`
+ * is the desktop-frame boundary (`globals.css`), not the list's own two-column
+ * switch: the band belongs to the fixed frame, not to the wide layout.
+ */
+.desktopFade {
+  display: contents;
+}
+
+@media (width < 64rem) {
+  .desktopFade {
+    display: none;
+  }
+}
+
 .empty {
   position: absolute;
   inset: 0;
@@ -265,14 +282,19 @@
 }
 
 /*
- * The control panel — floating over the bottom `EdgeFade` band rather than in
+ * The control panel — floating directly over the list's tail rather than in
  * a row beneath it, so the list reads as continuing underneath it instead of
- * stopping to make room. Its height is the same `--vk-fade-action` token the
- * band uses, so the two stay one number by construction. Bottom-aligned
+ * stopping to make room. There is no fade behind it (see recap.tsx for why
+ * the raw list edge matters on iOS); `--vk-fade-action` survives here purely
+ * as the band's *spacing*: the panel's height and the list's bottom padding
+ * stay one number by construction. Bottom-aligned
  * within the band rather than centred in it: `.content`
  * (`app-shell.module.css`) is already sized to `100dvh`, the live-tracking
- * edge just above the browser's own chrome, so the button only needs a small
- * margin off that edge, not half the band's height. Centred horizontally on
+ * edge just above the browser's own chrome — and iOS Safari keeps a reserve of
+ * its own below that edge (measured ~27pt above the floating bar, with
+ * `safe-area-inset-bottom` reading 0 in-browser), so `space-2` is the whole
+ * clearance; the inset only bites in an installed PWA, where the browser
+ * chrome is gone and the hardware inset is real. Centred horizontally on
  * a phone; `justify-content` moves to the right column edge on a desktop,
  * where "centred" would otherwise mean centred under a much wider two-column
  * list than the button has any relation to. `z-index: 3` keeps it above the
@@ -288,13 +310,16 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: max(var(--vk-space-3), env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
 
+/* The floating shadow `StickyBar` used to provide — the button sits in the
+   band directly now, but must still read as chrome over rows sliding past. */
 .footer > * {
   width: fit-content;
   pointer-events: auto;
+  box-shadow: var(--vk-shadow-card-back);
 }
 
 /* --- Wide screens -------------------------------------------------------- */
