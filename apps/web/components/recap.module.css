@@ -161,14 +161,9 @@
 /*
  * The filter row stays reachable while the header above it scrolls away —
  * stuck directly under the app bar, at the height `ScrollMode` mirrors into
- * `--vk-app-bar-h`. Below the bar's z-index (5), above the rows.
- *
- * The glass panel behind it is the app bar's own recipe (`app-shell`'s
- * `.bar::before`), gated on the same `data-vk-header-surface` flag so the two
- * surfaces come in together and read as one slab once content is moving
- * underneath. Full viewport width via the `left: 50% / 100vw` trick, since the
- * chips live inside a gutter-padded column; the negative `top` covers the
- * column's gap up to the bar so rows never peek through between the two.
+ * `--vk-app-bar-h`. Below the bar's z-index (5), above the rows. No panel
+ * behind it: each chip floats on its own shadow, like the app bar's own
+ * controls and the call to action below.
  */
 .filters {
   flex: none;
@@ -177,32 +172,9 @@
   z-index: 4;
 }
 
-.filters::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: calc(-1 * var(--vk-space-4));
-  bottom: calc(-1 * var(--vk-space-2));
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  pointer-events: none;
-
-  opacity: 0;
-  background: oklch(from var(--vk-color-page) l c h / 0.82);
-  backdrop-filter: var(--vk-plate-blur);
-  transition: opacity var(--vk-duration-base) ease;
-}
-
-:global(html[data-vk-header-surface]) .filters::before {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .filters::before {
-    transition: none;
-  }
-}
+/* No chip styling here: the floating shadow is part of `FilterChips`' own
+   plate recipe (`filter-chips.module.css`), layered with its inset border —
+   an override from outside would clobber that inset. */
 
 /* --- The list ----------------------------------------------------------- */
 
@@ -297,35 +269,17 @@
   width: fit-content;
   margin-inline: auto;
   margin-top: auto;
-  /* Sticks to the bottom of the layout viewport, which iOS already holds a
-     little above its floating bar — breathing room, not clearance. The inset
+  /* Sticks to the bottom of the layout viewport; `space-5` keeps the pill
+     comfortably clear of the browser bar below in every bar state. The inset
      only bites in an installed PWA, where the browser chrome is gone and the
      hardware inset is real. */
-  margin-bottom: max(var(--vk-space-2), env(safe-area-inset-bottom, 0px));
+  margin-bottom: max(var(--vk-space-5), env(safe-area-inset-bottom, 0px));
 }
 
-/* The floating shadow `StickyBar` would have provided — the button must still
-   read as chrome over rows sliding past. */
+/* The float-tier shadow is the button's whole separation from the rows
+   sliding past — there is no fade behind it on any width. */
 .footer > * {
-  box-shadow: var(--vk-shadow-card-back);
-}
-
-/*
- * `display: contents` so the `EdgeFade` inside keeps positioning against
- * `.listShell` as if unwrapped — the wrapper exists only to switch the band
- * off on phones, where the raw list edge is what iOS extends under its glass
- * and the document arrangement needs no fade at all. `64rem` is the
- * desktop-frame boundary (`globals.css`), not the list's own two-column
- * switch: the band belongs to the fixed frame, not to the wide layout.
- */
-.desktopFade {
-  display: contents;
-}
-
-@media (width < 64rem) {
-  .desktopFade {
-    display: none;
-  }
+  box-shadow: var(--vk-shadow-float);
 }
 
 /* --- Wide layout (56rem): typography and column arrangement -------------- */
@@ -378,13 +332,9 @@
   }
 
   /* The whole header column holds still in the fixed frame — nothing for the
-     filter row to stick to, or need glass against. */
+     filter row to stick to. */
   .filters {
     position: static;
-  }
-
-  .filters::before {
-    content: none;
   }
 
   /*
@@ -411,8 +361,9 @@
     padding-inline: 3px;
     margin-inline: -3px;
 
-    /* Keeps the last row clear of the floating button — tracks the action
-       band's height. */
+    /* Keeps the last row clear of the floating button — `--vk-fade-action`
+       survives purely as this clearance number; the fade band it once sized
+       is gone. */
     padding-bottom: calc(var(--vk-fade-action) - var(--vk-space-2));
   }
 

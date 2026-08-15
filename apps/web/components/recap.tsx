@@ -206,18 +206,6 @@ export function Recap({ calculator, questions }: RecapProps) {
                     })}
                   </ul>
                 </div>
-
-                {/*
-                  Desktop-only (the wrapper hides it below the desktop-frame
-                  breakpoint): the band that settles rows under the floating
-                  button in the fixed frame. On a phone there is no fade at all
-                  — the raw list edge is what runs on under Safari's glass, and
-                  a page-colour ramp there would end the screen in a dead strip
-                  instead.
-                */}
-                <div className={styles.desktopFade}>
-                  <EdgeFade edge="bottom" size="action" />
-                </div>
               </>
             )}
           </div>

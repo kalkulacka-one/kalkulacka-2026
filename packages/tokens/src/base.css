@@ -143,6 +143,13 @@
   --vk-shadow-card-lifted:
     0 8px 20px -4px oklch(from var(--vk-shadow-color) l c h / 0.14),
     0 24px 52px -10px oklch(from var(--vk-shadow-color) l c h / 0.25);
+  /* The strongest tier: a floating call-to-action riding over content that
+     scrolls beneath it. Carries the whole separation job by itself — the
+     fade scrims that used to sit under these buttons are gone. */
+  --vk-shadow-float:
+    0 2px 6px -2px oklch(from var(--vk-shadow-color) l c h / 0.2),
+    0 10px 28px -6px oklch(from var(--vk-shadow-color) l c h / 0.35),
+    0 28px 64px -12px oklch(from var(--vk-shadow-color) l c h / 0.28);
   --vk-shadow-sticky: 0 -8px 24px -12px oklch(from var(--vk-shadow-color) l c h / 0.14);
 
   /*

@@ -14,6 +14,9 @@
   align-items: center;
   gap: 0.875rem;
   min-width: 0;
+  /* No glass panel behind the bar anymore — a soft glyph-following shadow is
+     what keeps the wordmark readable over content scrolling beneath it. */
+  filter: drop-shadow(0 1px 2px oklch(from var(--vk-shadow-color) l c h / 0.45));
 }
 
 .logo {
@@ -53,6 +56,13 @@
   align-items: center;
   gap: var(--vk-space-2);
   margin-left: auto;
+}
+
+/* The menu trigger floats on its own shadow, same as every other control
+   that sits over the scrolling page. */
+.actions > * {
+  box-shadow: var(--vk-shadow-card-back);
+  border-radius: var(--vk-radius-pill);
 }
 
 /* With `href` set (embeds), the brand is an anchor — but it is chrome first
