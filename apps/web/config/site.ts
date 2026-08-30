@@ -44,10 +44,33 @@ export type SiteDataConfig = {
  * Display names below are provisional (review break 1) — taken from the
  * previous platform's homepage, not from data.
  */
+/**
+ * Who runs the site, and where to reach them.
+ *
+ * Facts, not copy — the homepage's footer pairs each of these with a label from
+ * the message catalog. They live here rather than in `cs.json` for the same
+ * reason the election keys do: a fork in another country changes these values
+ * and translates nothing, and a translator translating a phone number is a bug
+ * waiting to happen.
+ */
+export const SITE_ORGANIZATION = {
+  name: 'KohoVolit.eu',
+  url: 'https://kohovolit.eu',
+  /** The association's Darujme.cz campaign — the same one the results screen uses. */
+  donateUrl: 'https://www.darujme.cz/darovat/1200653',
+  instagramUrl: 'https://www.instagram.com/volebnikalk',
+  xUrl: 'https://x.com/volebnikalk',
+  email: 'ahoj@volebnikalkulacka.cz',
+  /** Displayed as written; `tel:` strips the spaces at the call site. */
+  phone: '+420 735 518 529',
+} as const;
+
 const ELECTIONS: SiteElectionEntry[] = [
   {
     key: 'snemovni-2025',
     name: 'Sněmovní volby 2025',
+    description:
+      'Volba poslanců, kteří budou příští čtyři roky rozhodovat o zákonech, rozpočtu i vládě.',
     // One nationwide election, seven calculators — the choice is which
     // calculator, not where you vote.
     districtKind: 'variant',

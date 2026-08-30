@@ -4,6 +4,28 @@
     "description": "Porovnejte své názory s programy politických stran a zjistěte, které straně jste nejblíž.",
     "calculatorTitle": "{calculator} — {election}"
   },
+  "home": {
+    "heroTitle": "Zjistěte, ke komu máte ve volbách nejblíž",
+    "heroLead": "Odpovíte na otázky o tom, co se právě řeší, a uvidíte, kdo na ně odpovídal stejně jako vy. Zabere to pár minut a nemusíte se nikde registrovat.",
+    "heroCta": "Spustit kalkulačku",
+    "electionsTitle": "Aktuální volby",
+    "howTitle": "Jak to funguje",
+    "howAnswerTitle": "Odpovíte",
+    "howAnswerDescription": "U každé otázky řeknete, jestli souhlasíte, nebo ne. Na co nemáte názor, přeskočíte.",
+    "howWeighTitle": "Zvážíte",
+    "howWeighDescription": "Otázky, na kterých vám nejvíc záleží, označíte jako důležité. Ve výsledku pak váží dvojnásobně.",
+    "howCompareTitle": "Porovnáte",
+    "howCompareDescription": "Uvidíte pořadí stran a kandidátů podle shody s vámi — a u každého i to, v čem se rozcházíte.",
+    "aboutTitle": "Kdo za tím stojí",
+    "aboutBody": "Volební kalkulačku vyvíjí a provozuje spolek KohoVolit.eu. Od roku 2006 jsme jich připravili přes 150 — pro volby evropské, prezidentské, parlamentní, krajské i komunální.",
+    "aboutLink": "Víc o KohoVolit.eu",
+    "supportTitle": "Podpořte kalkulačku",
+    "supportBody": "Kalkulačka je nezávislá a nezisková. Zdarma a bez reklam ji držíme díky lidem, kteří na ni přispějí.",
+    "supportAction": "Přispět na kalkulačku",
+    "contactTitle": "Ozvěte se nám",
+    "socialInstagram": "Instagram",
+    "socialX": "X"
+  },
   "menu": {
     "label": "Nabídka",
     "close": "Zavřít",
@@ -274,10 +296,6 @@
     "title": "Stránka nenalezena",
     "description": "Adresa neexistuje nebo je zapsaná špatně.",
     "homeLabel": "Zpět na úvod"
-  },
-  "comingSoon": {
-    "title": "Připravujeme",
-    "description": "Tato část kalkulačky se teprve staví."
   },
   "errorPage": {
     "title": "Něco se pokazilo",

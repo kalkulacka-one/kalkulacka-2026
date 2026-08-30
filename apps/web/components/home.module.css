@@ -1,0 +1,413 @@
+/*
+ * The homepage sits on the shared backdrop like every other screen — no band of
+ * its own colour anywhere, including the footer. What separates the sections is
+ * space and one hairline rule, not a slab.
+ *
+ * Structure mirrors `screen.module.css` (`.screen`/`.inner`): the document is
+ * the scroller, this is just the column inside it. The column is wider than a
+ * `Screen`'s 42rem because the three-step strip and the footer are genuinely
+ * multi-column layouts, where a calculator step is one thing at a time.
+ */
+/*
+ * Main *and* the footer, in one box — because on a desktop this box is the
+ * scroller.
+ *
+ * Above 64rem the app goes back to a fixed frame (see `globals.css`), so
+ * whatever scrolls has to be an element with a bounded height. Every other
+ * screen makes its `<main>` that element, but this is the one page with a
+ * sibling after `<main>`: scrolling `<main>` alone left the footer pinned
+ * across the bottom of the viewport as a permanent bar, cutting through the
+ * election card behind it. Scrolling their shared parent puts the footer back
+ * at the end of the page where it belongs.
+ */
+.page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 64rem) {
+  .page {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/*
+ * `1 0 auto`: grows to push the footer to the bottom of a short page, and never
+ * shrinks below its own content — which is what would otherwise let the footer
+ * ride up over the sections while the page is still in its pre-hydration
+ * pinned frame.
+ */
+.main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-7);
+
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+
+  padding-top: var(--vk-space-6);
+  padding-bottom: var(--vk-space-7);
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+}
+
+/* --- Hero ----------------------------------------------------------------
+ * The page's whole job: what this is, and one way in. Deliberately the only
+ * thing above the fold on a phone, so the button is never something you have to
+ * go looking for.
+ */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vk-space-5);
+  padding-top: var(--vk-space-4);
+}
+
+/*
+ * The mark at a size the header's 12px version cannot be mistaken for. Both are
+ * on screen at once here, which is the one place in the app that is true — at
+ * anything close to the header's size the second one reads as a glitch rather
+ * than as the brand being stated.
+ */
+.heroMark {
+  color: var(--vk-color-text);
+}
+
+@media (min-width: 34rem) {
+  .heroMark {
+    height: 2rem;
+    width: auto;
+  }
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vk-space-3);
+}
+
+.heroTitle {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-display);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-tight);
+  color: var(--vk-color-text);
+  text-wrap: balance;
+}
+
+.heroLead {
+  margin: 0;
+  max-width: 34rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-lg);
+  line-height: var(--vk-leading-relaxed);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+/* --- Sections ----------------------------------------------------------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-4);
+}
+
+/*
+ * The same label the picker puts over its groups — small, spaced, muted. These
+ * headings organise the page; they are not competing with the hero for it.
+ */
+.sectionHeading {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-base);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vk-color-text-muted);
+}
+
+/* --- Elections ------------------------------------------------------------ */
+
+.electionList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vk-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A card/list nudges toward a wider layout. */
+@media (min-width: 34rem) {
+  .electionList {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+}
+
+/*
+ * The one place on this page carrying the brand's asymmetric card shape —
+ * square top-left, rounded elsewhere — because these *are* the calculators, and
+ * the question card the reader meets two taps later wears the same corner.
+ */
+.electionCard {
+  display: grid;
+  /* Text, then the chevron — a real column rather than an absolutely
+     positioned corner, so the affordance stays beside the card's middle
+     whether the card is a full-width feature or one of two in a row. */
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: var(--vk-space-4);
+  height: 100%;
+  padding: var(--vk-space-5);
+
+  border-radius: var(--vk-radius-card);
+  background: var(--vk-color-surface);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-surface);
+
+  text-decoration: none;
+  color: inherit;
+
+  transition:
+    background var(--vk-duration-fast) ease,
+    box-shadow var(--vk-duration-base) ease,
+    transform var(--vk-duration-fast) ease;
+}
+
+.electionCard:hover {
+  background: var(--vk-color-surface-hover);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border-strong),
+    var(--vk-shadow-card-back);
+}
+
+.electionCard:active {
+  transform: scale(0.995);
+}
+
+.electionCard:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+}
+
+.electionText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  min-width: 0;
+}
+
+/* Above the name, not below it: the count is the qualifier, the name is what
+   you read. Ordering them this way keeps the name on the card's own baseline
+   grid whether or not a description follows. */
+.electionCount {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-wide);
+  text-transform: uppercase;
+  /* `-muted`, not `-subtle`: at 12px this is small text and has to clear 4.5:1
+     on the card surface, which `-subtle` (muted lightened by 0.12) does not. */
+  color: var(--vk-color-text-muted);
+}
+
+.electionName {
+  font-family: var(--vk-typeface-display);
+  font-size: var(--vk-text-2xl);
+  font-weight: 700;
+  letter-spacing: var(--vk-tracking-tight);
+  line-height: var(--vk-leading-snug);
+  color: var(--vk-color-text-strong);
+  text-wrap: balance;
+}
+
+.electionDescription {
+  /* A full-width feature card is ~56rem across; body copy set that wide is
+     unreadable, so the measure is capped rather than the card narrowed. */
+  max-width: 36rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  line-height: var(--vk-leading-normal);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+/*
+ * Decorative, like `OptionRow`'s: the whole card is the link, so this is an
+ * affordance rather than a second target.
+ */
+.electionChevron {
+  color: var(--vk-color-text-subtle);
+  transition: transform var(--vk-duration-fast) ease;
+}
+
+.electionCard:hover .electionChevron {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electionCard,
+  .electionChevron {
+    transition: none;
+  }
+
+  .electionCard:hover .electionChevron {
+    transform: none;
+  }
+}
+
+/* --- How it works -------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vk-space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * Three across only from 53.75rem — the same width the app brings its desktop
+ * chrome in at. Tried at 44rem first and each step got a ~9-word measure with
+ * a 2.75rem badge beside it, so every description broke into five ragged
+ * lines; stacked rows are the better read all the way up to a real desktop.
+ */
+@media (min-width: 53.75rem) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--vk-space-4);
+  }
+}
+
+/* --- Footer --------------------------------------------------------------
+ * A quiet close, not a dark slab like the previous site's. One hairline, the
+ * same column as the content above it, and type a step down.
+ */
+.footer {
+  flex: none;
+  padding-left: calc(var(--vk-fluid-gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--vk-fluid-gutter) + env(safe-area-inset-right, 0px));
+  /* The last thing on the page has to clear the browser's floating address
+     bar — see `--vk-scroll-tail`. */
+  padding-bottom: var(--vk-scroll-tail);
+}
+
+@media (min-width: 64rem) {
+  .footer {
+    padding-bottom: var(--vk-space-7);
+  }
+}
+
+.footerInner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vk-space-6);
+
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding-top: var(--vk-space-6);
+  border-top: var(--vk-border-width) solid var(--vk-color-border);
+}
+
+/* Two columns as soon as a card would go wide; three once the desktop nav
+   chrome's width is available. */
+@media (min-width: 34rem) {
+  .footerInner {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--vk-space-6) var(--vk-space-5);
+  }
+}
+
+@media (min-width: 53.75rem) {
+  .footerInner {
+    grid-template-columns: 1.4fr 1fr 1fr;
+  }
+}
+
+.footerBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vk-space-2);
+}
+
+.footerHeading {
+  margin: 0;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-base);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vk-color-text-muted);
+}
+
+.footerBody {
+  margin: 0;
+  max-width: 34rem;
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  line-height: var(--vk-leading-relaxed);
+  color: var(--vk-color-text-muted);
+  text-wrap: pretty;
+}
+
+.footerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footerLink {
+  font-family: var(--vk-typeface-sans);
+  font-size: var(--vk-text-md);
+  font-weight: 600;
+  color: var(--vk-color-text-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--vk-color-border-strong);
+  transition: text-decoration-color var(--vk-duration-fast) ease;
+}
+
+.footerLink:hover {
+  text-decoration-color: currentColor;
+}
+
+.footerLink:focus-visible {
+  outline: var(--vk-focus-width) solid var(--vk-focus-color);
+  outline-offset: var(--vk-focus-offset);
+  border-radius: var(--vk-space-1);
+}
+
+/* The donate button is the one control down here, so it gets a little air of
+   its own rather than sitting flush under the sentence that argues for it. */
+.footerAction {
+  padding-top: var(--vk-space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footerLink {
+    transition: none;
+  }
+}

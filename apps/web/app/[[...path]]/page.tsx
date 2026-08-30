@@ -10,24 +10,25 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { AnswersComparison } from '../../components/answers-comparison';
-import { AppShell } from '../../components/app-shell';
 import { CalculatorIntro } from '../../components/calculator-intro';
 import { CalculatorSession } from '../../components/calculator-session';
 import { DistrictPicker, type PickerDistrict } from '../../components/district-picker';
 import { Guide } from '../../components/guide';
+import { electionCountLabel, Home, type HomeElection } from '../../components/home';
 import { QuestionFlow } from '../../components/question-flow';
 import { Recap } from '../../components/recap';
 import { Results } from '../../components/results';
 import { isEmbedName } from '../../config/embeds';
 import {
+  type ElectionListing,
   listAvailableCalculators,
   listDistricts,
+  listReadyElections,
   loadCalculator,
   loadElection,
 } from '../../lib/calculators';
-import { type CalculatorRef, shellInfoOf, stepPath } from '../../lib/paths';
+import { type CalculatorRef, electionPath, shellInfoOf, stepPath } from '../../lib/paths';
 import { loadSharedResult } from '../../lib/shared-result';
-import styles from './page.module.css';
 
 /**
  * Every screen is rendered from this one route.
@@ -40,7 +41,6 @@ import styles from './page.module.css';
 export default async function CatchAllPage({ params }: { params: Promise<{ path?: string[] }> }) {
   const { path } = await params;
   const route = parseRoute(path ?? [], routeSlugs());
-  const messages = getMessages();
 
   if (!route) notFound();
 
@@ -134,19 +134,29 @@ export default async function CatchAllPage({ params }: { params: Promise<{ path?
     );
   }
 
-  /*
-   * The homepage is Phase 8. It gets the shell anyway — "Opustit kalkulačku"
-   * lands here, and arriving at an unstyled page would read as having left the
-   * app rather than as having reached a part of it that is still being built.
-   */
-  return (
-    <AppShell>
-      <main className={styles.placeholder}>
-        <h1 className={styles.title}>{messages.comingSoon.title}</h1>
-        <p className={styles.description}>{messages.comingSoon.description}</p>
-      </main>
-    </AppShell>
-  );
+  return <Home elections={(await listReadyElections()).map(homeElection)} />;
+}
+
+/**
+ * Where an election's card (and the hero's one call to action) leads.
+ *
+ * An election with a single calculator skips its own picker: that screen would
+ * be one row, and asking someone to choose from a list of one is a tap that
+ * buys them nothing. With several, the picker is exactly the right next
+ * question — which is the live Czech shape, seven calculators for one election.
+ */
+function homeElection(election: ElectionListing): HomeElection {
+  const only = election.available.length === 1 ? election.available[0] : undefined;
+
+  return {
+    key: election.key,
+    name: election.name,
+    description: election.description,
+    count: electionCountLabel(election.districtKind, election.available.length),
+    href: only
+      ? stepPath({ electionKey: election.key, district: only.slug }, 'intro')
+      : electionPath(election.key),
+  };
 }
 
 /**
@@ -239,7 +249,22 @@ export async function generateMetadata({
     // descendant segment sets, so an explicit `messages.app.title` here would
     // read "Volební kalkulačka · Volební kalkulačka". Omitting it is what
     // lets the layout's untemplated `default` stand.
-    return { description: messages.app.description };
+    //
+    // `openGraph` *does* have to restate both, because it is a separate
+    // namespace with no inheritance from `title`/`description` — and this is
+    // the address that actually gets pasted into a chat or a post, so an
+    // unfurl with nothing in it is a worse miss here than anywhere else. No
+    // image: the app ships no static OG asset (the one route that unfurls a
+    // picture renders it per session), and naming a file that does not exist
+    // would be worse than naming none.
+    return {
+      description: messages.app.description,
+      openGraph: {
+        type: 'website',
+        title: messages.app.title,
+        description: messages.app.description,
+      },
+    };
   }
 
   if (route.kind === 'election') {

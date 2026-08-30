@@ -51,8 +51,10 @@ test('completes a calculator from the picker through to ranked results, and shar
   page,
 }) => {
   await test.step('election picker lists the available calculator', async () => {
-    // No link to here exists on the homepage yet (see `home.spec.ts`) — this
-    // is the address that link will eventually point at.
+    // Entered directly rather than from the homepage: on fixtures this
+    // election has exactly one available calculator, so the homepage's card
+    // skips the picker and links straight to the intro (`home.spec.ts` covers
+    // that). This suite is about the picker, so it starts at the picker.
     await page.goto(ELECTION_PATH);
     await expect(
       page.getByRole('heading', { name: messages.picker.municipality.title, exact: true }),
