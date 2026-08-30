@@ -10,7 +10,7 @@ import {
   type RecapFilterId,
 } from '@vk/core';
 import { format, getMessages } from '@vk/i18n';
-import { Button, EdgeFade, FilterChips, QuestionDialog, RecapRow, StickyBar } from '@vk/ui';
+import { Button, EdgeFade, FilterChips, QuestionDialog, RecapRow } from '@vk/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -35,9 +35,10 @@ const messages = getMessages();
  * Two things shape this screen. First, edits go straight to the same store the
  * deck writes to, so this is a second *view* of the answers rather than a copy:
  * there is no save step and no way for the two screens to disagree. Second, the
- * screen does not scroll — only the list inside it does. The deck is a fixed,
- * balanced composition, and a recap that scrolled the title and the call to
- * action off the top made the step after it feel like a different product.
+ * call to action never leaves the screen: on a phone the page scrolls as a
+ * document (the only arrangement iOS paints under its glass address bar — see
+ * `recap.module.css`) with the button riding sticky above the bar, while on a
+ * desktop the frame holds still and only the list inside it moves.
  */
 export function Recap({ calculator, questions }: RecapProps) {
   const { id: calculatorId, electionKey, district, embed } = calculator;
@@ -51,45 +52,17 @@ export function Recap({ calculator, questions }: RecapProps) {
   /** The question the dialog is showing, as an index into `questions`. */
   const [openIndex, setOpenIndex] = useState<number | undefined>();
 
-  /** Whether the list has been scrolled away from its top edge — drives the top fade (there's more above). */
-  const [scrolled, setScrolled] = useState(false);
   /**
-   * On a phone, the header (back link, title, description, tally) collapses
-   * to just the filter row while scrolling forward through the list, and
-   * re-expands the moment the scroll reverses — the common "toolbar hides
-   * advancing, reappears on the way back" pattern, not merely "hidden until
-   * you're back at the very top". `lastScrollTopRef` is what makes it
-   * direction-aware rather than distance-from-top-aware.
+   * Whether the desktop's inner list box has been scrolled away from its top
+   * edge — drives the top fade (there's more above). On a phone the box never
+   * scrolls (the document does), so this stays false and the fade stays off;
+   * the app bar's glass surface is the phone's "more above" cue instead.
    */
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
-  const lastScrollTopRef = useRef(0);
+  const [scrolled, setScrolled] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback(() => {
-    const el = listRef.current;
-    const top = el?.scrollTop ?? 0;
-    setScrolled(top > 4);
-
-    // A dead zone at *both* ends, not just the top: the elastic overscroll
-    // bounce at the bottom of the list reports a few small reverse-direction
-    // scroll events while it springs back, and without this a scroll that
-    // simply reaches the end reads as "scrolled up" and flickers the header
-    // back open for a frame before it re-collapses.
-    const maxTop = el ? el.scrollHeight - el.clientHeight : 0;
-    if (top <= 24) {
-      setHeaderCollapsed(false);
-      lastScrollTopRef.current = top;
-      return;
-    }
-    if (top >= maxTop - 24) {
-      lastScrollTopRef.current = top;
-      return;
-    }
-
-    const delta = top - lastScrollTopRef.current;
-    if (delta > 8) setHeaderCollapsed(true);
-    else if (delta < -8) setHeaderCollapsed(false);
-    lastScrollTopRef.current = top;
+    setScrolled((listRef.current?.scrollTop ?? 0) > 4);
   }, []);
 
   const ref = { electionKey, district, embed };
@@ -139,16 +112,19 @@ export function Recap({ calculator, questions }: RecapProps) {
   };
 
   return (
-    <AppShell calculator={calculator}>
+    <AppShell
+      calculator={calculator}
+      /* The phone list must carry on under Safari's glass rather than stop in
+         a line above it, and only a scrolling document gets to (`screen.tsx`
+         records the same finding). The desktop's fixed frame comes back via
+         the `64rem` rules in `globals.css`. */
+      scroll="document"
+    >
       <main className={styles.screen}>
         <div className={styles.inner}>
-          {/*
-            Collapses to just the filter row below while scrolling forward on
-            a phone (`data-collapsed`, mobile-only in the CSS) — the grid
-            wrapping `.headerInner` is what lets that animate to and from an
-            unknown content height instead of a guessed `max-height`.
-          */}
-          <header className={styles.header} data-collapsed={headerCollapsed || undefined}>
+          {/* On a phone this simply scrolls away with the page; the app bar,
+              the filter row and the action below are the parts that stay. */}
+          <header className={styles.header}>
             <div className={styles.headerInner}>
               <BackLink
                 href={questionPath(ref, questions.length)}
@@ -230,37 +206,32 @@ export function Recap({ calculator, questions }: RecapProps) {
                     })}
                   </ul>
                 </div>
-
-                {/* The tall `action` band, so the control panel below reads as
-                    floating over the list rather than sitting in a lane of its
-                    own underneath it. */}
-                <EdgeFade edge="bottom" size="action" />
               </>
             )}
+          </div>
 
-            <div className={styles.footer}>
-              <StickyBar>
-                {/*
-                  With nothing answered there is nothing to compare, so the control
-                  is a genuinely disabled button rather than a link wearing
-                  `aria-disabled` — which would still navigate on click.
-                */}
-                {ready && answered === 0 ? (
-                  <Button size="large" iconEnd="arrowRight" disabled>
-                    {messages.recap.showResults}
-                  </Button>
-                ) : (
-                  <Button
-                    as={Link}
-                    href={stepPath(ref, 'result')}
-                    size="large"
-                    iconEnd="arrowRight"
-                  >
-                    {messages.recap.showResults}
-                  </Button>
-                )}
-              </StickyBar>
-            </div>
+          {/*
+            The control panel: sticky over the scrolling page on a phone,
+            floating over the desktop fade band otherwise — the CSS holds both
+            arrangements. Deliberately a bare button rather than `StickyBar`,
+            whose phone scrim would paint a solid tail exactly over the
+            under-glass strip the document arrangement exists to leave open.
+          */}
+          <div className={styles.footer}>
+            {/*
+              With nothing answered there is nothing to compare, so the control
+              is a genuinely disabled button rather than a link wearing
+              `aria-disabled` — which would still navigate on click.
+            */}
+            {ready && answered === 0 ? (
+              <Button size="large" iconEnd="arrowRight" disabled>
+                {messages.recap.showResults}
+              </Button>
+            ) : (
+              <Button as={Link} href={stepPath(ref, 'result')} size="large" iconEnd="arrowRight">
+                {messages.recap.showResults}
+              </Button>
+            )}
           </div>
         </div>
       </main>

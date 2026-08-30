@@ -95,39 +95,26 @@
 }
 
 /*
- * The glass surface — a `z-index: -1` layer behind the header's own content
- * rather than painted on `.bar` directly, so it can fade in on its own instead
- * of the header's background snapping in.
- *
- * It only appears once `ScrollMode` has marked the page as scrolled
- * (`data-vk-header-surface`, set past a few pixels of movement). At rest —
- * fresh load, or a screen shorter than the viewport — there is nothing behind
- * the header for it to separate itself from, and a translucent panel with no
- * content passing under it just draws a hard seam under the wordmark for no
- * reason. Once something *is* scrolling underneath, the same translucent,
- * blurred treatment `StickyBar` uses keeps the wash showing through rather
- * than punching a flat panel out of it — tinted with the page colour, not the
- * card colour, since this frames the *page*, not a card floating on it.
+ * Not the old glass slab — a blur-less wash of the page colour, solid behind
+ * the wordmark and gone shortly past the bar's bottom edge. The glass panel
+ * went because the header's elements now float on their own shadows; but a
+ * drop shadow cannot separate text from *text*, and rows scrolling straight
+ * through the wordmark read as a defect, not a style. Page-coloured top to
+ * transparent bottom, so at rest (nothing under the bar yet) it blends into
+ * the page invisibly and needs no scroll gating; the extra `space-5` of
+ * height lets the ramp finish below the bar instead of cutting at its edge.
  */
 :global(html[data-vk-scroll="document"]) .bar::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 0 0 auto 0;
+  height: calc(100% + var(--vk-space-5));
   z-index: -1;
-
-  opacity: 0;
-  background: oklch(from var(--vk-color-page) l c h / 0.82);
-  backdrop-filter: var(--vk-plate-blur);
-  box-shadow: 0 8px 20px -16px oklch(from var(--vk-shadow-color) l c h / 0.25);
-  transition: opacity var(--vk-duration-base) ease;
-}
-
-:global(html[data-vk-scroll="document"][data-vk-header-surface]) .bar::before {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :global(html[data-vk-scroll="document"]) .bar::before {
-    transition: none;
-  }
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--vk-color-page) 0%,
+    oklch(from var(--vk-color-page) l c h / 0.88) 55%,
+    oklch(from var(--vk-color-page) l c h / 0) 100%
+  );
 }

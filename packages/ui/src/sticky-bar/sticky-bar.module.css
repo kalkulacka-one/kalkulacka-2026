@@ -68,62 +68,11 @@
  *
  * What the plate still owned is a floating shadow, so each action stays
  * legible over content sliding past underneath it — that moves to the
- * buttons themselves rather than disappearing.
+ * buttons themselves, at the strongest tier (`--vk-shadow-float`): with the
+ * phone scrim gone, the shadow is the only separation the actions get.
  */
 .floating > * {
-  box-shadow: var(--vk-shadow-card-back);
-}
-
-/*
- * The phone scrim — the same page-colour ramp every list edge uses
- * (`--vk-fade-to-top`, shared with `EdgeFade`), painted behind the floating
- * actions so the content sliding under them settles toward the page colour
- * and the buttons read as chrome rather than as one more row.
- *
- * Full viewport width via the `left: 50% / 100vw` trick: the bar lives inside
- * a gutter-padded, max-width column, and a scrim that stopped at the column's
- * edges would draw two hard vertical seams on anything wider than the column.
- * Phone-only (`width < 64rem`): that is the breakpoint where the desktop
- * frame returns and the bar stops floating over a document that scrolls
- * under it. Negative top/bottom stretch the band above the actions for the
- * fade-in and below them through the bar's own bottom margin to the true
- * viewport edge.
- *
- * Two layers, split at the bar's bottom edge: `::before` carries the fade
- * above and behind the actions, `::after` carries *solid* page colour from
- * there down through the page's own scroll tail. Without the solid tail, the
- * scrim rode up with the bar at the very end of the scroll — the bar settles
- * at its flow position, a `--vk-scroll-tail` of padding still lies below it,
- * and the wash showed through the gap under a gradient now floating mid-air.
- * Sized to end exactly at the page's bottom edge (tail + the bar's own
- * margin), so it adds no scrollable overflow of its own.
- */
-@media (width < 64rem) {
-  .floating::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: calc(-1 * var(--vk-space-6));
-    bottom: 0;
-    left: 50%;
-    width: 100vw;
-    transform: translateX(-50%);
-    pointer-events: none;
-    background: var(--vk-fade-to-top);
-  }
-
-  .floating::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: 100%;
-    height: calc(var(--vk-scroll-tail) + max(var(--vk-space-2), env(safe-area-inset-bottom, 0px)));
-    left: 50%;
-    width: 100vw;
-    transform: translateX(-50%);
-    pointer-events: none;
-    background: var(--vk-color-page);
-  }
+  box-shadow: var(--vk-shadow-float);
 }
 
 /*

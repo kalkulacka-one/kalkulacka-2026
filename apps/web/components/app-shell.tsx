@@ -98,7 +98,10 @@ export function AppShell({
       <ScrollMode mode={scroll} />
 
       <div className={styles.content}>
-        <div className={styles.bar}>
+        {/* `data-vk-app-bar` is `ScrollMode`'s measuring hook: in `document`
+            mode it mirrors this bar's height into `--vk-app-bar-h` so a
+            screen's own sticky rows can stack directly beneath it. */}
+        <div className={styles.bar} data-vk-app-bar>
           <AppHeader
             title={messages.app.title}
             electionName={calculator?.electionName ?? electionName}

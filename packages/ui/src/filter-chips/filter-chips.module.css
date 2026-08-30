@@ -81,10 +81,15 @@
 
   /*
    * Translucent, like the back link and the sticky bar: this floats over the
-   * moving wash, and an opaque grey chip would punch a hole in it.
+   * moving wash, and an opaque grey chip would punch a hole in it. The outer
+   * drop shadow is the floating half of the recipe — where the row sticks
+   * (the recap's phone header) there is no panel behind it, so each chip
+   * separates itself from the content passing beneath.
    */
   background: oklch(from var(--vk-color-surface) l c h / 0.7);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-border);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-border),
+    var(--vk-shadow-card-back);
   backdrop-filter: var(--vk-plate-blur);
   color: var(--vk-color-text-muted);
 
@@ -107,7 +112,9 @@
 .chip[aria-pressed="true"] {
   background: var(--vk-color-neutral);
   color: var(--vk-color-neutral-on);
-  box-shadow: inset 0 0 0 var(--vk-border-width) var(--vk-color-neutral);
+  box-shadow:
+    inset 0 0 0 var(--vk-border-width) var(--vk-color-neutral),
+    var(--vk-shadow-card-back);
 }
 
 .count {
