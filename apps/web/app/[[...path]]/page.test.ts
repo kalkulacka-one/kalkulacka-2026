@@ -21,6 +21,16 @@ describe('generateMetadata', () => {
     );
   });
 
+  it('gives home an og card, since it is the address people actually paste', async () => {
+    // `openGraph` inherits nothing from `title`/`description`, so an unfurl of
+    // the front door only says anything if both are restated here.
+    const { openGraph } = await metadataFor([]);
+    expect(openGraph?.title).toBe('Volební kalkulačka');
+    expect(openGraph?.description).toBe(
+      'Porovnejte své názory s programy politických stran a zjistěte, které straně jste nejblíž.',
+    );
+  });
+
   it('titles the election picker with the election name', async () => {
     const metadata = await metadataFor(['volby', 'komunalni-2022']);
     expect(metadata.title).toBe('Komunální volby 2022');

@@ -19,6 +19,8 @@
       // inferred by the framework integration but declared anyway — local
       // turbo has no such inference, and the hash should react to it too.
       "env": [
+        "ARCHIVE_DEMO",
+        "VERCEL",
         "DATA_ENDPOINT",
         "DATABASE_URL",
         "DATABASE_INITIALIZED_AT",
